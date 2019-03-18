@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/instantsearch.css@7.1.0/themes/reset-min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/instantsearch.css@7.1.0/themes/algolia-min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://use.fontawesome.com/releases/v5.5.0/css/all.css"
+    />
+    <link rel="stylesheet" type="text/css" href="style.css" />
+    <title>New In Items</title>
+  </head>
+
+  <body>
+    <nav>
+      <h1>
+        New In Items
+      </h1>
+    </nav>
+    <div class="content">
+      <div class="left-part">
+        <div class="facets"></div>
+      </div>
+      <div class="right-part">
+        <div id="search-box"></div>
+        <div id="stats-container"></div>
+        <div id="hits"></div>
+        <div id="pagination"></div>
+      </div>
+    </div>
+  </body>
+
+  <script src="https://cdn.jsdelivr.net/npm/algoliasearch@3.32.0/dist/algoliasearchLite.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/instantsearch.js@3.0.0/dist/instantsearch.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
+  <script type="module" src="main.js"></script>
+</html>

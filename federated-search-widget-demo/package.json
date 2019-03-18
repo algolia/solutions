@@ -1,0 +1,26 @@
+{
+  "name": "federated-search-widget-demo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "start": "browser-sync start --server --files .",
+    "test": "npm run lint",
+    "lint": "eslint .",
+    "lint:fix": "npm run lint -- --fix"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "browser-sync": "^2.18.13"
+  },
+  "dependencies": {
+    "babel-eslint": "^10.0.1",
+    "eslint": "^5.15.1",
+    "eslint-config-algolia": "^13.2.3",
+    "eslint-config-prettier": "^4.1.0",
+    "eslint-plugin-import": "^2.16.0",
+    "eslint-plugin-prettier": "^3.0.1",
+    "prettier": "^1.16.4"
+  }
+}

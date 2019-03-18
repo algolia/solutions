@@ -1,0 +1,153 @@
+body {
+  font-family: helvetica, arial, sans-serif;
+}
+
+em {
+  background: cyan;
+  font-style: normal;
+}
+
+.container {
+  max-width: 1140px;
+  margin: 0 auto;
+}
+
+.twoColumns {
+  display: grid;
+  grid-template-columns: 20% 75%;
+  grid-gap: 5%;
+}
+
+#refinement-lists {
+  margin-left: 5%;
+}
+/* .ais-hits {
+  display: grid;
+  grid-template-columns: 47.5% 47.5%;
+  grid-gap: 5%;
+}
+.ais-hits--item {
+  background: #efefef;
+  margin-bottom: 0.5em;
+  padding: 1em;
+  min-height: 100px;
+} */
+
+#hits {
+  margin: 4px 0;
+  padding: 10px 0;
+  border-top: 2px solid #eee;
+}
+.hit {
+  font-size: 0;
+  padding: 15px 0;
+  border-bottom: 1px solid #eee;
+}
+.hit-name {
+  margin: 0;
+}
+.hit-image {
+  display: inline-block;
+  width: 16%;
+  text-align: center;
+}
+.hit-image img {
+  max-width: 100%;
+  max-height: 80px;
+}
+.hit-content {
+  font-size: 13px;
+  font-weight: 300;
+  display: inline-block;
+  width: 81%;
+  margin-left: 3%;
+  vertical-align: top;
+}
+.hit-stars {
+  font-size: 17px;
+  margin: 4px 0;
+  color: #868686;
+}
+
+.hit-content .hit-price {
+  float: right;
+  margin-left: 20px;
+  color: #ffffff;
+  background: #383838;
+  padding: 4px;
+  border-radius: 3px;
+}
+.hit-content .hit-price,
+.hit-content .hit-name {
+  font-weight: normal;
+  margin-top: 0;
+}
+
+.hit-content em {
+  font-style: normal;
+  color: #ed5565;
+  border-bottom: solid 1px rgba(244, 107, 91, 0.5);
+}
+
+.hit-content p {
+  font-size: 13px;
+}
+
+.hit-description em {
+  color: inherit;
+}
+
+.hit-category-breadcrumb {
+  margin: 5px 0 2px 0;
+}
+
+.hit-category-breadcrumb em {
+  color: inherit;
+}
+
+.hit-content .hit-description {
+  color: #868686;
+  margin: 1px 0 10px 0;
+  font-size: 14px;
+}
+
+.searchTop {
+  padding-left: 25%;
+}
+
+#searchBox {
+  margin-bottom: 2em;
+}
+#pagination {
+  margin: 0 auto;
+  text-align: center;
+}
+
+#current-refined-values {
+  padding: 10px;
+}
+
+.ais-current-refined-values--list {
+  display: flex;
+}
+
+.ais-current-refined-values--item {
+  margin: 0px 15px 0px 0px;
+}
+
+.ais-refinement-list {
+  margin: 25px 0px 0px 0px;
+}
+
+.ais-refinement-list--checkbox {
+  float: left;
+  margin-top: 6px;
+}
+
+.ais-refinement-list--count {
+  margin: 0px 5px;
+}
+
+em {
+  background: none;
+}

@@ -1,0 +1,22 @@
+{
+  "name": "search-history",
+  "version": "1.0.0",
+  "description": "Algolia Autocomplete.js with history of searches",
+  "keywords": [],
+  "private": true,
+  "devDependencies": {
+    "parcel-bundler": "1.6.2"
+  },
+  "scripts": {
+    "start": "parcel index.html"
+  },
+  "engines": {
+    "node": "^9.6.1"
+  },
+  "renovate": {
+    "extends": [
+      "config:js-app",
+      "algolia"
+    ]
+  }
+}

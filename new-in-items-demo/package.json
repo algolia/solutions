@@ -1,0 +1,17 @@
+{
+  "name": "new-in-items-demo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "start": "browser-sync start --server --files ."
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "browser-sync": "^2.18.13"
+  },
+  "dependencies": {
+    "moment": "^2.24.0"
+  }
+}

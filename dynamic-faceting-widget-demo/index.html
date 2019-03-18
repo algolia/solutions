@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Do not use @2 in production, use a complete version like x.x.x, see website for latest version:
+      https://community.algolia.com/instantsearch.js/v2/getting-started.html
+    -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2/dist/instantsearch.min.css">
+	  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2/dist/instantsearch-theme-algolia.min.css">
+	  <link rel="stylesheet" href="./index.css">
+    <meta charset="utf-8">
+    <title>Algolia InstantSearch.js template</title>
+  </head>
+
+  <body>
+		<details open>
+      This Codesandbox demonstrates the concept of "dynamic faceting" -- that is displaying different refinement lists depending on what is being queried.  If you search for "cell phone cases", for example, the refinement lists include color and phone model.  Searching for "laptops" includes facets for memory and storage, while searching for "TVs" include resolution, screen size, and diagonal options.
+		</details>
+    <div class="container">
+      <div class="searchTop">
+      <h2>
+        Products
+      </h2>
+      <div id="searchBox"></div>
+      </div>
+      <div class="twoColumns">
+        <div id="refinement-lists"></div>
+        <div id="main">
+				<div id="stats"></div>
+        <div id="current-refined-values"></div>
+        <div id="products"></div>
+        </div>
+      </div>
+      <div id="pagination"></div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2/dist/instantsearch.min.js"></script>
+    <script src="./index.js"></script>
+  </body>
+</html>

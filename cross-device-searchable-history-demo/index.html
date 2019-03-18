@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Do not use @2 in production, use a complete version like x.x.x, see website for latest version:
+      https://community.algolia.com/instantsearch.js/v2/getting-started.html
+    -->
+	  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2/dist/instantsearch.min.css">
+	  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2/dist/instantsearch-theme-algolia.min.css">
+	  <link rel="stylesheet" href="./index.css">
+    <meta charset="utf-8">
+    <title>Algolia InstantSearch.js template</title>
+  </head>
+
+  <body>
+    <div class="container">
+      <details open>
+        <h1>Searchable History</h1>
+        <p>Queries are saved in an Algolia index.</p>
+        <ul>
+          <li>The history is per user: you are <i>user-42</i> (can be modified in the code)</li>
+          <li>To be saved the query must have a length > 3</li>
+          <li>A score is incremented when a query from the history is searched again (custom ranking #1)</li>
+		      <li>The query is saved along with the query (attribute <i>lastSearch</i>, custom ranking #2)</li>
+        </ul>
+      </details>
+
+      <div id="searchBox"></div>
+      <div id="products"></div>
+      <div id="pagination"></div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/algoliasearch@3.26.0/dist/algoliasearch.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/autocomplete.js@0.29.0/dist/autocomplete.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2/dist/instantsearch.min.js"></script>
+    <script src="./autocompleteWidget.js"></script>
+    <script src="./index.js"></script>
+  </body>
+</html>
