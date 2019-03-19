@@ -34,10 +34,12 @@
   color: #a2a2a2;
 }
 
-#suggestion-tags-container {
-    width: 100%;
-  display: inline-flex;
-  justify-content: flex-start;
+#smart-filters{
+  margin-top: 10px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   overflow-x: scroll;
   margin-top: 0.5em;
 }
@@ -49,16 +51,19 @@
 
 .suggestion-tag {
     padding: 10px;
-    margin-right: 20px;
-    white-space: nowrap;
     background: #ececec;
     cursor: pointer;
     border-radius: 2px;
 }
 
-.suggestion-tag em {
-    font-style: normal;
-    font-weight: bold;
+.suggestion-tag-content{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.suggestion-tag-content .smart-icon{
+  margin-right: 10px;
 }
 
 .smart-filters-active {

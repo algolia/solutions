@@ -14,6 +14,8 @@ class SmartFilters {
     let index = client.initIndex(this.indexName);
     let maxSuggestions = this.maxSuggestions;
     let filters = this.filters;
+    let smartIcon = this.smartIcon;
+
     console.log(this.previousQuery," // ",query);
     if (query != "" && query != this.previousQuery) {
       this.previousQuery = query;
@@ -42,7 +44,7 @@ class SmartFilters {
                     element.classList.add('suggestion-tag');
                     element.setAttribute("alg-refinement-brand", key);
                     element.setAttribute("alg-refinement-size", sortedFacetValues[0]);
-                    element.innerHTML = filters[0] + ': ' + key + ' | ' + filters[1] + ': ' + sortedFacetValues[0];
+                  element.innerHTML = `<span class="suggestion-tag-content"><span class="smart-icon">${smartIcon}</span><span>${ucwords(filters[0])}:${key}<br>${ucwords(filters[1])}:${sortedFacetValues[0]}</span></span>`;
                     element.addEventListener("click", () => {
                       smartFiltersContainer.childNodes.forEach(child => {
                         child.classList.remove('smart-filters-active');
@@ -59,6 +61,13 @@ class SmartFilters {
       );
     }
   }
+}
+
+function ucwords(str){
+  str = str.toLowerCase().replace(/\b[a-z]/g, function(letter) {
+      return letter.toUpperCase();
+  });
+  return str;
 }
 
 export default SmartFilters;

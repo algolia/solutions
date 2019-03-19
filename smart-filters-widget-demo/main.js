@@ -51,7 +51,8 @@ search.addWidget(
     appID: appID,
     apiKey: apiKey,
     indexName: 'products',
-    maxSuggestions: 5
+    maxSuggestions: 4,
+    smartIcon: '<i class="far fa-lightbulb"></i>'
   })
 );
 
@@ -92,9 +93,13 @@ const renderConfigure = (renderOptions, isFirstRender) => {
   //if (isFirstRender) {
     const smartFilters = document.querySelector('#smart-filters');
     smartFilters.addEventListener('click', (e) => {
+      let node = e.target;
+      while(node.tagName != 'DIV') {
+        node = node.parentNode;
+      }
       refine({ facetFilters: [
-        "author:" + e.target.attributes["alg-refinement-brand"].value,
-        "categories:" + e.target.attributes["alg-refinement-size"].value
+        "author:" + node.attributes["alg-refinement-brand"].value,
+        "categories:" + node.attributes["alg-refinement-size"].value
         ]
       });
     });
