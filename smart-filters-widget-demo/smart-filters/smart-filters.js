@@ -44,7 +44,7 @@ class SmartFilters {
                     element.classList.add('suggestion-tag');
                     element.setAttribute("alg-refinement-brand", key);
                     element.setAttribute("alg-refinement-size", sortedFacetValues[0]);
-                  element.innerHTML = `<span class="suggestion-tag-content"><span class="smart-icon">${smartIcon}</span><span>${ucwords(filters[0])}:${key}<br>${ucwords(filters[1])}:${sortedFacetValues[0]}</span></span>`;
+                    element.innerHTML = `<span class="suggestion-tag-content"><span class="smart-icon">${smartIcon}</span><span>${ucwords(filters[0])}: ${key}<br>${ucwords(filters[1])}: ${sortedFacetValues[0]}</span></span>`;
                     element.addEventListener("click", () => {
                       smartFiltersContainer.childNodes.forEach(child => {
                         child.classList.remove('smart-filters-active');
