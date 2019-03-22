@@ -1,1 +1,1 @@
-# predictive-search-box-demo
+# smart-filters-widget-demo
