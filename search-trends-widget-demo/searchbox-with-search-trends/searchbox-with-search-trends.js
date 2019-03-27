@@ -3,32 +3,11 @@ class SearchboxWithSearchTrends {
     Object.assign(this, options);
   }
 
-  init(initOptions) {
-    const searchboxContainer = document.querySelector(this.container);
+  render(renderOptions) {
 
-    searchboxContainer.innerHTML = `
-      <div id="searchbox">
-        <div class="search-box-container">
-            <input autocapitalize="off"
-              autocomplete="off"
-              autocorrect="off"
-              placeholder="${this.placeholder}"
-              role="textbox"
-              spellcheck="false"
-              type="text"
-              value=""
-              id="search-box-input">
-        </div>
-        <div id="clear-input"><i class="fas fa-times"></i></div>
-        <div id="search-trends-container"></div>
-      </div>
-    `;
+    const searchTrendsContainer = document.querySelector(this.container);
+    const searchBoxInput = document.getElementsByClassName('ais-SearchBox-input')[0];
 
-    let searchBoxInput = document.getElementById("search-box-input");
-    let clearButton = document.getElementById("clear-input");
-    let searchTrendsContainer = document.getElementById(
-      "search-trends-container"
-    );
     let trendIcon = this.trendIcon;
     let startDate = new Date();
     let endDate = new Date();
@@ -80,22 +59,12 @@ class SearchboxWithSearchTrends {
     searchBoxInput.addEventListener("input", function(e) {
       let value = searchBoxInput.value;
       if (value == "") {
-        clearButton.style.display = "none";
         var event = new Event("click");
         searchBoxInput.dispatchEvent(event);
       } else {
-        clearButton.style.display = "block";
         removeTags(searchTrendsContainer);
       }
-      initOptions.helper.setQuery(value).search(); //Set the query and search
-    });
-
-    //Clear button
-    clearButton.addEventListener("click", function(e) {
-      searchBoxInput.value = "";
-      clearButton.style.display = "none";
-      var event = new Event("input");
-      searchBoxInput.dispatchEvent(event);
+      renderOptions.helper.setQuery(value).search(); //Set the query and search
     });
   }
 }

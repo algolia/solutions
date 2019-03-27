@@ -36,12 +36,18 @@ search.addWidget(
 );
 
 search.addWidget(
+  instantsearch.widgets.searchBox({
+    container: "#search-box",
+    placeholder: "Search for products and brands",
+  })
+);
+
+search.addWidget(
   new SearchboxWithSearchTrends({
-    container: '#search-box',
+    container: '#search-trends',
     appID: appID,
     apiKey: apiKey,
     indexName: indexName,
-    placeholder: "Search for products and brands",
     trendIcon: '<i class="fas fa-fire"></i>',
     trendPeriodInDays: 2, 
     maxSearchTrends: 5,
