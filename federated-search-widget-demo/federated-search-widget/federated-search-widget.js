@@ -48,7 +48,7 @@ class FederatedSearchWidget {
           (i.src = "https://cdn.jsdelivr.net/npm/search-insights@1.0.0"),
           c.parentNode.insertBefore(i, c);
       })(window, document, "script", 0, "aa");
-  
+
       // Initialize Insights library
       aa("init", {
         appId: this.appID,
@@ -93,19 +93,25 @@ class FederatedSearchWidget {
         indices.forEach((index, i) => {
           if(columns[i].isFacetBased){
             //Perform a search to get facets only
-            index.search({ query: searchBoxInput.value, hitsPerPage: 1, facets: columns[i].facetsBasedOn }, (err, res) => {              
+            index.search({ query: searchBoxInput.value, hitsPerPage: 1, facets: columns[i].facetsBasedOn }, (err, res) => {
               columns[i].facetsBasedOn.forEach((facet, counter) => {
                 let element = document.createElement("div");
                 element.setAttribute("id", "facet-column-" + counter + "-content");
                 document.getElementById("column-" + i + "-content").append(element);
                 let container = document.getElementById("facet-column-" + counter + "-content");
                 if(res.facets[facet] !== undefined){
-                  displayFacetValues(Object.entries(res.facets[facet]).slice(0, columns[i].displayLimit), container, `<h3 class="column-title">${columns[i].title[counter]}</h3>`);
+                  displayFacetValues(
+                    Object.entries(res.facets[facet]).slice(0, columns[i].displayLimit),
+                    container,
+                    `<h3 class="column-title">${columns[i].title[counter]}</h3>`,
+                    initOptions,
+                    facet
+                  );
                 }else{
                   container.innerHTML = `<h3 class="column-title">${columns[i].title[counter]}</h3><p>${columns[i].noResultLabel}</p>`;
                 }
               })
-              
+
             });
           }else{
             //Perform a search to get hits / query suggestions
@@ -172,13 +178,16 @@ function displayQuerySuggestions(res, qsSourceIndex, container, redirectTo, noRe
   }
 }
 
-function displayFacetValues(arrayOfFacetsAndCount, container, title){
+function displayFacetValues(arrayOfFacetsAndCount, container, title, initOptions, facet){
   container.innerHTML = title;
   arrayOfFacetsAndCount.forEach(array => {
       let element = document.createElement("div");
       element.classList.add("hover-background");
       element.addEventListener("click", function(e) {
-        //TODO
+        const nextStateWithFacetRefinement = initOptions.helper.state.addDisjunctiveFacetRefinement(facet, array[0]);
+        const nextURLWithFacetRefinement = initOptions.createURL(nextStateWithFacetRefinement);
+        // We could rather use an href on a link
+        location.href = nextURLWithFacetRefinement;
       });
       element.innerHTML = "<div style='padding: 10px;'>" + array[0] + "<span class='facet-count'> (" + array[1] + ")</span></div>";
       container.append(element);
