@@ -8,9 +8,7 @@ const virutalRefinementList = instantsearch.connectors.connectRefinementList(() 
 const search = instantsearch({
   indexName: "atis-prods",
   searchClient: algoliasearch(appID, apiKey),
-  // This option is mandatory to allow the createURL
-  // function to generate an URL.
-  routing: true,
+  routing: true, // This option is mandatory to allow the createURL function to generate an URL.
 });
 
 search.addWidget(
@@ -61,7 +59,7 @@ search.addWidget(
         title: "Matching Keywords",
         displayOnMobile: true,
         noResultLabel: 'No Matching Queries',
-        redirectTo: "https://www.noon.com/uae-en/search?q=",
+        redirectTo: "https://www.mywebsite.com/search?q=",
       },
       {
         indexName: "atis-prods",
@@ -122,7 +120,7 @@ search.addWidget(
   // it does not render anything. Note that for brand we don't have it because
   // we already have a refinementList mounted on the page.
   virutalRefinementList({
-    attribute: "categories",
+    attribute: "categories", //Need to be all the facets that are currently not visible on the website
   })
 );
 
