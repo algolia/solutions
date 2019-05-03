@@ -3,14 +3,26 @@ import FederatedSearchWidget from "./federated-search-widget/federated-search-wi
 let appID = "932LAAGOT3";
 let apiKey = "6a187532e8e703464da52c20555c37cf";
 
+const virutalRefinementList = instantsearch.connectors.connectRefinementList(() => {})
+
 const search = instantsearch({
   indexName: "atis-prods",
-  searchClient: algoliasearch(appID, apiKey)
+  searchClient: algoliasearch(appID, apiKey),
+  // This option is mandatory to allow the createURL
+  // function to generate an URL.
+  routing: true,
 });
 
 search.addWidget(
   instantsearch.widgets.configure({
     hitsPerPage: 12
+  })
+);
+
+search.addWidget(
+  // Useful for debug purpose
+  instantsearch.widgets.currentRefinements({
+    container: '#current-refinements'
   })
 );
 
@@ -101,6 +113,16 @@ search.addWidget(
     showMore: true,
     searchable: true,
     searchablePlaceholder: "Search our brands"
+  })
+);
+
+search.addWidget(
+  // This widget is required otherwise we can't add the refinement to
+  // generate the URL with the refinement applied. The widget is headless
+  // it does not render anything. Note that for brand we don't have it because
+  // we already have a refinementList mounted on the page.
+  virutalRefinementList({
+    attribute: "categories",
   })
 );
 
