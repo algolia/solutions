@@ -17,9 +17,11 @@ class SmartFilters {
     let smartIcon = this.smartIcon;
 
     console.log(this.previousQuery," // ",query);
-    if (query != "" && query != this.previousQuery) {
+    if (query != "" && query != this.previousQuery && renderOptions.state.facetFilters == undefined) {
+      console.log(renderOptions.state.facetFilters);
       this.previousQuery = query;
       smartFiltersContainer.innerHTML = "";
+      console.log("coucou");
       index.search(
         { query: query, hitsPerPage: 0, facets: [filters[0]] },
         (err, res) => {
