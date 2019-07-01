@@ -54,6 +54,10 @@
     background: #ececec;
     cursor: pointer;
     border-radius: 2px;
+    border: none;
+    font-size: inherit;
+    font-family: inherit;
+    color: inherit;
 }
 
 .suggestion-tag-content{
