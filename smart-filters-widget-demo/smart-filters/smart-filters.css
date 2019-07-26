@@ -20,53 +20,39 @@
   font-family: Arial, Helvetica, sans-serif;
 }
 
-#predictive-box {
-  height: 50px;
-  padding: 0 !important;
-  display: flex;
-  align-items: center;
-  position: absolute;
-}
-
-#predictive-item {
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 20px;
-  color: #a2a2a2;
-}
-
-#smart-filters{
+#smart-filters {
   margin-top: 10px;
   width: 100%;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: space-evenly;
   overflow-x: scroll;
   margin-top: 0.5em;
 }
 
 ::-webkit-scrollbar {
-    width: 0px;  /* remove scrollbar space */
-    background: transparent;  /* optional: just make scrollbar invisible */
+  width: 0px; /* remove scrollbar space */
+  background: transparent; /* optional: just make scrollbar invisible */
 }
 
 .suggestion-tag {
-    padding: 10px;
-    background: #ececec;
-    cursor: pointer;
-    border-radius: 2px;
-    border: none;
-    font-size: inherit;
-    font-family: inherit;
-    color: inherit;
+  padding: 10px;
+  background: #ececec;
+  cursor: pointer;
+  border-radius: 2px;
+  border: none;
+  font-size: inherit;
+  font-family: inherit;
+  color: inherit;
 }
 
-.suggestion-tag-content{
+.suggestion-tag-content {
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.suggestion-tag-content .smart-icon{
+.suggestion-tag-content .smart-icon {
   margin-right: 10px;
 }
 

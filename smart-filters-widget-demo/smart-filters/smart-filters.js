@@ -1,75 +1,137 @@
 class SmartFilters {
-
-  constructor(options, previousQuery) {
+  constructor(options) {
     Object.assign(this, options);
-    this.previousQuery = "";
+    this.node = document.querySelector(this.container);
+    this.derivedHelpers = [];
   }
 
-  render(renderOptions){
-    let query = renderOptions.state.query;
+  getConfiguration() {
+    return {
+      disjunctiveFacets: this.filters
+    };
+  }
 
-    const smartFiltersContainer = document.querySelector(this.container);
+  init({ instantSearchInstance, helper }) {
+    helper.on("result", (result, state) => {
+      const [mainFacetName, subFacetName] = this.filters;
+      const facetValues = result
+        .getFacetValues(mainFacetName)
+        .slice(0, this.maxSuggestions)
+        .map(_ => _.name);
 
-    let client = algoliasearch(this.appID, this.apiKey);
-    let index = client.initIndex(this.indexName);
-    let maxSuggestions = this.maxSuggestions;
-    let filters = this.filters;
-    let smartIcon = this.smartIcon;
-
-    console.log(this.previousQuery," // ",query);
-    if (query != "" && query != this.previousQuery && renderOptions.state.facetFilters == undefined) {
-      console.log(renderOptions.state.facetFilters);
-      this.previousQuery = query;
-      smartFiltersContainer.innerHTML = "";
-      console.log("coucou");
-      index.search(
-        { query: query, hitsPerPage: 0, facets: [filters[0]] },
-        (err, res) => {
-          console.log(query);
-          if (Object.keys(res.facets)[0] != undefined) {
-            let facet = Object.keys(res.facets)[0];
-            Object.keys(res.facets[facet]).forEach((key, counter) => {
-              if (counter < maxSuggestions) {
-                index.search(
-                  {
-                    query: query,
-                    hitsPerPage: 0,
-                    facets: [filters[1]],
-                    facetFilters: [[facet + ":" + key]]
-                  },
-                  (err, result) => {
-                    let facetsValues = result.facets[filters[1]];
-                    let sortedFacetValues = Object.keys(facetsValues).sort(function(a, b) {
-                      return facetsValues[b] - facetsValues[a];
-                    });
-                    let element = document.createElement("div");
-                    element.classList.add('suggestion-tag');
-                    element.setAttribute("alg-refinement-brand", key);
-                    element.setAttribute("alg-refinement-size", sortedFacetValues[0]);
-                    element.innerHTML = `<span class="suggestion-tag-content"><span class="smart-icon">${smartIcon}</span><span>${ucwords(filters[0])}: ${key}<br>${ucwords(filters[1])}: ${sortedFacetValues[0]}</span></span>`;
-                    element.addEventListener("click", () => {
-                      smartFiltersContainer.childNodes.forEach(child => {
-                        child.classList.remove('smart-filters-active');
-                      })
-                      element.classList.add('smart-filters-active');
-                    });
-                    smartFiltersContainer.append(element);
-                  }
-                );
+      let currentRefinements = result._state.disjunctiveFacetsRefinements;
+      if (
+        instantSearchInstance.helper.state.query != "" &&
+        result.hits.length > 0 &&
+        !(this.filters[0] in currentRefinements) &&
+        !(this.filters[1] in currentRefinements)
+      ) {
+        instantSearchInstance.client
+          .search(
+            facetValues.map(_ => ({
+              indexName: helper.getIndex(),
+              params: {
+                query: state.query,
+                hitsPerPage: 0,
+                facets: [subFacetName],
+                filters: `${mainFacetName}:"${_}"`
               }
+            }))
+          )
+          .then(response => {
+            const subFacetValues = response.results.flatMap(
+              (result, idx) =>
+                (result.facets &&
+                  result.facets[subFacetName] &&
+                  Object.entries(result.facets[subFacetName])
+                    .sort(([_, a], [__, b]) => a - b)
+                    .slice(0, 1)
+                    .map(([_]) => [facetValues[idx], _])) ||
+                ""
+            );
+
+            this.renderSmartCategories({
+              facetValues: subFacetValues,
+              helper
             });
-          }
+          });
+      } else {
+        var e = document.getElementById("smart-filters");
+        deleteChildren(e);
+      }
+    });
+  }
+
+  renderSmartCategories({ helper, facetValues }) {
+    const selected = document.querySelector(".smart-filters-active");
+
+    this.node.innerHTML = facetValues
+      .map(([mainFacetValue, subFacetValue]) => {
+        const [mainFacetName, subFacetName] = this.filters;
+
+        if (!subFacetValue) {
+          return;
         }
-      );
+
+        return `
+          <button
+            class="suggestion-tag"
+            data-top-level-facet="${mainFacetValue}"
+            data-sub-level-facet="${subFacetValue}"
+          >
+            <span class="suggestion-tag-content">
+              <span class="smart-icon">${this.smartIcon}</span>
+              <span>
+                ${ucwords(mainFacetName)}: ${mainFacetValue}<br />
+                ${ucwords(subFacetName)}: ${subFacetValue}
+              </span>
+            </span>
+          </button>
+        `;
+      })
+      .join("");
+
+    if (selected) {
+      const data = selected.dataset;
+      const topLevel = `[data-top-level-facet="${data.topLevelFacet}"]`;
+      const subLevel = `[data-sub-level-facet="${data.subLevelFacet}"]`;
+      const el = document.querySelector(`${topLevel}${subLevel}`);
+      if (el) {
+        el.classList.add("smart-filters-active");
+      }
+      var e = document.getElementById("smart-filters");
+      deleteChildren(e);
     }
+
+    this.node.querySelectorAll("button").forEach(el => {
+      el.addEventListener("click", event => {
+        const [topLevelFacet, subLevelFacet] = this.filters;
+        const data = event.currentTarget.dataset;
+
+        event.currentTarget.classList.toggle("smart-filters-active");
+
+        helper
+          .toggleFacetRefinement(topLevelFacet, data.topLevelFacet)
+          .toggleFacetRefinement(subLevelFacet, data.subLevelFacet)
+          .search();
+      });
+    });
   }
 }
 
-function ucwords(str){
+function ucwords(str) {
   str = str.toLowerCase().replace(/\b[a-z]/g, function(letter) {
-      return letter.toUpperCase();
+    return letter.toUpperCase();
   });
   return str;
+}
+
+function deleteChildren(parentNode) {
+  var child = parentNode.lastElementChild;
+  while (child) {
+    parentNode.removeChild(child);
+    child = parentNode.lastElementChild;
+  }
 }
 
 export default SmartFilters;
