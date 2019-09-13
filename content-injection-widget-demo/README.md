@@ -1,6 +1,6 @@
 # content-injection-query-rules-demo
 
-Create a QR that returns Custom Data that returns this type of object:
+Create a Query Rule with "Return Custom Data" as a consequence that returns this type of object:
 
 ```javascript
 {
