@@ -1,4 +1,5 @@
-import SmartFiltersWidget from "./smart-filters/smart-filters.js";
+import SmartFiltersWidgetWithClient from './smart-filters/smart-filters.js/index.js';
+
 let appID = 'X3V4T15K7A';
 let apiKey = 'bc2d15b75dcb2f4e9945c1e2be859467';
 
@@ -45,7 +46,7 @@ search.addWidget(
 );
 
 search.addWidget(
-  new SmartFiltersWidget({
+  new SmartFiltersWidgetWithClient({
     container: '#smart-filters',
     filters: ['author', 'categories'], //Max 2 filters - the order of the filters are important
     appID: appID,
@@ -59,6 +60,18 @@ search.addWidget(
 search.addWidget(
   instantsearch.widgets.pagination({
     container: "#pagination"
+  })
+);
+
+search.addWidget(
+  instantsearch.widgets.currentRefinements({
+    container: "#refinements",
+  })
+);
+
+search.addWidget(
+  instantsearch.widgets.clearRefinements({
+    container: "#clear"
   })
 );
 
@@ -83,40 +96,6 @@ search.addWidget(
   instantsearch.widgets.refinementList({
     container: "#categories",
     attribute: "categories"
-  })
-);
-
-// 1. Create a render function
-const renderConfigure = (renderOptions, isFirstRender) => {
-  const { refine } = renderOptions;
-
-  //if (isFirstRender) {
-    const smartFilters = document.querySelector('#smart-filters');
-    smartFilters.addEventListener('click', (e) => {
-      let node = e.target;
-      while(node.tagName != 'DIV') {
-        node = node.parentNode;
-      }
-      refine({ facetFilters: [
-        "author:" + node.attributes["alg-refinement-brand"].value,
-        "categories:" + node.attributes["alg-refinement-size"].value
-        ]
-      });
-    });
-};
-
-// 2. Create the custom widget
-const customConfigure = instantsearch.connectors.connectConfigure(
-  renderConfigure
-);
-
-// 3. Instantiate
-search.addWidget(
-  customConfigure({
-    container: document.querySelector('#configure'),
-    searchParameters: {
-      hitsPerPage: 8
-    }
   })
 );
 
