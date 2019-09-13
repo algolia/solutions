@@ -1,7 +1,8 @@
-# content-injection-widget
+# content-injection-query-rules-demo
 
 Create a QR that returns Custom Data that returns this type of object:
 
+```javascript
 {
     "injected": true, //Mandatory
     "image":"https://cdn.dribbble.com/users/760797/screenshots/5548304/gif-offices.gif",
@@ -9,3 +10,4 @@ Create a QR that returns Custom Data that returns this type of object:
     "target":"http://algolia.com",
     "position":5 //Mandatory
 }
+```
