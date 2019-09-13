@@ -62,7 +62,7 @@ class HitsWithContent {
           <div class="item">
               <div class="centered"><img src="${hit.image}" alt=""></div>
           </div>
-          <a class="price" href="${hit.target}">${hit.button} + pos: ${injectedPos}</a>
+          <a class="price" href="${hit.target}">${hit.button}</a>
           </div>
           <br>`;
         } else { //Template for the regular results
@@ -80,7 +80,7 @@ class HitsWithContent {
                         <p class="name">${hit._highlightResult.item_title.value}</p>
                     </div>
                 </div>
-                <p class="price">Price: ${hit.price} + pos: ${pos}</p>
+                <p class="price">Price: ${hit.price}</p>
                 </div>
                 <br>`;
         }
