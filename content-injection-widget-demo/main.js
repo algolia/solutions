@@ -23,7 +23,7 @@ search.addWidget(
 search.addWidget(
   instantsearch.widgets.searchBox({
     container: "#search-box",
-    placeholder: "Search for products and brands",
+    placeholder: "Type 'bag' and see the 5th result",
   })
 );
 
