@@ -55,29 +55,6 @@ nav ul {
   width: 90%;
 }
 
-.lane{
-  margin-top: 20px;
-}
-
-.lane .label{
-  font-weight: bold;
-  font-size: 20px;
-  margin-bottom: 10px;
-}
-
-.ais-Hits-list{
-  flex-wrap: nowrap;
-  display: -webkit-box;
-  overflow-x: scroll;
-}
-
-.ais-Hits-item {
-  width: 20%;
-  background-color: white;
-  padding: 0;
-  position: relative;
-}
-
 .item {
   padding: 1rem;
 }
