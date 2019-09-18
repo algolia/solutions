@@ -55,6 +55,14 @@ class PredictiveSearchBox {
       initOptions.helper.setQuery(value).search(); //Set the query and search
     });
 
+    //In case of a query coming from the URL directly
+    var urlParams = new URLSearchParams(window.location.search);
+    let queryFromUrl = urlParams.get('query'); //Get query from URL (value is supposed to be coming from the query= param)
+    searchBoxInput.value = queryFromUrl; //Add query to the input
+    //Fake a input event to trigger the search with the query
+    var event = new Event("input");
+    searchBoxInput.dispatchEvent(event);
+
     //Clear button
     clearButton.addEventListener("click", function(e) {
       searchBoxInput.value = "";
