@@ -57,7 +57,7 @@ class PredictiveSearchBox {
 
     //In case of a query coming from the URL directly
     var urlParams = new URLSearchParams(window.location.search);
-    let queryFromUrl = urlParams.get('query'); //Get query from URL (value is supposed to be coming from the query= param)
+    let queryFromUrl = urlParams.get("query"); //Get query from URL (value is supposed to be coming from the query= param)
     searchBoxInput.value = queryFromUrl; //Add query to the input
     //Fake a input event to trigger the search with the query
     var event = new Event("input");
@@ -72,6 +72,10 @@ class PredictiveSearchBox {
 
       currentSuggestion = "";
       clearButton.style.display = "none";
+
+      //Fake a input event to trigger the search with an empty query
+      var event = new Event("input");
+      searchBoxInput.dispatchEvent(event);
     });
 
     //To handle the tab key
@@ -163,7 +167,7 @@ function updateState(
   return promise;
 }
 
-function removeTags(suggestionTags){
+function removeTags(suggestionTags) {
   while (suggestionTags.lastChild) {
     suggestionTags.removeChild(suggestionTags.lastChild);
   }
