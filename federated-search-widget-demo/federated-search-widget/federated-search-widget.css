@@ -79,6 +79,18 @@ em {
   font-size: 12px;
 }
 
+.hover-background .hit{
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 10px;
+}
+
+.hover-background .hit img{
+  width: 60px;
+  margin-right: 20px;
+}
+
 @media screen and (max-width: 656px) {
   .hidesmall {
     display: none !important;
