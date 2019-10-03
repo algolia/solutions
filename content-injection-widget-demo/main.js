@@ -1,11 +1,12 @@
 import HitsWithContent from "./hits-with-content/hits-with-content.js";
 
-let appID = 'XC1DYSAPBX';
-let apiKey = '3720c40761477e74cb938856acebfa31';
+let appID = "RSBCBF0EG8";
+let apiKey = "fac0c6dc5e242a210d0047f51cec2b77";
+let indexName = "solution_retail_dataset";
 
 const search = instantsearch({
-  indexName: "demo_ecommerce",
-  searchClient: algoliasearch(appID, apiKey),
+  indexName: indexName,
+  searchClient: algoliasearch(appID, apiKey)
 });
 
 search.addWidget(
