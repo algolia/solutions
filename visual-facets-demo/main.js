@@ -67,32 +67,33 @@ search.addWidget(
     templates: {
       item: `
         <input type="checkbox" id="{{label}}" {{#isRefined}}checked{{/isRefined}}/>
-        <label for="{{label}}" style="{{#isRefined}}font-weight: bold{{/isRefined}}">
+        <label for="{{label}}" class="{{#isRefined}}isRefined{{/isRefined}}">
           {{label}}
+          <span class="color" style="background-color: {{hexaCode}}"></span>
         </label>
       `
     }
   })
 );
 
-search.addWidget(
-  instantsearch.widgets.refinementList({
-    container: "#locations",
-    attribute: "availableIn",
-    transformItems(items) {
-      return items.map(item => ({
-        ...item,
-        image: getLocationImage(item.label)
-      }));
-    },
-    templates: {
-      item: `<span class="location-pair" style="{{#isRefined}}font-weight: bold{{/isRefined}}">
-              <img class="location-image" src="assets/images/locations/{{image}}">
-              <span class="facet-value">{{label}} ({{count}})</span>
-            <span>`
-    }
-  })
-);
+// search.addWidget(
+//   instantsearch.widgets.refinementList({
+//     container: "#locations",
+//     attribute: "availableIn",
+//     transformItems(items) {
+//       return items.map(item => ({
+//         ...item,
+//         image: getLocationImage(item.label)
+//       }));
+//     },
+//     templates: {
+//       item: `<span class="location-pair" style="{{#isRefined}}font-weight: bold{{/isRefined}}">
+//               <img class="location-image" src="assets/images/locations/{{image}}">
+//               <span class="facet-value">{{label}} ({{count}})</span>
+//             <span>`
+//     }
+//   })
+// );
 
 search.start();
 
