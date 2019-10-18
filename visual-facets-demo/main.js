@@ -65,9 +65,12 @@ search.addWidget(
       }));
     },
     templates: {
-      item: `<span style="{{#isRefined}}font-weight: bold{{/isRefined}}">
-              <span class="color-preview" style="background-color: {{hexaCode}}"></span><span>{{label}} ({{count}})</span>
-            <span>`
+      item: `
+        <input type="checkbox" id="{{label}}" {{#isRefined}}checked{{/isRefined}}/>
+        <label for="{{label}}" style="{{#isRefined}}font-weight: bold{{/isRefined}}">
+          {{label}}
+        </label>
+      `
     }
   })
 );
