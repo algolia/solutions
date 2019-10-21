@@ -1,6 +1,5 @@
 let appID = "932LAAGOT3";
 let apiKey = "6a187532e8e703464da52c20555c37cf";
-let placeholder = "This is an animated placeholder";
 
 const search = instantsearch({
   indexName: "atis-prods",
@@ -36,7 +35,7 @@ search.addWidget(
 search.addWidget(
   instantsearch.widgets.searchBox({
     container: "#search-box",
-    placeholder: placeholder,
+    placeholder: "",
     showReset: true,
     showSubmit: true,
     showLoadingIndicator: true
@@ -68,33 +67,72 @@ search.addWidget(
 
 search.start();
 
-/***** ANIMATED PLACEHOLDER *****/
 const searchBar = document.querySelector(".ais-SearchBox-input");
 
+/***** ANIMATED PLACEHOLDER *****/
 const getRandomDelayBetween = (min, max) =>
   Math.floor(Math.random() * (max - min + 1) + min);
 
-const setPlaceholder = (inputNode, newPlaceholder) =>
-  inputNode.setAttribute("placeholder", newPlaceholder);
+const setPlaceholder = (inputNode, placeholder) => {
+  inputNode.setAttribute("placeholder", placeholder);
+};
 
-const printLetter = (currentLetters, remainingLetters, inputNode) => {
+const animateLetters = (
+  currentLetters,
+  remainingLetters,
+  inputNode,
+  onAnimationEnd
+) => {
   if (!remainingLetters.length) {
-    return;
+    return (
+      typeof onAnimationEnd === "function" &&
+      onAnimationEnd(currentLetters.join(""), inputNode)
+    );
   }
 
   currentLetters.push(remainingLetters.shift());
 
   setTimeout(() => {
     setPlaceholder(inputNode, currentLetters.join(""));
-    printLetter(currentLetters, remainingLetters, inputNode);
+    animateLetters(currentLetters, remainingLetters, inputNode, onAnimationEnd);
   }, getRandomDelayBetween(50, 90));
 };
 
-const animatePlaceholder = (inputNode, placeholder) => {
-  setPlaceholder(inputNode, "");
-  printLetter([], placeholder.split(""), inputNode);
+const animatePlaceholder = (inputNode, placeholder, onAnimationEnd) => {
+  animateLetters([], placeholder.split(""), inputNode, onAnimationEnd);
 };
 
+// Code if we we want to restart animation after it ends
+const DELAY_AFTER_ANIMATION = 1000;
+const PLACEHOLDERS = [
+  "Search for green hoodie",
+  "Search for our latest items",
+  "Find your favorite movie"
+];
+
+const onAnimationEnd = (placeholder, inputNode) => {
+  setTimeout(() => {
+    let newPlaceholder =
+      PLACEHOLDERS[Math.floor(Math.random() * PLACEHOLDERS.length)];
+
+    do {
+      newPlaceholder =
+        PLACEHOLDERS[Math.floor(Math.random() * PLACEHOLDERS.length)];
+    } while (placeholder === newPlaceholder);
+
+    animatePlaceholder(inputNode, newPlaceholder, onAnimationEnd);
+  }, DELAY_AFTER_ANIMATION);
+};
+
+// With multiple different placeholders
 window.addEventListener("load", () => {
-  animatePlaceholder(searchBar, "Whatever");
+  // Single placeholder option
+  animatePlaceholder(searchBar, "This is an animated placeholder");
+
+  // If we want multiple different placeholders, we pass our callback
+  // animatePlaceholder(
+  //   searchBar,
+  //   "This is an animated placeholder",
+  //   onAnimationEnd
+  // );
 });
