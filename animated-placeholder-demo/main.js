@@ -69,35 +69,32 @@ search.addWidget(
 search.start();
 
 /***** ANIMATED PLACEHOLDER *****/
+const searchBar = document.querySelector(".ais-SearchBox-input");
 
-let searchBar = document.getElementsByClassName("ais-SearchBox-input")[0]; //Getting the searchbar input
-let counter = 0;
+const getRandomDelayBetween = (min, max) =>
+  Math.floor(Math.random() * (max - min + 1) + min);
 
-function getRandomDelayBetween(min, max) {
-  return Math.floor(Math.random() * (max - min + 1) + min);
-}
+const setPlaceholder = (inputNode, newPlaceholder) =>
+  inputNode.setAttribute("placeholder", newPlaceholder);
 
-//Printing the placeholder text in a 'typing' effect
-function printLetter(string, input) {
-  let placeholderCharsArray = string.split(""); //Splitting the string into character seperated array
-  let originalString = string; //Storing the full placeholder
-  let currentPlaceholder = input.getAttribute("placeholder"); //Getting the current placeholder value
-  let newPlaceholder = currentPlaceholder + placeholderCharsArray[counter]; //Appending the next letter to current placeholder
+const printLetter = (currentLetters, remainingLetters, inputNode) => {
+  if (!remainingLetters.length) {
+    return;
+  }
 
-  setTimeout(function() {
-    input.setAttribute("placeholder", newPlaceholder); //Modifying the placeholder text
-    counter++;
-    //Looping until the placeholder is fully printed
-    if (counter < placeholderCharsArray.length) {
-      printLetter(originalString, input);
-    }
-  }, getRandomDelayBetween(50, 90)); //Using a random speed to simulate 'human' typing
-}
+  currentLetters.push(remainingLetters.shift());
 
-//Func to init the animation
-function animatePlaceholder() {
-  searchBar.setAttribute("placeholder", ""); //Removing the initial placeholder
-  printLetter(placeholder, searchBar); //Starting the animation
-}
+  setTimeout(() => {
+    setPlaceholder(inputNode, currentLetters.join(""));
+    printLetter(currentLetters, remainingLetters, inputNode);
+  }, getRandomDelayBetween(50, 90));
+};
 
-animatePlaceholder();
+const animatePlaceholder = (inputNode, placeholder) => {
+  setPlaceholder(inputNode, "");
+  printLetter([], placeholder.split(""), inputNode);
+};
+
+window.addEventListener("load", () => {
+  animatePlaceholder(searchBar, "Whatever");
+});
