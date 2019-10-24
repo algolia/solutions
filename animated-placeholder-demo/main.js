@@ -67,9 +67,58 @@ search.addWidget(
 
 search.start();
 
-const searchBar = document.querySelector(".ais-SearchBox-input");
-
 /***** ANIMATED PLACEHOLDER *****/
+
+/***** ANIMATE 1 PLACEHOLDER *****/
+// const searchBar = document.querySelector(".ais-SearchBox-input");
+// const DELAY_AFTER_ANIMATION = 1000;
+// const PLACEHOLDER = "This is an animated placeholder";
+
+// const getRandomDelayBetween = (min, max) =>
+//   Math.floor(Math.random() * (max - min + 1) + min);
+
+// const setPlaceholder = (inputNode, placeholder) => {
+//   inputNode.setAttribute("placeholder", placeholder);
+// };
+
+// const animateLetters = (
+//   currentLetters,
+//   remainingLetters,
+//   inputNode
+// ) => {
+//   if (!remainingLetters.length) {
+//     return 
+//   }
+
+//   currentLetters.push(remainingLetters.shift());
+
+//   setTimeout(() => {
+//     setPlaceholder(inputNode, currentLetters.join(""));
+//     animateLetters(currentLetters, remainingLetters, inputNode);
+//   }, getRandomDelayBetween(50, 90));
+// };
+
+// const animatePlaceholder = (inputNode, placeholder) => {
+//   animateLetters([], placeholder.split(""), inputNode);
+// };
+
+// window.addEventListener("load", () => {
+//   // Single placeholder option
+//   animatePlaceholder(searchBar, PLACEHOLDER);
+// });
+
+
+/***** ANIMATE MULTIPLE PLACEHOLDERs *****/
+
+const searchBar = document.querySelector(".ais-SearchBox-input");
+const DELAY_AFTER_ANIMATION = 1000;
+const PLACEHOLDERS = [
+  "This is an animated placeholder", //1st animated placeholder
+  "Search for green hoodie", 
+  "Search for our latest items", 
+  "Find your favorite movie" 
+];
+
 const getRandomDelayBetween = (min, max) =>
   Math.floor(Math.random() * (max - min + 1) + min);
 
@@ -102,14 +151,6 @@ const animatePlaceholder = (inputNode, placeholder, onAnimationEnd) => {
   animateLetters([], placeholder.split(""), inputNode, onAnimationEnd);
 };
 
-// Code if we we want to restart animation after it ends
-const DELAY_AFTER_ANIMATION = 1000;
-const PLACEHOLDERS = [
-  "Search for green hoodie",
-  "Search for our latest items",
-  "Find your favorite movie"
-];
-
 const onAnimationEnd = (placeholder, inputNode) => {
   setTimeout(() => {
     let newPlaceholder =
@@ -124,15 +165,11 @@ const onAnimationEnd = (placeholder, inputNode) => {
   }, DELAY_AFTER_ANIMATION);
 };
 
-// With multiple different placeholders
 window.addEventListener("load", () => {
-  // Single placeholder option
-  animatePlaceholder(searchBar, "This is an animated placeholder");
-
   // If we want multiple different placeholders, we pass our callback
-  // animatePlaceholder(
-  //   searchBar,
-  //   "This is an animated placeholder",
-  //   onAnimationEnd
-  // );
+  animatePlaceholder(
+    searchBar,
+    PLACEHOLDERS[0], 
+    onAnimationEnd
+  );
 });
