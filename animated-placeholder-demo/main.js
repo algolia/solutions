@@ -1,6 +1,5 @@
 let appID = "932LAAGOT3";
 let apiKey = "6a187532e8e703464da52c20555c37cf";
-let placeholder = "This is an animated placeholder";
 
 const search = instantsearch({
   indexName: "atis-prods",
@@ -36,7 +35,7 @@ search.addWidget(
 search.addWidget(
   instantsearch.widgets.searchBox({
     container: "#search-box",
-    placeholder: placeholder,
+    placeholder: "",
     showReset: true,
     showSubmit: true,
     showLoadingIndicator: true
@@ -68,36 +67,72 @@ search.addWidget(
 
 search.start();
 
+const searchBar = document.querySelector(".ais-SearchBox-input");
+
 /***** ANIMATED PLACEHOLDER *****/
+const getRandomDelayBetween = (min, max) =>
+  Math.floor(Math.random() * (max - min + 1) + min);
 
-let searchBar = document.getElementsByClassName("ais-SearchBox-input")[0]; //Getting the searchbar input
-let counter = 0;
+const setPlaceholder = (inputNode, placeholder) => {
+  inputNode.setAttribute("placeholder", placeholder);
+};
 
-function getRandomDelayBetween(min, max) {
-  return Math.floor(Math.random() * (max - min + 1) + min);
-}
+const animateLetters = (
+  currentLetters,
+  remainingLetters,
+  inputNode,
+  onAnimationEnd
+) => {
+  if (!remainingLetters.length) {
+    return (
+      typeof onAnimationEnd === "function" &&
+      onAnimationEnd(currentLetters.join(""), inputNode)
+    );
+  }
 
-//Printing the placeholder text in a 'typing' effect
-function printLetter(string, input) {
-  let placeholderCharsArray = string.split(""); //Splitting the string into character seperated array
-  let originalString = string; //Storing the full placeholder
-  let currentPlaceholder = input.getAttribute("placeholder"); //Getting the current placeholder value
-  let newPlaceholder = currentPlaceholder + placeholderCharsArray[counter]; //Appending the next letter to current placeholder
+  currentLetters.push(remainingLetters.shift());
 
-  setTimeout(function() {
-    input.setAttribute("placeholder", newPlaceholder); //Modifying the placeholder text
-    counter++;
-    //Looping until the placeholder is fully printed
-    if (counter < placeholderCharsArray.length) {
-      printLetter(originalString, input);
-    }
-  }, getRandomDelayBetween(50, 90)); //Using a random speed to simulate 'human' typing
-}
+  setTimeout(() => {
+    setPlaceholder(inputNode, currentLetters.join(""));
+    animateLetters(currentLetters, remainingLetters, inputNode, onAnimationEnd);
+  }, getRandomDelayBetween(50, 90));
+};
 
-//Func to init the animation
-function animatePlaceholder() {
-  searchBar.setAttribute("placeholder", ""); //Removing the initial placeholder
-  printLetter(placeholder, searchBar); //Starting the animation
-}
+const animatePlaceholder = (inputNode, placeholder, onAnimationEnd) => {
+  animateLetters([], placeholder.split(""), inputNode, onAnimationEnd);
+};
 
-animatePlaceholder();
+// Code if we we want to restart animation after it ends
+const DELAY_AFTER_ANIMATION = 1000;
+const PLACEHOLDERS = [
+  "Search for green hoodie",
+  "Search for our latest items",
+  "Find your favorite movie"
+];
+
+const onAnimationEnd = (placeholder, inputNode) => {
+  setTimeout(() => {
+    let newPlaceholder =
+      PLACEHOLDERS[Math.floor(Math.random() * PLACEHOLDERS.length)];
+
+    do {
+      newPlaceholder =
+        PLACEHOLDERS[Math.floor(Math.random() * PLACEHOLDERS.length)];
+    } while (placeholder === newPlaceholder);
+
+    animatePlaceholder(inputNode, newPlaceholder, onAnimationEnd);
+  }, DELAY_AFTER_ANIMATION);
+};
+
+// With multiple different placeholders
+window.addEventListener("load", () => {
+  // Single placeholder option
+  animatePlaceholder(searchBar, "This is an animated placeholder");
+
+  // If we want multiple different placeholders, we pass our callback
+  // animatePlaceholder(
+  //   searchBar,
+  //   "This is an animated placeholder",
+  //   onAnimationEnd
+  // );
+});
