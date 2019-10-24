@@ -65,75 +65,42 @@ search.addWidget(
       }));
     },
     templates: {
-      item: `<span style="{{#isRefined}}font-weight: bold{{/isRefined}}">
-              <span class="color-preview" style="background-color: {{hexaCode}}"></span><span>{{label}} ({{count}})</span>
-            <span>`
+      item: `
+        <input type="checkbox" id="{{label}}" {{#isRefined}}checked{{/isRefined}}/>
+        <label for="{{label}}" class="{{#isRefined}}isRefined{{/isRefined}}">
+          {{label}}
+          <span class="color" style="background-color: {{hexaCode}}"></span>
+        </label>
+      `
     }
   })
 );
 
-search.addWidget(
-  instantsearch.widgets.refinementList({
-    container: "#locations",
-    attribute: "availableIn",
-    transformItems(items) {
-      return items.map(item => ({
-        ...item,
-        image: getLocationImage(item.label)
-      }));
-    },
-    templates: {
-      item: `<span class="location-pair" style="{{#isRefined}}font-weight: bold{{/isRefined}}">
-              <img class="location-image" src="assets/images/locations/{{image}}">
-              <span class="facet-value">{{label}} ({{count}})</span>
-            <span>`
-    }
-  })
-);
+// search.addWidget(
+//   instantsearch.widgets.refinementList({
+//     container: "#locations",
+//     attribute: "availableIn",
+//     transformItems(items) {
+//       return items.map(item => ({
+//         ...item,
+//         image: getLocationImage(item.label)
+//       }));
+//     },
+//     templates: {
+//       item: `<span class="location-pair" style="{{#isRefined}}font-weight: bold{{/isRefined}}">
+//               <img class="location-image" src="assets/images/locations/{{image}}">
+//               <span class="facet-value">{{label}} ({{count}})</span>
+//             <span>`
+//     }
+//   })
+// );
 
 search.start();
 
-function getHexaCodeFromColor(color) {
-  let hexa;
-  switch (color) {
-    case "red":
-      hexa = "#ff0000";
-      break;
-    case "yellow":
-      hexa = "#ffff00";
-      break;
-    case "black":
-      hexa = "#000000";
-      break;
-    case "white":
-      hexa = "#ffffff";
-      break;
-    case "orange":
-      hexa = "#ff9900";
-      break;
-    default:
-      hexa = "transparent";
-  }
-  return hexa;
-}
+const getHexaCodeFromColor = color => {
+  return color ? color : "transparent";
+};
 
-function getLocationImage(location) {
-  let image;
-  switch (location) {
-    case "Paris":
-      image = "paris.jpeg";
-      break;
-    case "Berlin":
-      image = "berlin.jpeg";
-      break;
-    case "Milan":
-      image = "milan.jpeg";
-      break;
-    case "Madrid":
-      image = "madrid.jpeg";
-      break;
-    default:
-      image = "";
-  }
-  return image;
-}
+const getLocationImage = location => {
+  return location ? `${location.toLowerCase()}.jpeg` : "";
+};
