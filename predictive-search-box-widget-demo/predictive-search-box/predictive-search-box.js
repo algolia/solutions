@@ -2,23 +2,37 @@ const renderSearchBoxContainer = (placeholder, value) => {
   return `
       <div id="searchbox">
         <div id="predictive-box" style="display: none;">
-            <span id="predictive-box-text"></span>
+          <span id="predictive-box-text"></span>
         </div>
         <div class="search-box-container">
-            <input autocapitalize="off"
-              autocomplete="off"
-              autocorrect="off"
-              placeholder="${placeholder}"
-              role="textbox"
-              spellcheck="false"
-              type="text"
-              value="${value}"
-              id="search-box-input">
+          <input autocapitalize="off"
+            placeholder="${placeholder}"
+            id="search-box-input"
+            autocomplete="off"
+            autocorrect="off"
+            role="textbox"
+            spellcheck="false"
+            type="search"
+            value="${value}">
         </div>
         <div id="clear-input"><i class="fas fa-times"></i></div>
-        <div id="suggestion-tags-container"></div>
+        <fieldset id="suggestion-tags-container"></fieldset>
       </div>
     `;
+};
+
+const renderTagInput = (query, highlightedQuery) => {
+  const id = query.replace(/\s/, "");
+  return `
+    <input type="radio" id="${id}" tabindex="0"/>
+    <label for="${id}">
+      ${highlightedQuery}
+    </label>
+  `;
+};
+
+const isKey = (event, code, name) => {
+  return event.which === code || event.keyCode === code || event.key === name;
 };
 
 class PredictiveSearchBox {
@@ -79,7 +93,7 @@ class PredictiveSearchBox {
   };
 
   onTabSelection = event => {
-    if (event.keyCode !== 9 && event.which !== 9) return;
+    if (!isKey(event, 39, "ArrowRight")) return;
 
     event.preventDefault();
     this.setSearchBoxValue(this.tabActionSuggestion);
@@ -92,7 +106,10 @@ class PredictiveSearchBox {
     hits.slice(0, this.maxSuggestions).forEach(suggestion => {
       const suggestionElement = document.createElement("div");
       suggestionElement.classList.add("suggestion-tag");
-      suggestionElement.innerHTML = suggestion._highlightResult.query.value;
+      suggestionElement.innerHTML = renderTagInput(
+        suggestion.query,
+        suggestion._highlightResult.query.value
+      );
 
       suggestionElement.addEventListener("click", () => {
         this.setSearchBoxValue(suggestion.query);
