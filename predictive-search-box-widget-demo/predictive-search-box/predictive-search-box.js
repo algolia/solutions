@@ -21,16 +21,6 @@ const renderSearchBoxContainer = (placeholder, value) => {
     `;
 };
 
-const renderTagInput = (query, highlightedQuery) => {
-  const id = query.replace(/\s/, "");
-  return `
-    <input type="radio" id="${id}" tabindex="0"/>
-    <label for="${id}">
-      ${highlightedQuery}
-    </label>
-  `;
-};
-
 const isKey = (event, code, name) => {
   return event.which === code || event.keyCode === code || event.key === name;
 };
@@ -104,12 +94,9 @@ class PredictiveSearchBox {
     this.clearSuggestionTags();
 
     hits.slice(0, this.maxSuggestions).forEach(suggestion => {
-      const suggestionElement = document.createElement("div");
+      const suggestionElement = document.createElement("button");
       suggestionElement.classList.add("suggestion-tag");
-      suggestionElement.innerHTML = renderTagInput(
-        suggestion.query,
-        suggestion._highlightResult.query.value
-      );
+      suggestionElement.innerHTML = suggestion._highlightResult.query.value;
 
       suggestionElement.addEventListener("click", () => {
         this.setSearchBoxValue(suggestion.query);
