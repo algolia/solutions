@@ -1,11 +1,11 @@
 import PredictiveSearchBoxWidget from "./predictive-search-box/predictive-search-box.js";
 
-let appID = '932LAAGOT3';
-let apiKey = '6a187532e8e703464da52c20555c37cf';
+let appID = "932LAAGOT3";
+let apiKey = "6a187532e8e703464da52c20555c37cf";
 
 const search = instantsearch({
   indexName: "atis-prods",
-  searchClient: algoliasearch(appID, apiKey),
+  searchClient: algoliasearch(appID, apiKey)
 });
 
 search.addWidget(
@@ -36,8 +36,8 @@ search.addWidget(
 
 search.addWidget(
   new PredictiveSearchBoxWidget({
-    container: '#predictive-search-box',
-    suggestionsIndex: 'atis-prods_query_suggestions',
+    container: "#predictive-search-box",
+    querySuggestionsIndex: "atis-prods_query_suggestions",
     appID: appID,
     apiKey: apiKey,
     placeholder: "Search for products and brands",

@@ -1,176 +1,152 @@
-class PredictiveSearchBox {
-  constructor(options) {
-    Object.assign(this, options);
-  }
-
-  init(initOptions) {
-    const predictiveSearchBoxContainer = document.querySelector(this.container);
-
-    predictiveSearchBoxContainer.innerHTML = `
+const renderSearchBoxContainer = (placeholder, value) => {
+  return `
       <div id="searchbox">
         <div id="predictive-box" style="display: none;">
-            <span id="predictive-item"></span>
+            <span id="predictive-box-text"></span>
         </div>
         <div class="search-box-container">
             <input autocapitalize="off"
               autocomplete="off"
               autocorrect="off"
-              placeholder="${this.placeholder}"
+              placeholder="${placeholder}"
               role="textbox"
               spellcheck="false"
               type="text"
-              value=""
+              value="${value}"
               id="search-box-input">
         </div>
         <div id="clear-input"><i class="fas fa-times"></i></div>
         <div id="suggestion-tags-container"></div>
       </div>
     `;
+};
 
-    let predictiveBox = document.getElementById("predictive-box");
-    let predictiveSearchBoxItem = document.getElementById("predictive-item");
-    let searchBoxInput = document.getElementById("search-box-input");
-    let clearButton = document.getElementById("clear-input");
-    let suggestionTags = document.getElementById("suggestion-tags-container");
+class PredictiveSearchBox {
+  constructor(options) {
+    Object.assign(this, options);
 
-    let client = algoliasearch(this.appID, this.apiKey);
-    let suggestionIndex = client.initIndex(this.suggestionsIndex);
+    this.client = algoliasearch(options.appID, options.apiKey);
+    this.querySuggestionsIndex = this.client.initIndex(
+      this.querySuggestionsIndex
+    );
 
-    let currentSuggestion;
-    let maxSuggestions = this.maxSuggestions;
-
-    searchBoxInput.addEventListener("input", function(evt) {
-      let value = searchBoxInput.value;
-      updateState(
-        predictiveBox,
-        searchBoxInput,
-        clearButton,
-        predictiveSearchBoxItem,
-        suggestionIndex,
-        maxSuggestions,
-        suggestionTags
-      ).then(current => {
-        currentSuggestion = current;
-      });
-      initOptions.helper.setQuery(value).search(); //Set the query and search
-    });
-
-    //In case of a query coming from the URL directly
-    var urlParams = new URLSearchParams(window.location.search);
-    let queryFromUrl = urlParams.get("query"); //Get query from URL (value is supposed to be coming from the query= param)
-    searchBoxInput.value = queryFromUrl; //Add query to the input
-    //Fake a input event to trigger the search with the query
-    var event = new Event("input");
-    searchBoxInput.dispatchEvent(event);
-
-    //Clear button
-    clearButton.addEventListener("click", function(e) {
-      searchBoxInput.value = "";
-      predictiveSearchBoxItem.innerText = "";
-
-      removeTags(suggestionTags);
-
-      currentSuggestion = "";
-      clearButton.style.display = "none";
-
-      //Fake a input event to trigger the search with an empty query
-      var event = new Event("input");
-      searchBoxInput.dispatchEvent(event);
-    });
-
-    //To handle the tab key
-    searchBoxInput.addEventListener("keydown", function(e) {
-      if (e.keyCode == 9) {
-        e.preventDefault();
-        searchBoxInput.value = currentSuggestion;
-        var event = new Event("input");
-        searchBoxInput.dispatchEvent(event);
-      }
-    });
+    this.tabActionSuggestion = "";
   }
-}
 
-function updateState(
-  predictiveBox,
-  searchBoxInput,
-  clearButton,
-  predictiveSearchBoxItem,
-  suggestionIndex,
-  maxSuggestions,
-  suggestionTags
-) {
-  let currentSuggestion;
-  let promise;
-  if (searchBoxInput.value == "") {
-    predictiveBox.style.display = "none";
-    clearButton.style.display = "none";
+  init(initOptions) {
+    const widgetContainer = document.querySelector(this.container);
 
-    // Clear suggestion tags
-    while (suggestionTags.lastChild) {
-      suggestionTags.removeChild(suggestionTags.lastChild);
+    if (!widgetContainer) {
+      throw new Error(
+        `Could not find widget container ${this.container} inside the DOM`
+      );
     }
 
-    promise = new Promise(function(resolve, reject) {
-      resolve("");
+    widgetContainer.innerHTML = renderSearchBoxContainer(
+      this.placeholder,
+      initOptions.helper.state.query
+    );
+
+    this.predictiveSearchBox = widgetContainer.querySelector("#predictive-box");
+    this.predictiveSearchBoxItem = widgetContainer.querySelector(
+      "#predictive-box-text"
+    );
+    this.clearButton = widgetContainer.querySelector("#clear-input");
+    this.searchBoxInput = widgetContainer.querySelector("#search-box-input");
+    this.suggestionTagsContainer = widgetContainer.querySelector(
+      "#suggestion-tags-container"
+    );
+
+    this.registerSearchBoxHandlers(
+      initOptions.helper,
+      this.searchBoxInput,
+      this.clearButton
+    );
+  }
+
+  registerSearchBoxHandlers = (helper, searchBox, clearButton) => {
+    searchBox.addEventListener("input", this.updateTabActionSuggestion);
+    searchBox.addEventListener("keydown", this.onTabSelection);
+    clearButton.addEventListener("click", this.clear);
+    searchBox.addEventListener("input", event => {
+      helper.setQuery(event.currentTarget.value).search();
     });
-  } else {
-    clearButton.style.display = "block";
-    promise = new Promise(function(resolve, reject) {
-      suggestionIndex.search({ query: searchBoxInput.value }, (err, res) => {
-        if (res.hits.length > 0) {
-          predictiveBox.style.display = "flex";
+  };
 
-          if (res.hits[0].query.startsWith(searchBoxInput.value)) {
-            predictiveSearchBoxItem.innerText = res.hits[0].query;
-            currentSuggestion = res.hits[0].query;
-          } else {
-            predictiveSearchBoxItem.innerText = "";
-          }
-        } else {
-          predictiveSearchBoxItem.innerText = "";
-        }
+  setSearchBoxValue = value => {
+    this.searchBoxInput.value = value;
+    this.searchBoxInput.dispatchEvent(new Event("input"));
+  };
 
-        // Update suggestionTags
-        if (maxSuggestions || maxSuggestions === 0) {
-          // Clear suggestion tags
-          removeTags(suggestionTags);
-          // Add tags up to maxSuggestions
-          let addedTags = 0;
-          if (
-            res.hits.length > 1 ||
-            (res.hits.length === 1 && res.hits[0].query != searchBoxInput.value)
-          ) {
-            res.hits.forEach(hit => {
-              if (addedTags === maxSuggestions) {
-                return;
-              }
-              let tagElement = document.createElement("div");
-              tagElement.classList.add("suggestion-tag");
-              tagElement.innerHTML = hit._highlightResult.query.value;
-              tagElement.addEventListener("click", function(e) {
-                searchBoxInput.value = hit.query;
-                predictiveSearchBoxItem.innerText = hit.query;
-                var event = new Event("input");
-                searchBoxInput.dispatchEvent(event);
-              });
-              suggestionTags.append(tagElement);
-              addedTags++;
-            });
-          }
-        }
+  onTabSelection = event => {
+    if (event.keyCode !== 9 && event.which !== 9) return;
 
-        resolve(currentSuggestion);
+    event.preventDefault();
+    this.setSearchBoxValue(this.tabActionSuggestion);
+  };
+
+  updateSuggestionTags = hits => {
+    if (!this.maxSuggestions || this.maxSuggestions <= 0) return hits;
+    this.clearSuggestionTags();
+
+    hits.slice(0, this.maxSuggestions).forEach(suggestion => {
+      const suggestionElement = document.createElement("div");
+      suggestionElement.classList.add("suggestion-tag");
+      suggestionElement.innerHTML = suggestion._highlightResult.query.value;
+
+      suggestionElement.addEventListener("click", () => {
+        this.setSearchBoxValue(suggestion.query);
       });
+      this.suggestionTagsContainer.append(suggestionElement);
     });
-  }
+  };
 
-  return promise;
-}
+  updateTabActionSuggestion = event => {
+    const query = event.currentTarget.value;
 
-function removeTags(suggestionTags) {
-  while (suggestionTags.lastChild) {
-    suggestionTags.removeChild(suggestionTags.lastChild);
-  }
+    if (!query) {
+      this.predictiveSearchBox.style.display = "none";
+      this.clearButton.style.display = "none";
+      return;
+    }
+
+    this.querySuggestionsIndex
+      .search({ query })
+      .then(response => {
+        const suggestions = response.hits.filter(hit =>
+          hit.query.startsWith(query)
+        );
+
+        if (!suggestions.length) {
+          this.clearPredictiveSearchBox();
+          return [];
+        }
+
+        this.predictiveSearchBox.style.display = "flex";
+        this.predictiveSearchBoxItem.innerText = suggestions[0].query;
+        this.tabActionSuggestion = suggestions[0].query;
+        return suggestions.slice(1);
+      })
+      .then(this.updateSuggestionTags);
+  };
+
+  clearSuggestionTags = () => {
+    this.suggestionTagsContainer.innerHTML = "";
+  };
+
+  clearPredictiveSearchBox = () => {
+    this.tabActionSuggestion = "";
+  };
+
+  clear = event => {
+    this.searchBoxInput.value = "";
+    this.predictiveSearchBoxItem.innerText = "";
+    this.clearSuggestionTags();
+
+    this.tabActionSuggestion = "";
+    event.target.style.display = "none";
+    searchBoxInput.dispatchEvent(new Event("input"));
+  };
 }
 
 export default PredictiveSearchBox;
