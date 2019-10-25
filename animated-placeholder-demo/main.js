@@ -19,7 +19,7 @@ search.addWidget(
       empty: "No results",
       item: `
             <div class="item">
-                <div class="centered"><img src="{{image}}" alt=""></div>
+                <div class="centered"><img src="{{largeImage}}" alt=""></div>
                 <div class="centered"><div class="add-to-cart"><i class="fas fa-cart-plus"></i> Add <span class="hide-mobile hide-tablet">to Cart</span></div></div>
                 <div class="item-content">
                     <p class="brand">{{{_highlightResult.brand.value}}}</p>
