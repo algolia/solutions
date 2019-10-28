@@ -35,11 +35,11 @@
 }
 
 #suggestion-tags-container {
-    width: 100%;
-  display: inline-flex;
-  justify-content: flex-start;
-  overflow-x: scroll;
+  width: 100%;
   margin-top: 0.5em;
+  border: none;
+  margin: .5em 0 0 0;
+  padding: 0;
 }
 
 ::-webkit-scrollbar {
@@ -48,11 +48,15 @@
 }
 
 .suggestion-tag {
-    padding: 10px;
-    margin-right: 20px;
-    white-space: nowrap;
-    background: #ececec;
-    cursor: pointer;
+  padding: 10px;
+  white-space: nowrap;
+  background: #ececec;
+  cursor: pointer;
+  margin: 8px 0;
+}
+
+.suggestion-tag:not(:last-child){
+  margin-right: 20px;
 }
 
 .suggestion-tag em {
