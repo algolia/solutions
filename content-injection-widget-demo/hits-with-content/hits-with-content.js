@@ -3,24 +3,12 @@ class HitsWithContent {
     Object.assign(this, options);
   }
 
-  // init(initOptions) {
-  //   const hitsWithContentContainer = document.querySelector(this.container);
-
-  //   hitsWithContentContainer.innerHTML = `
-  //     <div id="hit-with-content"></div>
-  //   `;
-
-  //   //let client = algoliasearch(this.appID, this.apiKey);
-
-  // }
-
   render(renderOptions) {
-    console.log(renderOptions);
 
     const results = renderOptions.results;
     const userData = results.userData;
 
-    //Appenning custom data at the beginning of the array of results only if it's in the range of the position
+    //Appending custom data at the beginning of the array of results only if it's in the range of the position
     let positionStart = results.page * results.hitsPerPage + 1;
     let positionEnd = results.page * results.hitsPerPage + results.hitsPerPage;
 
