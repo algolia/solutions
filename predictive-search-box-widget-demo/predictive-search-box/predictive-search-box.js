@@ -129,7 +129,7 @@ class PredictiveSearchBox {
         this.predictiveSearchBox.style.display = "flex";
         this.predictiveSearchBoxItem.innerText = suggestions[0].query;
         this.tabActionSuggestion = suggestions[0].query;
-        return suggestions.slice(1);
+        return suggestions;
       })
       .then(this.updateSuggestionTags);
   };
