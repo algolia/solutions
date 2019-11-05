@@ -121,7 +121,7 @@ class PredictiveSearchBox {
     }
 
     event.preventDefault();
-    this.setSearchBoxValue(this.tabActionSuggestion);
+    this.searchBoxInput.value = this.tabActionSuggestion;
   };
 
   updateSuggestionTags = hits => {
