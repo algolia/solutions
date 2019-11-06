@@ -48,12 +48,12 @@
   box-shadow: 0px 26px 110px -12px rgba(0,0,0,0.43);
 }
 
-.ais-federated-result-column {
+.ais-federated-result {
   padding: 0 20px;
   border-right: 1px solid #d6d6d6;
 }
 
-.ais-federated-result-column:last-child {
+.ais-federated-result:last-child {
   border-right: none;
 }
 
