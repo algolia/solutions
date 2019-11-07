@@ -1,3 +1,5 @@
 module.exports = {
-  extends: 'algolia'
+  parserOptions: {
+    ecmaVersion: 2017
+  }
 };

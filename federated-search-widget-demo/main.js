@@ -3,6 +3,39 @@ import FederatedSearchWidget from "./federated-search-widget/federated-search-wi
 const appID = "932LAAGOT3";
 const apiKey = "6a187532e8e703464da52c20555c37cf";
 
+const renderQuerySuggestionWithCategory = (suggestion, sourceIndex) => {
+  if (!suggestion[sourceIndex]) {
+    return `
+      <a href="https://www.mywebsite.com/search?q=${suggestion.query}" target="_blank">
+        ${suggestion._highlightResult.query.value}
+      </a>`;
+  }
+
+  const bestMatchedFacet = Object.values(
+    suggestion[sourceIndex].facets.exact_matches
+  )
+    .reduce((acc, arr) => acc.concat(arr), [])
+    .sort((a, b) => {
+      if (a.count > b.count) return -1;
+      if (a.count < b.count) return 1;
+      return 0;
+    });
+
+  return `
+      <a href="https://www.mywebsite.com/search?q=${suggestion.query}" target="_blank">
+        <div style="padding: 10px;">
+          <span class="inverted-highlight">
+            ${suggestion._highlightResult.query.value}
+          </span>
+          <span class="in-facet">
+            <i>
+              in ${bestMatchedFacet[0].value}
+            </i>
+          </span>
+        </div>
+      </a>`;
+};
+
 const virutalRefinementList = instantsearch.connectors.connectRefinementList(
   () => {}
 );
@@ -51,40 +84,54 @@ search.addWidget(
     container: "#search-box",
     appID,
     apiKey,
-    clickAnalytics: true, // Optional. Default: false
     placeholder: "Search for products and brands",
     columns: [
       {
         type: "QuerySuggestions",
         indexName: "atis-prods_query_suggestions",
-        sourceIndexForQS: "atis-prods", // Optional: need to be used if the user wants to display 'in facet'
-        limit: 10,
+        clickAnalytics: true,
+        // querySuggestionsSourceIndex: "atis-prods", // Optional: need to be used if the user wants to display 'in facet'
         title: "Matching Keywords",
-        noResultLabel: "No Matching Queries",
-        redirectTo: "https://www.mywebsite.com/search?q="
+        noResultsRenderer: (query, response) => "No Matching Queries",
+
+        itemRenderer: hit => {
+          return renderQuerySuggestionWithCategory(hit, "atis-prods");
+        }
+        // itemRenderer: suggestion => `
+        //   <a href="https://www.mywebsite.com/search?q=${suggestion.query}" target="_blank">
+        //     ${suggestion._highlightResult.query.value}
+        //   </a>
+        // `
       },
       {
         type: "Search",
         indexName: "atis-prods",
-        limit: 3,
         title: "Matching Products",
-        itemTemplate: `<div class='hit'>
-          <img src="{{largeImage}}" alt="">
-          <div>
-            <p>{{_highlightResult.title.value}}</p>
-            <p class="text-right">{{price}}€</p>
-          </div>
-        </div>`,
-        noResultLabel: "No Matching Products",
+        clickAnalytics: true,
+        itemRenderer: hit => `
+          <div class='hit'>
+            <img src="${hit.largeImage}" alt="">
+            <div>
+              <p>${hit._highlightResult.title.value}</p>
+              <p class="text-right">${hit.price}€</p>
+            </div>
+          </div>`,
+        noResultsRenderer: (query, response) => "No Matching Products",
         redirectAttribute: "url"
       },
       {
         type: "Facets",
         indexName: "atis-prods",
-        limit: 5,
-        title: ["Matching Brands", "Matching Categories"],
         noResultLabel: "No result",
-        facets: ["brand", "categories"]
+        facets: ["categories", "brand"],
+        clickAnalytics: true,
+        facetTitleRenderer: facet => {
+          return `<h3 class="column-title">${
+            facet === "categories" ? "Matched Categories" : "Matched Brand"
+          }<h3>`;
+        },
+        noResultsRenderer: (query, response) => "No Matching Facet",
+        titleRenderer: () => ""
       }
     ]
   })

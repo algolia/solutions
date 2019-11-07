@@ -57,11 +57,6 @@
   border-right: none;
 }
 
-.hover-background:hover {
-  background-color: #f3f3f3bf;
-  cursor: pointer;
-}
-
 em {
   font-weight: bold;
   font-style: normal;
@@ -77,18 +72,6 @@ em {
 
 .in-facet {
   font-size: 12px;
-}
-
-.hover-background .hit{
-  display: flex;
-  align-items: center;
-  justify-content: space-around;
-  padding: 10px;
-}
-
-.hover-background .hit img{
-  width: 60px;
-  margin-right: 20px;
 }
 
 @media screen and (max-width: 656px) {

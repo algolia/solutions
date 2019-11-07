@@ -8,21 +8,23 @@
 // indexName: string
 // type: "QuerySuggestions" | "Facets" | "Search"
 // limit?: number = 3
-// itemTemplate: TEMPLATE?
+// itemRenderer: TEMPLATE?
 // redirectAttribute: string???
 
 // Facets
 // indexName: string
 // type: "QuerySuggestions" | "Facets" | "Search"
 // facets: string[]
+// facetTitleRenderer:
 // limit?: number = 3
 
-// titleTemplate: () => titleString
-// itemTemplate: () => titleString
+// titleRenderer?: () => templateString
+// itemRenderer?: () => templateString
+// noResultsRenderer: (query) => templateString
 
 const validateMandatoryColumnOptions = column => {
   const COLUMN_TYPES = ["QuerySuggestions", "Facets", "Search"];
-  const MANDATORY_PARAMS = ["indexName", "type"];
+  const MANDATORY_PARAMS = ["indexName", "type", "noResultsRenderer"];
 
   const errors = [];
 
@@ -41,6 +43,46 @@ const validateMandatoryColumnOptions = column => {
   }
 
   return errors;
+};
+
+const validateSearchColumnOptions = column => {
+  const errors = [];
+  if (typeof column.itemRenderer !== "function") {
+    errors.push(
+      new Error(
+        "Search column requires itemRenderer function param that returns the string you want to render"
+      )
+    );
+  }
+
+  return errors;
+};
+
+const validateFacetColumnOptions = column => {
+  const errors = [];
+  if (!column.facets || !column.facets.length) {
+    errors.push(
+      new Error(
+        "Facets column requires you to specifiy a facets array that represents the facets you want displayed. Example: ['brand', 'category']"
+      )
+    );
+  }
+
+  if (typeof column.facetTitleRenderer !== "function") {
+    errors.push(
+      new Error(
+        "Facets column requires facetTitleRenderer function which returns the string you want to render. Example: function(facet){return 'Searched in ' + facet }"
+      )
+    );
+  }
+
+  return errors;
+};
+
+const COLUMN_TYPE_VALIDATORS = {
+  Search: validateSearchColumnOptions,
+  QuerySuggestions: () => [],
+  Facets: validateFacetColumnOptions
 };
 
 const initializeIndices = (columns, client) => {
@@ -75,21 +117,41 @@ const initializeSearchInsights = (appId, apiKey) => {
   return true;
 };
 
+const enrichHitsWithClickAnalyticsData = (hits, queryID) => {
+  return hits.map((hit, index) => ({
+    ...hit,
+    __queryID: queryID,
+    __position: index + 1
+  }));
+};
+
 const renderColumns = (resultsContainer, columns) => {
   // This has the side effect of enriching the column with it's respective
   // container node. This way we can avoid relying on custom id's
-  return columns.map((column, index) => {
+  const DEFAULT_TITLE = title => `<h3 class="column-title">${title}</h3>`;
+  const DEFAULT_RESULTS = () => `<ul></ul>`;
+
+  return columns.map(column => {
     const columnNode = document.createElement("div");
     columnNode.classList.add("ais-federated-result");
 
-    columnNode.innerHTML = `<h3 class="column-title">${column.title}</h3>
-                      <ul id="column-${index}-content"></ul>`;
+    const titleRenderer =
+      typeof column.titleRenderer === "function"
+        ? column.titleRenderer()
+        : DEFAULT_TITLE(column.title);
 
+    const resultsTemplate =
+      typeof column.resultsTemplate === "function"
+        ? column.resultsTemplate([])
+        : DEFAULT_RESULTS();
+
+    columnNode.innerHTML = titleRenderer + resultsTemplate;
     resultsContainer.append(columnNode);
 
     return {
       ...column,
-      columnNode
+      limit: column.limit || 5,
+      columnNode: columnNode.lastChild
     };
   });
 };
@@ -101,6 +163,13 @@ class FederatedSearchWidget {
     }, []);
 
     if (mandatoryErrors.length > 0) throw mandatoryErrors;
+
+    const customColumnErrors = options.columns.reduce((acc, column) => {
+      return acc.concat(COLUMN_TYPE_VALIDATORS[column.type](column));
+    }, []);
+
+    if (customColumnErrors.length > 0) throw customColumnErrors;
+
     this.columnsMetaData = options.columns;
 
     // DOM Element references
@@ -134,18 +203,18 @@ class FederatedSearchWidget {
       "#federated-results-container"
     );
 
-    this.clickAnalytics = options.clickAnalytics
-      ? initializeSearchInsights(options.appID, options.apiKey)
-      : false;
+    if (this.columnsMetaData.some(column => column.clickAnalytics)) {
+      initializeSearchInsights(options.appID, options.apiKey);
+    }
   }
 
   init(initOptions) {
     this.columns = renderColumns(this.resultsContainer, this.columnsMetaData);
 
     this.searchBoxInput.addEventListener("input", event => {
-      const { value } = event.currentTarget;
+      const query = event.currentTarget.value;
 
-      if (!value) {
+      if (!query) {
         this.clearButton.style.display = "none";
         this.resultsContainer.style.display = "none";
         return;
@@ -163,7 +232,7 @@ class FederatedSearchWidget {
           case "Facets":
             index
               .search({
-                query: value,
+                query,
                 hitsPerPage: 1,
                 facets: column.facets
               })
@@ -175,38 +244,24 @@ class FederatedSearchWidget {
           case "QuerySuggestions":
             index
               .search({
-                query: value,
-                hitsPerPage: column.displayLimit,
-                clickAnalytics: this.clickAnalytics
+                query,
+                hitsPerPage: column.limit,
+                clickAnalytics: column.clickAnalytics
               })
               .then(response => {
-                displayQuerySuggestions(
-                  response,
-                  column.sourceIndexForQS,
-                  column.columnNode,
-                  column.redirectTo,
-                  column.noResultLabel
-                );
+                displayQuerySuggestions(column, response, query);
                 return response;
               });
             break;
           case "Search":
             index
               .search({
-                query: value,
-                hitsPerPage: column.displayLimit,
-                clickAnalytics: this.clickAnalytics
+                query,
+                hitsPerPage: column.limit,
+                clickAnalytics: column.clickAnalytics
               })
               .then(response => {
-                displayHits(
-                  response,
-                  column.columnNode,
-                  column.itemTemplate,
-                  column.noResultLabel,
-                  column.redirectAttribute,
-                  this.clickAnalytics,
-                  column.indexName
-                );
+                displayHits(column, response, query);
                 return response;
               });
             break;
@@ -232,60 +287,41 @@ const displayFacets = (column, response, initOptions) => {
     const container = document.getElementById(`facet-column-${index}-content`);
     if (response.facets[facet] !== undefined) {
       displayFacetValues(
-        Object.entries(response.facets[facet]).slice(0, column.displayLimit),
+        Object.entries(response.facets[facet]).slice(0, column.limit),
         container,
-        `<h3 class="column-title">${column.title[index]}</h3>`,
+        column.facetTitleRenderer(facet),
         initOptions,
         facet
       );
     } else {
-      container.innerHTML = `<h3 class="column-title">${column.title[index]}</h3><p>${column.noResultLabel}</p>`;
+      container.innerHTML = column.noResultsRenderer();
     }
   });
 };
 
-function displayQuerySuggestions(
-  response,
-  qsSourceIndex,
-  container,
-  redirectTo,
-  noResultLabel
-) {
+function displayQuerySuggestions(column, response, query) {
+  column.columnNode.innerHTML = "";
   const hits = response.hits;
 
-  container.innerHTML = "";
-  if (hits.length > 0) {
-    for (let i = 0; i < hits.length; i++) {
-      const element = document.createElement("div");
-      element.classList.add("hover-background");
-      element.addEventListener("click", function(e) {
-        window.location = encodeURI(redirectTo + hits[i].query);
-      });
-      if (i < Math.round(0.25 * hits.length)) {
-        if (hits[i][qsSourceIndex] != undefined) {
-          Object.keys(hits[i][qsSourceIndex].facets.exact_matches).forEach(
-            key => {
-              const array = hits[i][qsSourceIndex].facets.exact_matches[key];
-              array.sort(function(a, b) {
-                if (a.count > b.count) return -1;
-                if (a.count < b.count) return 1;
-                return 0;
-              });
-              element.innerHTML = `<div style="padding: 10px;"><span class="inverted-highlight">${
-                hits[i]._highlightResult.query.value
-              }</span> <span class="in-facet"><i> in ${(key,
-              array[0].value)}</i></span></div>`;
-            }
-          );
-        }
-      } else {
-        element.innerHTML = `<div style="padding: 10px;" class="inverted-highlight">${hits[i]._highlightResult.query.value}</div>`;
-      }
-      container.append(element);
-    }
-  } else {
-    container.innerHTML = `<p>${noResultLabel}</p>`;
+  if (!hits.length) {
+    column.columnNode.innerHTML = column.noResultsRenderer(query, response);
+    return;
   }
+
+  hits.forEach(hit => {
+    const element = document.createElement("li");
+    element.classList.add("hover-background");
+    element.addEventListener("click", function(e) {
+      window.location = encodeURI(redirectTo + hit.query);
+    });
+
+    element.innerHTML =
+      typeof column.itemRenderer === "function"
+        ? column.itemRenderer(hit)
+        : hit._highlightResult.query.value;
+
+    column.columnNode.append(element);
+  });
 }
 
 function displayFacetValues(
@@ -317,73 +353,46 @@ function displayFacetValues(
   });
 }
 
-function displayHits(
-  response,
-  container,
-  template,
-  noResultLabel,
-  redirectAttribute,
-  clickAnalytics,
-  indexName
-) {
-  const hits = response.hits;
+function displayHits(column, response, query) {
+  const hits = response.queryID
+    ? enrichHitsWithClickAnalyticsData(response.hits, response.queryID)
+    : response.hits;
 
-  if (clickAnalytics) {
-    hits.forEach(hit => {
-      hit._queryID = response.queryID;
-      hit._position =
-        response.hits.findIndex(hit => hit.objectID == hit.objectID) + 1; // The position cannot be 0
-    });
+  column.columnNode.innerHTML = "";
+
+  if (!hits.length) {
+    column.columnNode.innerHTML = column.noResultsRenderer(query, response);
+    return;
   }
 
-  container.innerHTML = "";
-  if (hits.length > 0) {
-    const regexGroup = new RegExp("(?<={{).+?(?=}})", "gm"); // Regex to match 'text' inside {{}}
-    const regexGlobal = new RegExp("{{(.*?)}}", "gm"); // Regex to match '{{text}}'
-    const foundAttributes = template.match(regexGlobal); // Array of all the {{text}}
-    for (let i = 0; i < hits.length; i++) {
-      const element = document.createElement("div");
-      element.classList.add("hover-background");
+  hits.forEach(hit => {
+    const hitHTML = column.itemRenderer(hit);
+    const element = document.createElement("li");
+
+    if (response.queryID) {
       element.addEventListener("click", function(e) {
-        if (clickAnalytics) {
-          // To send a click event
-          aa("clickedObjectIDsAfterSearch", {
-            eventName: "product_clicked",
-            index: indexName,
-            queryID: hits[i]._queryID,
-            objectIDs: [hits[i].objectID],
-            positions: [hits[i]._position]
-          });
+        // To send a click event
+        aa("clickedObjectIDsAfterSearch", {
+          eventName: "product_clicked",
+          index: column.indexName,
+          queryID: hit.__queryID,
+          objectIDs: [hit.objectID],
+          positions: [hit.__position]
+        });
 
-          // To send a conversion event
-          aa("convertedObjectIDsAfterSearch", {
-            eventName: "product_clicked",
-            index: indexName,
-            queryID: hits[i]._queryID,
-            objectIDs: [hits[i].objectID]
-          });
-        }
-
-        window.location = hits[i][redirectAttribute];
+        // To send a conversion event
+        aa("convertedObjectIDsAfterSearch", {
+          eventName: "product_clicked",
+          index: column.indexName,
+          queryID: hit.__queryID,
+          objectIDs: [hit.objectID]
+        });
       });
-
-      let newTemplate = template;
-      foundAttributes.forEach(globalAttr => {
-        const attr = globalAttr.match(regexGroup)[0]; // Getting only the text inside the {{}}
-        newTemplate = newTemplate.replace(globalAttr, resolve(attr, hits[i])); // Replace the template value by the real value from Algolia
-      });
-
-      element.innerHTML = newTemplate;
-      container.append(element);
     }
-  } else {
-    container.innerHTML = `<p>${noResultLabel}</p>`;
-  }
-}
 
-function resolve(path, obj = self, separator = ".") {
-  const properties = Array.isArray(path) ? path : path.split(separator);
-  return properties.reduce((prev, curr) => prev && prev[curr], obj);
+    element.innerHTML = hitHTML;
+    column.columnNode.append(element);
+  });
 }
 
 export default FederatedSearchWidget;
