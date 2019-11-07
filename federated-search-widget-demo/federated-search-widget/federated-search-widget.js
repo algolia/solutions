@@ -1,27 +1,3 @@
-// QuerySuggestions
-// indexName: string
-// type: "QuerySuggestions" | "Facets" | "Search"
-// limit: number? = 10
-// querySuggestionsSourceIndex? string
-
-// Search
-// indexName: string
-// type: "QuerySuggestions" | "Facets" | "Search"
-// limit?: number = 3
-// itemRenderer: TEMPLATE?
-// redirectAttribute: string???
-
-// Facets
-// indexName: string
-// type: "QuerySuggestions" | "Facets" | "Search"
-// facets: string[]
-// facetTitleRenderer:
-// limit?: number = 3
-
-// titleRenderer?: () => templateString
-// itemRenderer?: () => templateString
-// noResultsRenderer: (query) => templateString
-
 const validateMandatoryColumnOptions = column => {
   const COLUMN_TYPES = ["QuerySuggestions", "Facets", "Search"];
   const MANDATORY_PARAMS = ["indexName", "type", "noResultsRenderer"];
@@ -64,6 +40,14 @@ const validateFacetColumnOptions = column => {
     errors.push(
       new Error(
         "Facets column requires you to specifiy a facets array that represents the facets you want displayed. Example: ['brand', 'category']"
+      )
+    );
+  }
+
+  if (typeof column.itemRenderer !== "function") {
+    errors.push(
+      new Error(
+        "Search column requires itemRenderer function param that returns the string you want to render"
       )
     );
   }
@@ -133,26 +117,47 @@ const renderColumns = (resultsContainer, columns) => {
 
   return columns.map(column => {
     const columnNode = document.createElement("div");
-    columnNode.classList.add("ais-federated-result");
 
-    const titleRenderer =
+    const titleHTML =
       typeof column.titleRenderer === "function"
         ? column.titleRenderer()
         : DEFAULT_TITLE(column.title);
 
-    const resultsTemplate =
+    const resultsHTML =
       typeof column.resultsTemplate === "function"
         ? column.resultsTemplate([])
         : DEFAULT_RESULTS();
 
-    columnNode.innerHTML = titleRenderer + resultsTemplate;
-    resultsContainer.append(columnNode);
+    if (column.type !== "Facets") {
+      columnNode.innerHTML = titleHTML + resultsHTML;
+      resultsContainer.append(columnNode);
 
-    return {
-      ...column,
-      limit: column.limit || 5,
-      columnNode: columnNode.lastChild
-    };
+      return {
+        ...column,
+        limit: column.limit || 5,
+        columnNode: columnNode.lastChild
+      };
+    } else {
+      column.facets.forEach(facet => {
+        const innerColumn = document.createElement("div");
+        const facetTitleHTML = column.facetTitleRenderer(facet);
+        const resultsHTML =
+          typeof column.resultsTemplate === "function"
+            ? column.resultsTemplate([])
+            : DEFAULT_RESULTS();
+
+        innerColumn.innerHTML = facetTitleHTML + resultsHTML;
+        columnNode.appendChild(innerColumn);
+      });
+
+      resultsContainer.append(columnNode);
+
+      return {
+        ...column,
+        limit: column.limit || 5,
+        columnNode: columnNode
+      };
+    }
   });
 };
 
@@ -191,7 +196,7 @@ class FederatedSearchWidget {
     id="search-box-input">
     </div>
     <div id="clear-input"><i class="fas fa-times"></i></div>
-    <div id="federated-results-container"></div>
+    <div id="federated-results-container" style="display: none"></div>
     </div>
     `;
     this.searchBoxInput = this.widgetContainer.querySelector(
@@ -222,7 +227,7 @@ class FederatedSearchWidget {
 
       this.clearButton.style.display = "block";
       //@TODO Set display to inherit
-      this.resultsContainer.style.display = "flex";
+      this.resultsContainer.style.display = "";
 
       // Perfom a search for each index
       this.columns.forEach(column => {
@@ -237,7 +242,7 @@ class FederatedSearchWidget {
                 facets: column.facets
               })
               .then(response => {
-                displayFacets(column, response, initOptions);
+                renderFacets(column, response, query, initOptions);
                 return response;
               });
             break;
@@ -249,7 +254,7 @@ class FederatedSearchWidget {
                 clickAnalytics: column.clickAnalytics
               })
               .then(response => {
-                displayQuerySuggestions(column, response, query);
+                renderQuerySuggestions(column, response, query);
                 return response;
               });
             break;
@@ -261,7 +266,7 @@ class FederatedSearchWidget {
                 clickAnalytics: column.clickAnalytics
               })
               .then(response => {
-                displayHits(column, response, query);
+                renderSearchHits(column, response, query);
                 return response;
               });
             break;
@@ -279,27 +284,27 @@ class FederatedSearchWidget {
   }
 }
 
-const displayFacets = (column, response, initOptions) => {
+const renderFacets = (column, response, query, initOptions) => {
   column.facets.forEach((facet, index) => {
-    const element = document.createElement("div");
-    element.setAttribute("id", `facet-column-${index}-content`);
-    column.columnNode.append(element);
-    const container = document.getElementById(`facet-column-${index}-content`);
-    if (response.facets[facet] !== undefined) {
-      displayFacetValues(
-        Object.entries(response.facets[facet]).slice(0, column.limit),
-        container,
-        column.facetTitleRenderer(facet),
-        initOptions,
-        facet
-      );
-    } else {
-      container.innerHTML = column.noResultsRenderer();
+    const facetsNode = column.columnNode.childNodes[index].lastChild;
+    facetsNode.innerHTML = "";
+
+    if (!response.facets[facet]) {
+      facetsNode.innerHTML = column.noResultsRenderer(query, response);
+      return;
     }
+
+    Object.entries(response.facets[facet])
+      .slice(0, column.limit)
+      .forEach(([value, count]) => {
+        const element = document.createElement("li");
+        element.innerHTML = column.itemRenderer({ name: value, count }, facet);
+        facetsNode.appendChild(element);
+      });
   });
 };
 
-function displayQuerySuggestions(column, response, query) {
+const renderQuerySuggestions = (column, response, query) => {
   column.columnNode.innerHTML = "";
   const hits = response.hits;
 
@@ -310,11 +315,6 @@ function displayQuerySuggestions(column, response, query) {
 
   hits.forEach(hit => {
     const element = document.createElement("li");
-    element.classList.add("hover-background");
-    element.addEventListener("click", function(e) {
-      window.location = encodeURI(redirectTo + hit.query);
-    });
-
     element.innerHTML =
       typeof column.itemRenderer === "function"
         ? column.itemRenderer(hit)
@@ -322,38 +322,9 @@ function displayQuerySuggestions(column, response, query) {
 
     column.columnNode.append(element);
   });
-}
+};
 
-function displayFacetValues(
-  arrayOfFacetsAndCount,
-  container,
-  title,
-  initOptions,
-  facet
-) {
-  container.innerHTML = title;
-  arrayOfFacetsAndCount.forEach(array => {
-    const element = document.createElement("div");
-    element.classList.add("hover-background");
-    element.addEventListener("click", e => {
-      const nextStateWithFacetRefinement = initOptions.helper.state.addDisjunctiveFacetRefinement(
-        facet,
-        array[0]
-      );
-      const nextURLWithFacetRefinement = initOptions.createURL(
-        nextStateWithFacetRefinement
-      );
-      // We could rather use an href on a link
-      location.href = nextURLWithFacetRefinement;
-    });
-    element.innerHTML = `<div style='padding: 10px;'>${
-      array[0]
-    }<span class='facet-count'> (${array[1]})</span></div>`;
-    container.append(element);
-  });
-}
-
-function displayHits(column, response, query) {
+const renderSearchHits = (column, response, query) => {
   const hits = response.queryID
     ? enrichHitsWithClickAnalyticsData(response.hits, response.queryID)
     : response.hits;
@@ -366,7 +337,6 @@ function displayHits(column, response, query) {
   }
 
   hits.forEach(hit => {
-    const hitHTML = column.itemRenderer(hit);
     const element = document.createElement("li");
 
     if (response.queryID) {
@@ -390,9 +360,9 @@ function displayHits(column, response, query) {
       });
     }
 
-    element.innerHTML = hitHTML;
+    element.innerHTML = column.itemRenderer(hit);
     column.columnNode.append(element);
   });
-}
+};
 
 export default FederatedSearchWidget;

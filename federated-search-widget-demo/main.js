@@ -90,10 +90,9 @@ search.addWidget(
         type: "QuerySuggestions",
         indexName: "atis-prods_query_suggestions",
         clickAnalytics: true,
-        // querySuggestionsSourceIndex: "atis-prods", // Optional: need to be used if the user wants to display 'in facet'
         title: "Matching Keywords",
-        noResultsRenderer: (query, response) => "No Matching Queries",
-
+        noResultsRenderer: (query, response) =>
+          `No Matching Suggestion for ${query}`,
         itemRenderer: hit => {
           return renderQuerySuggestionWithCategory(hit, "atis-prods");
         }
@@ -116,7 +115,8 @@ search.addWidget(
               <p class="text-right">${hit.price}€</p>
             </div>
           </div>`,
-        noResultsRenderer: (query, response) => "No Matching Products",
+        noResultsRenderer: (query, response) =>
+          `No Matching Products for query ${query}`,
         redirectAttribute: "url"
       },
       {
@@ -125,12 +125,15 @@ search.addWidget(
         noResultLabel: "No result",
         facets: ["categories", "brand"],
         clickAnalytics: true,
-        facetTitleRenderer: facet => {
-          return `<h3 class="column-title">${
+        facetTitleRenderer: facet =>
+          `<h3 class="column-title">${
             facet === "categories" ? "Matched Categories" : "Matched Brand"
-          }<h3>`;
-        },
-        noResultsRenderer: (query, response) => "No Matching Facet",
+          }</h3>`,
+        itemRenderer: (facet, facetCategory) => `
+          <a href="">${facet.name} ${facet.count}</a>
+        `,
+        noResultsRenderer: (query, response) =>
+          `No Matching Facet for query ${query}`,
         titleRenderer: () => ""
       }
     ]

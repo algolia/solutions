@@ -1,7 +1,3 @@
-.hidden {
-  display: none;
-}
-
 #searchbox {
   width: 100%;
   position: relative;
@@ -39,64 +35,72 @@
   padding-bottom: 0;
   align-items: top;
   justify-content: space-around;
-  display: none;
   background-color: white;
   position: absolute;
   z-index: 1;
   width: 100%;
   border: 1px solid #e0e0e0;
   box-shadow: 0px 26px 110px -12px rgba(0,0,0,0.43);
+
+  display: grid;
+  padding: 16px;
+  grid-column-gap: 16px;
 }
 
-.ais-federated-result {
-  padding: 0 20px;
-  border-right: 1px solid #d6d6d6;
-}
 
-.ais-federated-result:last-child {
-  border-right: none;
-}
-
-em {
+#federated-results-container em {
   font-weight: bold;
   font-style: normal;
 }
 
-.inverted-highlight {
+#federated-results-container .inverted-highlight {
   font-weight: bold;
 }
-.inverted-highlight em {
+
+#federated-results-container .inverted-highlight em {
   font-style: normal;
   font-weight: normal;
 }
 
-.in-facet {
+#federated-results-container .in-facet {
   font-size: 12px;
 }
 
-@media screen and (max-width: 656px) {
-  .hidesmall {
-    display: none !important;
-  }
-  .mobile-format {
-    width: 100% !important;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #e0e0e0;
-  }
-  .mobile-format:last-child {
-    padding-bottom: 0;
-    border-bottom: none;
-  }
-  #federated-results-container {
-    flex-direction: column;
-    align-items: top;
-    justify-content: center;
-  }
 
-  .ais-federated-result-column{
-    border-right: none;
-  }
-  .column-title {
-    text-align: center;
-  }
+/* Start Custom Views */
+/* 1. Regular display*/
+#federated-results-container {
+  grid-template-areas: 
+    "suggestions search facets"
 }
+#federated-results-container div:first-child {
+  grid-area: suggestions
+}
+#federated-results-container div:nth-child(2) {
+  grid-area: search
+}
+#federated-results-container div:nth-child(3) {
+  grid-area: facets
+}
+
+/* 2. Suggestions on top view (uncomment to see changes) */
+/* #federated-results-container {
+  grid-template-areas: 
+    "suggestions suggestions"
+    "search      facets"
+}
+#federated-results-container div:first-child {
+  grid-area: suggestions
+}
+#federated-results-container div:nth-child(2) {
+  grid-area: search
+}
+#federated-results-container div:nth-child(3) {
+  grid-area: facets
+} */
+/* Inline suggestions so we keep everything visual*/
+/* #federated-results-container div:first-child li {
+  display: inline-block;
+} */
+
+/* End Custom Views */
