@@ -1,14 +1,49 @@
 import FederatedSearchWidget from "./federated-search-widget/federated-search-widget.js";
 
-let appID = "932LAAGOT3";
-let apiKey = "6a187532e8e703464da52c20555c37cf";
+const appID = "932LAAGOT3";
+const apiKey = "6a187532e8e703464da52c20555c37cf";
 
-const virutalRefinementList = instantsearch.connectors.connectRefinementList(() => {})
+const renderQuerySuggestionWithCategory = (suggestion, sourceIndex) => {
+  if (!suggestion[sourceIndex]) {
+    return `
+      <a href="https://www.mywebsite.com/search?q=${suggestion.query}" target="_blank">
+        ${suggestion._highlightResult.query.value}
+      </a>`;
+  }
+
+  const bestMatchedFacet = Object.values(
+    suggestion[sourceIndex].facets.exact_matches
+  )
+    .reduce((acc, arr) => acc.concat(arr), [])
+    .sort((a, b) => {
+      if (a.count > b.count) return -1;
+      if (a.count < b.count) return 1;
+      return 0;
+    });
+
+  return `
+      <a href="https://www.mywebsite.com/search?q=${suggestion.query}" target="_blank">
+        <div style="padding: 10px;">
+          <span class="inverted-highlight">
+            ${suggestion._highlightResult.query.value}
+          </span>
+          <span class="in-facet">
+            <i>
+              in ${bestMatchedFacet[0].value}
+            </i>
+          </span>
+        </div>
+      </a>`;
+};
+
+const virutalRefinementList = instantsearch.connectors.connectRefinementList(
+  () => {}
+);
 
 const search = instantsearch({
   indexName: "atis-prods",
   searchClient: algoliasearch(appID, apiKey),
-  routing: true, // This option is mandatory to allow the createURL function to generate an URL.
+  routing: true // This option is mandatory to allow the createURL function to generate an URL.
 });
 
 search.addWidget(
@@ -20,7 +55,7 @@ search.addWidget(
 search.addWidget(
   // Useful for debug purpose
   instantsearch.widgets.currentRefinements({
-    container: '#current-refinements'
+    container: "#current-refinements"
   })
 );
 
@@ -47,47 +82,61 @@ search.addWidget(
 search.addWidget(
   new FederatedSearchWidget({
     container: "#search-box",
-    appID: appID,
-    apiKey: apiKey,
-    clickAnalytics: true, //Optional. Default: false
+    appID,
+    apiKey,
+    placeholder: "Search for products and brands",
     columns: [
       {
+        type: "QuerySuggestions",
         indexName: "atis-prods_query_suggestions",
-        isQuerySuggestionsBased: true,
-        sourceIndexForQS:"atis-prods", //Optional: need to be used if the user wants to display 'in facet'
-        displayLimit: 10,
+        clickAnalytics: true,
         title: "Matching Keywords",
-        displayOnMobile: true,
-        noResultLabel: 'No Matching Queries',
-        redirectTo: "https://www.mywebsite.com/search?q=",
+        noResultsRenderer: (query, response) =>
+          `No Matching Suggestion for ${query}`,
+        itemRenderer: hit => {
+          return renderQuerySuggestionWithCategory(hit, "atis-prods");
+        }
+        // itemRenderer: suggestion => `
+        //   <a href="https://www.mywebsite.com/search?q=${suggestion.query}" target="_blank">
+        //     ${suggestion._highlightResult.query.value}
+        //   </a>
+        // `
       },
       {
+        type: "Search",
         indexName: "atis-prods",
-        displayLimit: 3,
         title: "Matching Products",
-        displayOnMobile: true,
-        itemTemplate: `<div class='hit'>
-          <img src="{{largeImage}}" alt="">
-          <div>
-            <p>{{_highlightResult.title.value}}</p>
-            <p class="text-right">{{price}}€</p>
-          </div>
-        </div>`,
-        noResultLabel: 'No Matching Products',
+        clickAnalytics: true,
+        itemRenderer: hit => `
+          <div class='hit'>
+            <img src="${hit.largeImage}" alt="">
+            <div>
+              <p>${hit._highlightResult.title.value}</p>
+              <p class="text-right">${hit.price}€</p>
+            </div>
+          </div>`,
+        noResultsRenderer: (query, response) =>
+          `No Matching Products for query ${query}`,
         redirectAttribute: "url"
       },
       {
+        type: "Facets",
         indexName: "atis-prods",
-        isFacetBased: true,
-        displayLimit: 5,
-        title: ["Matching Brands", "Matching Categories"],
-        displayOnMobile: true,
-        noResultLabel: 'No result',
-        facetsBasedOn: ["brand", "categories"],
-        type: "facet",
+        noResultLabel: "No result",
+        facets: ["categories", "brand"],
+        clickAnalytics: true,
+        facetTitleRenderer: facet =>
+          `<h3 class="column-title">${
+            facet === "categories" ? "Matched Categories" : "Matched Brand"
+          }</h3>`,
+        itemRenderer: (facet, facetCategory) => `
+          <a href="">${facet.name} ${facet.count}</a>
+        `,
+        noResultsRenderer: (query, response) =>
+          `No Matching Facet for query ${query}`,
+        titleRenderer: () => ""
       }
-    ],
-    placeholder: "Search for products and brands"
+    ]
   })
 );
 
@@ -120,7 +169,7 @@ search.addWidget(
   // it does not render anything. Note that for brand we don't have it because
   // we already have a refinementList mounted on the page.
   virutalRefinementList({
-    attribute: "categories", //Need to be all the facets that are currently not visible on the website
+    attribute: "categories" // Need to be all the facets that are currently not visible on the website
   })
 );
 

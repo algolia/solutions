@@ -1,259 +1,368 @@
+const validateMandatoryColumnOptions = column => {
+  const COLUMN_TYPES = ["QuerySuggestions", "Facets", "Search"];
+  const MANDATORY_PARAMS = ["indexName", "type", "noResultsRenderer"];
+
+  const errors = [];
+
+  MANDATORY_PARAMS.forEach(param => {
+    if (!column[param]) {
+      errors.push(new Error(`${param} parameter was not provided.`));
+    }
+  });
+
+  if (COLUMN_TYPES.indexOf(column.type) === -1) {
+    const message = `Column has unknown type ${
+      column.type
+    }. Valid column types are ${COLUMN_TYPES.join(", ")}`;
+
+    errors.push(new Error(message));
+  }
+
+  return errors;
+};
+
+const validateSearchColumnOptions = column => {
+  const errors = [];
+  if (typeof column.itemRenderer !== "function") {
+    errors.push(
+      new Error(
+        "Search column requires itemRenderer function param that returns the string you want to render"
+      )
+    );
+  }
+
+  return errors;
+};
+
+const validateFacetColumnOptions = column => {
+  const errors = [];
+  if (!column.facets || !column.facets.length) {
+    errors.push(
+      new Error(
+        "Facets column requires you to specifiy a facets array that represents the facets you want displayed. Example: ['brand', 'category']"
+      )
+    );
+  }
+
+  if (typeof column.itemRenderer !== "function") {
+    errors.push(
+      new Error(
+        "Search column requires itemRenderer function param that returns the string you want to render"
+      )
+    );
+  }
+
+  if (typeof column.facetTitleRenderer !== "function") {
+    errors.push(
+      new Error(
+        "Facets column requires facetTitleRenderer function which returns the string you want to render. Example: function(facet){return 'Searched in ' + facet }"
+      )
+    );
+  }
+
+  return errors;
+};
+
+const COLUMN_TYPE_VALIDATORS = {
+  Search: validateSearchColumnOptions,
+  QuerySuggestions: () => [],
+  Facets: validateFacetColumnOptions
+};
+
+const initializeIndices = (columns, client) => {
+  // Initialize a map [indexName: string]: AlgoliaIndex
+  return columns.reduce((indices, column) => {
+    if (indices[column.indexName]) return indices;
+    indices[column.indexName] = client.initIndex(column.indexName);
+    return indices;
+  }, {});
+};
+
+const initializeSearchInsights = (appId, apiKey) => {
+  !(function(e, a, t, n, s, i, c) {
+    (e.AlgoliaAnalyticsObject = s),
+      (e.aa =
+        e.aa ||
+        function() {
+          (e.aa.queue = e.aa.queue || []).push(arguments);
+        }),
+      (i = a.createElement(t)),
+      (c = a.getElementsByTagName(t)[0]),
+      (i.async = 1),
+      (i.src = "https://cdn.jsdelivr.net/npm/search-insights@1.0.0"),
+      c.parentNode.insertBefore(i, c);
+  })(window, document, "script", 0, "aa");
+
+  window.aa("init", {
+    appId,
+    apiKey
+  });
+
+  return true;
+};
+
+const enrichHitsWithClickAnalyticsData = (hits, queryID) => {
+  return hits.map((hit, index) => ({
+    ...hit,
+    __queryID: queryID,
+    __position: index + 1
+  }));
+};
+
+const renderColumns = (resultsContainer, columns) => {
+  // This has the side effect of enriching the column with it's respective
+  // container node. This way we can avoid relying on custom id's
+  const DEFAULT_TITLE = title => `<h3 class="column-title">${title}</h3>`;
+  const DEFAULT_RESULTS = () => `<ul></ul>`;
+
+  return columns.map(column => {
+    const columnNode = document.createElement("div");
+
+    const titleHTML =
+      typeof column.titleRenderer === "function"
+        ? column.titleRenderer()
+        : DEFAULT_TITLE(column.title);
+
+    const resultsHTML =
+      typeof column.resultsTemplate === "function"
+        ? column.resultsTemplate([])
+        : DEFAULT_RESULTS();
+
+    if (column.type !== "Facets") {
+      columnNode.innerHTML = titleHTML + resultsHTML;
+      resultsContainer.append(columnNode);
+
+      return {
+        ...column,
+        limit: column.limit || 5,
+        columnNode: columnNode.lastChild
+      };
+    } else {
+      column.facets.forEach(facet => {
+        const innerColumn = document.createElement("div");
+        const facetTitleHTML = column.facetTitleRenderer(facet);
+        const resultsHTML =
+          typeof column.resultsTemplate === "function"
+            ? column.resultsTemplate([])
+            : DEFAULT_RESULTS();
+
+        innerColumn.innerHTML = facetTitleHTML + resultsHTML;
+        columnNode.appendChild(innerColumn);
+      });
+
+      resultsContainer.append(columnNode);
+
+      return {
+        ...column,
+        limit: column.limit || 5,
+        columnNode: columnNode
+      };
+    }
+  });
+};
+
 class FederatedSearchWidget {
   constructor(options) {
-    Object.assign(this, options);
+    const mandatoryErrors = options.columns.reduce((acc, column) => {
+      return acc.concat(validateMandatoryColumnOptions(column));
+    }, []);
+
+    if (mandatoryErrors.length > 0) throw mandatoryErrors;
+
+    const customColumnErrors = options.columns.reduce((acc, column) => {
+      return acc.concat(COLUMN_TYPE_VALIDATORS[column.type](column));
+    }, []);
+
+    if (customColumnErrors.length > 0) throw customColumnErrors;
+
+    this.columnsMetaData = options.columns;
+
+    // DOM Element references
+    this.client = algoliasearch(options.appID, options.apiKey);
+    this.indices = initializeIndices(options.columns, this.client);
+
+    this.widgetContainer = document.querySelector(options.container);
+    this.widgetContainer.innerHTML = `
+    <div id="searchbox">
+    <div class="search-box-container">
+    <input autocapitalize="off"
+    autocomplete="off"
+    autocorrect="off"
+    placeholder="${options.placeholder || ""}"
+    role="textbox"
+    spellcheck="false"
+    type="text"
+    value=""
+    id="search-box-input">
+    </div>
+    <div id="clear-input"><i class="fas fa-times"></i></div>
+    <div id="federated-results-container" style="display: none"></div>
+    </div>
+    `;
+    this.searchBoxInput = this.widgetContainer.querySelector(
+      "#search-box-input"
+    );
+
+    this.clearButton = this.widgetContainer.querySelector("#clear-input");
+    this.resultsContainer = this.widgetContainer.querySelector(
+      "#federated-results-container"
+    );
+
+    if (this.columnsMetaData.some(column => column.clickAnalytics)) {
+      initializeSearchInsights(options.appID, options.apiKey);
+    }
   }
 
   init(initOptions) {
+    this.columns = renderColumns(this.resultsContainer, this.columnsMetaData);
 
-    const searchboxContainer = document.querySelector(this.container);
+    this.searchBoxInput.addEventListener("input", event => {
+      const query = event.currentTarget.value;
 
-    searchboxContainer.innerHTML = `
-      <div id="searchbox">
-        <div class="search-box-container">
-            <input autocapitalize="off"
-              autocomplete="off"
-              autocorrect="off"
-              placeholder="${this.placeholder}"
-              role="textbox"
-              spellcheck="false"
-              type="text"
-              value=""
-              id="search-box-input">
-        </div>
-        <div id="clear-input"><i class="fas fa-times"></i></div>
-        <div id="federated-results-container"></div>
-      </div>
-    `;
-
-    let searchBoxInput = document.getElementById("search-box-input");
-    let clearButton = document.getElementById("clear-input");
-    let federatedResultsContainer = document.getElementById("federated-results-container");
-
-    let columns = this.columns;
-    let nbOfColumns = this.columns.length;
-    let clickAnalytics = (this.clickAnalytics) ? this.clickAnalytics : false;
-    let searchInsightsAPI;
-
-    if(clickAnalytics){
-      !(function(e, a, t, n, s, i, c) {
-        (e.AlgoliaAnalyticsObject = s),
-          (e.aa =
-            e.aa ||
-            function() {
-              (e.aa.queue = e.aa.queue || []).push(arguments);
-            }),
-          (i = a.createElement(t)),
-          (c = a.getElementsByTagName(t)[0]),
-          (i.async = 1),
-          (i.src = "https://cdn.jsdelivr.net/npm/search-insights@1.0.0"),
-          c.parentNode.insertBefore(i, c);
-      })(window, document, "script", 0, "aa");
-
-      // Initialize Insights library
-      aa("init", {
-        appId: this.appID,
-        apiKey: this.apiKey
-      });
-    }
-
-    let client = algoliasearch(this.appID, this.apiKey);
-    let indices = [];
-    for (let i = 0; i < nbOfColumns; i++) {
-      //To create the needed number of columns
-      let column = document.createElement("div");
-      column.classList.add("ais-federated-result-column");
-      if (columns[i].displayOnMobile) {
-        column.classList.add("mobile-format");
-      } else {
-        column.classList.add("hidesmall");
+      if (!query) {
+        this.clearButton.style.display = "none";
+        this.resultsContainer.style.display = "none";
+        return;
       }
-      column.style.width = 100 / nbOfColumns + "%";
-      if(columns[i].isFacetBased){
-        column.innerHTML = `<div id="column-${i}-content"></div>`;
-      }else{
-        column.innerHTML = `<h3 class="column-title">${columns[i].title}</h3>
-                          <div id="column-${i}-content"></div>`;
-      }
-      federatedResultsContainer.append(column);
 
-      //To store all the different indices
-      indices.push(client.initIndex(columns[i].indexName));
-    }
+      this.clearButton.style.display = "block";
+      //@TODO Set display to inherit
+      this.resultsContainer.style.display = "";
 
-    searchBoxInput.addEventListener("input", function(e) {
-      let value = searchBoxInput.value;
-      if (value == "") {
-        clearButton.style.display = "none";
-        federatedResultsContainer.style.display = "none";
-      } else {
-        clearButton.style.display = "block";
-        federatedResultsContainer.style.display = "flex";
+      // Perfom a search for each index
+      this.columns.forEach(column => {
+        const index = this.indices[column.indexName];
 
-        //Perfom a search for each index
-        indices.forEach((index, i) => {
-          if(columns[i].isFacetBased){
-            //Perform a search to get facets only
-            index.search({ query: searchBoxInput.value, hitsPerPage: 1, facets: columns[i].facetsBasedOn }, (err, res) => {
-              columns[i].facetsBasedOn.forEach((facet, counter) => {
-                let element = document.createElement("div");
-                element.setAttribute("id", "facet-column-" + counter + "-content");
-                document.getElementById("column-" + i + "-content").append(element);
-                let container = document.getElementById("facet-column-" + counter + "-content");
-                if(res.facets[facet] !== undefined){
-                  displayFacetValues(
-                    Object.entries(res.facets[facet]).slice(0, columns[i].displayLimit),
-                    container,
-                    `<h3 class="column-title">${columns[i].title[counter]}</h3>`,
-                    initOptions,
-                    facet
-                  );
-                }else{
-                  container.innerHTML = `<h3 class="column-title">${columns[i].title[counter]}</h3><p>${columns[i].noResultLabel}</p>`;
-                }
+        switch (column.type) {
+          case "Facets":
+            index
+              .search({
+                query,
+                hitsPerPage: 1,
+                facets: column.facets
               })
-
-            });
-          }else{
-            //Perform a search to get hits / query suggestions
-            index.search({ query: searchBoxInput.value, hitsPerPage: columns[i].displayLimit, clickAnalytics: clickAnalytics }, (err, res) => {
-              if(columns[i].isQuerySuggestionsBased != undefined && columns[i].isQuerySuggestionsBased){
-                displayQuerySuggestions(res, columns[i].sourceIndexForQS, document.getElementById("column-" + i + "-content"), columns[i].redirectTo, columns[i].noResultLabel)
-              }else{
-                displayHits(
-                  res,
-                  document.getElementById("column-" + i + "-content"),
-                  columns[i].itemTemplate,
-                  columns[i].noResultLabel,
-                  columns[i].redirectAttribute,
-                  clickAnalytics,
-                  columns[i].indexName,
-                );
-              }
-            });
-          }
-        });
-      }
-    });
-
-    //Clear button
-    clearButton.addEventListener("click", function(e) {
-      searchBoxInput.value = "";
-      clearButton.style.display = "none";
-      var event = new Event("input");
-      searchBoxInput.dispatchEvent(event);
-    });
-  }
-}
-
-function displayQuerySuggestions(res, qsSourceIndex, container, redirectTo, noResultLabel){
-  let hits = res.hits;
-
-  container.innerHTML = '';
-  if (hits.length > 0) {
-    for (let i = 0; i < hits.length; i++) {
-      let element = document.createElement("div");
-      element.classList.add("hover-background");
-      element.addEventListener("click", function(e) {
-        window.location = encodeURI(redirectTo + hits[i].query);
-      });
-      if(i < Math.round(0.25 * hits.length)){
-        if(hits[i][qsSourceIndex] != undefined){
-          Object.keys(hits[i][qsSourceIndex].facets.exact_matches).forEach(key => {
-              let array = hits[i][qsSourceIndex].facets.exact_matches[key];
-              array.sort(function(a, b){
-                if(a.count > b.count) return -1;
-                if(a.count < b.count) return 1;
-                return 0;
+              .then(response => {
+                renderFacets(column, response, query, initOptions);
+                return response;
               });
-            element.innerHTML = `<div style="padding: 10px;"><span class="inverted-highlight">${hits[i]._highlightResult.query.value}</span> <span class="in-facet"><i> in ${key, array[0].value}</i></span></div>`;
-          })
+            break;
+          case "QuerySuggestions":
+            index
+              .search({
+                query,
+                hitsPerPage: column.limit,
+                clickAnalytics: column.clickAnalytics
+              })
+              .then(response => {
+                renderQuerySuggestions(column, response, query);
+                return response;
+              });
+            break;
+          case "Search":
+            index
+              .search({
+                query,
+                hitsPerPage: column.limit,
+                clickAnalytics: column.clickAnalytics
+              })
+              .then(response => {
+                renderSearchHits(column, response, query);
+                return response;
+              });
+            break;
         }
-      }else{
-        element.innerHTML = `<div style="padding: 10px;" class="inverted-highlight">${hits[i]._highlightResult.query.value}</div>`;
-      }
-      container.append(element);
+      });
+    });
+
+    // Clear button
+    this.clearButton.addEventListener("click", e => {
+      this.searchBoxInput.value = "";
+      this.clearButton.style.display = "none";
+      const event = new Event("input");
+      this.searchBoxInput.dispatchEvent(event);
+    });
+  }
+}
+
+const renderFacets = (column, response, query, initOptions) => {
+  column.facets.forEach((facet, index) => {
+    const facetsNode = column.columnNode.childNodes[index].lastChild;
+    facetsNode.innerHTML = "";
+
+    if (!response.facets[facet]) {
+      facetsNode.innerHTML = column.noResultsRenderer(query, response);
+      return;
     }
-  } else {
-    container.innerHTML = `<p>${noResultLabel}</p>`;
-  }
-}
 
-function displayFacetValues(arrayOfFacetsAndCount, container, title, initOptions, facet){
-  container.innerHTML = title;
-  arrayOfFacetsAndCount.forEach(array => {
-      let element = document.createElement("div");
-      element.classList.add("hover-background");
-      element.addEventListener("click", function(e) {
-        const nextStateWithFacetRefinement = initOptions.helper.state.addDisjunctiveFacetRefinement(facet, array[0]);
-        const nextURLWithFacetRefinement = initOptions.createURL(nextStateWithFacetRefinement);
-        // We could rather use an href on a link
-        location.href = nextURLWithFacetRefinement;
+    Object.entries(response.facets[facet])
+      .slice(0, column.limit)
+      .forEach(([value, count]) => {
+        const element = document.createElement("li");
+        element.innerHTML = column.itemRenderer({ name: value, count }, facet);
+        facetsNode.appendChild(element);
       });
-      element.innerHTML = "<div style='padding: 10px;'>" + array[0] + "<span class='facet-count'> (" + array[1] + ")</span></div>";
-      container.append(element);
-  })
-}
+  });
+};
 
-function displayHits(res, container, template, noResultLabel, redirectAttribute, clickAnalytics, indexName) {
-  let hits = res.hits;
+const renderQuerySuggestions = (column, response, query) => {
+  column.columnNode.innerHTML = "";
+  const hits = response.hits;
 
-  if(clickAnalytics){
-    hits.forEach((hit) => {
-      hit._queryID = res.queryID;
-      hit._position = res.hits.findIndex(hit => hit.objectID == hit.objectID) + 1; //The position cannot be 0
-    })
+  if (!hits.length) {
+    column.columnNode.innerHTML = column.noResultsRenderer(query, response);
+    return;
   }
 
+  hits.forEach(hit => {
+    const element = document.createElement("li");
+    element.innerHTML =
+      typeof column.itemRenderer === "function"
+        ? column.itemRenderer(hit)
+        : hit._highlightResult.query.value;
 
-  container.innerHTML = '';
-  if (hits.length > 0) {
-    var regexGroup = new RegExp("(?<={{).+?(?=}})", "gm"); //Regex to match 'text' inside {{}}
-    var regexGlobal = new RegExp("{{(.*?)}}", "gm"); //Regex to match '{{text}}'
-    var foundAttributes = template.match(regexGlobal); //Array of all the {{text}}
-    for (let i = 0; i < hits.length; i++) {
-      let element = document.createElement("div");
-      element.classList.add("hover-background");
+    column.columnNode.append(element);
+  });
+};
+
+const renderSearchHits = (column, response, query) => {
+  const hits = response.queryID
+    ? enrichHitsWithClickAnalyticsData(response.hits, response.queryID)
+    : response.hits;
+
+  column.columnNode.innerHTML = "";
+
+  if (!hits.length) {
+    column.columnNode.innerHTML = column.noResultsRenderer(query, response);
+    return;
+  }
+
+  hits.forEach(hit => {
+    const element = document.createElement("li");
+
+    if (response.queryID) {
       element.addEventListener("click", function(e) {
+        // To send a click event
+        aa("clickedObjectIDsAfterSearch", {
+          eventName: "product_clicked",
+          index: column.indexName,
+          queryID: hit.__queryID,
+          objectIDs: [hit.objectID],
+          positions: [hit.__position]
+        });
 
-        if(clickAnalytics){
-          //To send a click event
-          aa("clickedObjectIDsAfterSearch", {
-            eventName: "product_clicked",
-            index: indexName,
-            queryID: hits[i]._queryID,
-            objectIDs: [hits[i].objectID],
-            positions: [hits[i]._position]
-          });
-
-          //To send a conversion event
-          aa('convertedObjectIDsAfterSearch', {
-              eventName: 'product_clicked',
-              index: indexName,
-              queryID: hits[i]._queryID,
-              objectIDs: [hits[i].objectID]
-          });
-        }
-
-        window.location = hits[i][redirectAttribute];
+        // To send a conversion event
+        aa("convertedObjectIDsAfterSearch", {
+          eventName: "product_clicked",
+          index: column.indexName,
+          queryID: hit.__queryID,
+          objectIDs: [hit.objectID]
+        });
       });
-
-      let newTemplate = template;
-      foundAttributes.forEach(globalAttr => {
-        let attr = globalAttr.match(regexGroup)[0]; //Getting only the text inside the {{}}
-        newTemplate = newTemplate.replace(globalAttr, resolve(attr, hits[i])); //Replace the template value by the real value from Algolia
-      });
-
-      element.innerHTML = newTemplate;
-      container.append(element);
     }
-  } else {
-    container.innerHTML = `<p>${noResultLabel}</p>`;
-  }
-}
 
-function resolve(path, obj = self, separator = ".") {
-  var properties = Array.isArray(path) ? path : path.split(separator);
-  return properties.reduce((prev, curr) => prev && prev[curr], obj);
-}
+    element.innerHTML = column.itemRenderer(hit);
+    column.columnNode.append(element);
+  });
+};
 
 export default FederatedSearchWidget;
