@@ -300,11 +300,25 @@ const renderFacets = (column, response, query, instantSearchOptions) => {
         const element = document.createElement("li");
         element.innerHTML = column.itemRenderer({ name: value, count }, facet);
         facetsNode.appendChild(element);
+
+        if (typeof column.afterItemRenderer === "function") {
+          column.afterItemRenderer(
+            element,
+            { name: value, count, category: facet },
+            response,
+            instantSearchOptions
+          );
+        }
       });
   });
 };
 
-const renderQuerySuggestions = (column, response, query) => {
+const renderQuerySuggestions = (
+  column,
+  response,
+  query,
+  instantSearchOptions
+) => {
   column.columnNode.innerHTML = "";
   const hits = response.hits;
 
@@ -321,6 +335,9 @@ const renderQuerySuggestions = (column, response, query) => {
         : hit._highlightResult.query.value;
 
     column.columnNode.append(element);
+    if (typeof column.afterItemRenderer === "function") {
+      column.afterItemRenderer(element, hit, response, instantSearchOptions);
+    }
   });
 };
 

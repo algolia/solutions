@@ -119,7 +119,7 @@ search.addWidget(
           </div>`,
         noResultsRenderer: (query, response) =>
           `No Matching Products for query ${query}`,
-        afterItemRenderer: (element, hit, response, helper) => {
+        afterItemRenderer: (element, hit, response, options) => {
           element
             .querySelector(".click-button")
             .addEventListener("click", () => {
@@ -153,11 +153,14 @@ search.addWidget(
             facet === "categories" ? "Matched Categories" : "Matched Brand"
           }</h3>`,
         itemRenderer: (facet, facetCategory) => `
-          <a href="http://localhost:3000/?refinementList%5Bbrand%5D%5B0%5D=Brand%3A%20Zebra">${facet.name} ${facet.count}</a>
+          <a href="http://localhost:3000/?demo">${facet.name} ${facet.count}</a>
         `,
         noResultsRenderer: (query, response) =>
           `No Matching Facet for query ${query}`,
-        titleRenderer: () => ""
+        titleRenderer: () => "",
+        afterItemRenderer: (element, hit, response, options) => {
+          // Do somethine
+        }
       }
     ]
   })
