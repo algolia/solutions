@@ -188,20 +188,34 @@ class FederatedSearchWidget {
 
     if (customColumnErrors.length > 0) throw customColumnErrors;
 
+    this.widgetOptions = {
+      container: options.container,
+      appID: options.appID,
+      apiKey: options.apiKey,
+      placeholder: options.placeholder || "Search by Algolia",
+      closeOnBlur:
+        typeof options.closeOnBlur !== "undefined" ? options.closeOnBlur : true,
+      openOnFocus:
+        typeof options.openOnFocus !== "undefined" ? options.openOnFocus : false
+    };
+
     this.columnsMetaData = options.columns;
 
     // DOM Element references
-    this.client = algoliasearch(options.appID, options.apiKey);
-    this.indices = initializeIndices(options.columns, this.client);
+    this.client = algoliasearch(
+      this.widgetOptions.appID,
+      this.widgetOptions.apiKey
+    );
+    this.indices = initializeIndices(this.columnsMetaData, this.client);
 
-    this.widgetContainer = document.querySelector(options.container);
+    this.widgetContainer = document.querySelector(this.widgetOptions.container);
     this.widgetContainer.innerHTML = `
       <div id="searchbox">
         <div class="search-box-container">
         <input autocapitalize="off"
         autocomplete="off"
         autocorrect="off"
-        placeholder="${options.placeholder || ""}"
+        placeholder="${this.widgetOptions.placeholder}"
         role="textbox"
         spellcheck="false"
         type="text"
@@ -222,13 +236,15 @@ class FederatedSearchWidget {
     );
 
     if (this.columnsMetaData.some(column => column.clickAnalytics)) {
-      initializeSearchInsights(options.appID, options.apiKey);
+      initializeSearchInsights(
+        this.widgetOptions.appID,
+        this.widgetOptions.apiKey
+      );
     }
   }
 
   init(instantSearchOptions) {
     this.columns = renderColumns(this.resultsContainer, this.columnsMetaData);
-
     this.searchBoxInput.addEventListener("input", event => {
       const query = event.currentTarget.value;
 
@@ -238,58 +254,26 @@ class FederatedSearchWidget {
         return;
       }
 
-      this.clearButton.style.display = "block";
-      this.resultsContainer.style.display = "";
-
-      // Perfom a search for each index
-      this.columns.forEach(column => {
-        const index = this.indices[column.indexName];
-
-        switch (column.type) {
-          case "Facets":
-            index
-              .search({
-                query,
-                hitsPerPage: 1,
-                facets: column.facets
-              })
-              .then(response => {
-                renderFacets(column, response, query, instantSearchOptions);
-                return response;
-              });
-            break;
-          case "QuerySuggestions":
-            index
-              .search({
-                query,
-                hitsPerPage: column.limit,
-                clickAnalytics: column.clickAnalytics
-              })
-              .then(response => {
-                renderQuerySuggestions(
-                  column,
-                  response,
-                  query,
-                  instantSearchOptions
-                );
-                return response;
-              });
-            break;
-          case "Search":
-            index
-              .search({
-                query,
-                hitsPerPage: column.limit,
-                clickAnalytics: column.clickAnalytics
-              })
-              .then(response => {
-                renderSearchHits(column, response, query, instantSearchOptions);
-                return response;
-              });
-            break;
-        }
-      });
+      this.search(query, instantSearchOptions);
     });
+
+    if (this.widgetOptions.openOnFocus) {
+      this.searchBoxInput.addEventListener("focus", event => {
+        const query = event.currentTarget.value;
+        this.search(query, instantSearchOptions);
+      });
+    }
+
+    if (this.widgetOptions.closeOnBlur) {
+      document.addEventListener("click", event => {
+        if (this.widgetContainer.contains(event.target)) {
+          // Click has happened inside the widget
+          return;
+        }
+        this.clearButton.style.display = "none";
+        this.resultsContainer.style.display = "none";
+      });
+    }
 
     // Clear button
     this.clearButton.addEventListener("click", e => {
@@ -299,6 +283,60 @@ class FederatedSearchWidget {
       this.searchBoxInput.dispatchEvent(event);
     });
   }
+
+  search = (query, instantSearchOptions) => {
+    this.clearButton.style.display = "block";
+    this.resultsContainer.style.display = "";
+
+    // Perfom a search for each index
+    this.columns.forEach(column => {
+      const index = this.indices[column.indexName];
+
+      switch (column.type) {
+        case "Facets":
+          index
+            .search({
+              query,
+              hitsPerPage: 1,
+              facets: column.facets
+            })
+            .then(response => {
+              renderFacets(column, response, query, instantSearchOptions);
+              return response;
+            });
+          break;
+        case "QuerySuggestions":
+          index
+            .search({
+              query,
+              hitsPerPage: column.limit,
+              clickAnalytics: column.clickAnalytics
+            })
+            .then(response => {
+              renderQuerySuggestions(
+                column,
+                response,
+                query,
+                instantSearchOptions
+              );
+              return response;
+            });
+          break;
+        case "Search":
+          index
+            .search({
+              query,
+              hitsPerPage: column.limit,
+              clickAnalytics: column.clickAnalytics
+            })
+            .then(response => {
+              renderSearchHits(column, response, query, instantSearchOptions);
+              return response;
+            });
+          break;
+      }
+    });
+  };
 }
 
 const renderFacets = (column, response, query, instantSearchOptions) => {

@@ -85,6 +85,8 @@ search.addWidget(
     appID,
     apiKey,
     placeholder: "Search for products and brands",
+    closeOnBlur: true,
+    openOnFocus: true,
     columns: [
       {
         type: "QuerySuggestions",
@@ -104,11 +106,13 @@ search.addWidget(
         afterItemRenderer: (element, hit, response, options) => {
           element.querySelector("a").addEventListener("click", event => {
             event.preventDefault();
+
+            document.querySelector("#search-box-input").value = hit.query;
             options.helper.setQuery(hit.query).search();
+
             document.querySelector(
               "#federated-results-container"
             ).style.display = "none";
-            document.querySelector("#search-box-input").value = hit.query;
           });
         }
       },
@@ -163,7 +167,7 @@ search.addWidget(
           `<h3 class="column-title">${
             facet === "categories" ? "Matched Categories" : "Matched Brand"
           }</h3>`,
-        itemRenderer: facet => `
+        itemRenderer: (facet, facetCategory) => `
           <a href="http://localhost:3000/#">${facet.name} ${facet.count}</a>
         `,
         noResultsRenderer: (query, response) =>
