@@ -149,8 +149,8 @@ class PredictiveSearchBox {
     this.querySuggestionsIndex
       .search({ query })
       .then(response => {
-        const suggestions = response.hits.filter(hit =>
-          hit.query.startsWith(query)
+        const suggestions = response.hits.filter(
+          hit => hit.query.startsWith(query) && hit.query !== query
         );
 
         if (!suggestions.length) {
@@ -158,13 +158,9 @@ class PredictiveSearchBox {
           return [];
         }
 
-        if (suggestions[0].query === query) {
-          this.predictiveSearchBoxItem.innerText = "";
-        } else {
-          this.predictiveSearchBox.style.display = "flex";
-          this.predictiveSearchBoxItem.innerText = suggestions[0].query;
-          this.tabActionSuggestion = suggestions[0].query;
-        }
+        this.predictiveSearchBox.style.display = "flex";
+        this.predictiveSearchBoxItem.innerText = suggestions[0].query;
+        this.tabActionSuggestion = suggestions[0].query;
         return suggestions;
       })
       .then(this.updateSuggestionTags);
