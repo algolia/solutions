@@ -57,12 +57,22 @@ search.addWidget({
   render(renderOptions) {
     const results = renderOptions.results;
     const userData = results.userData;
-    if (userData != undefined) {
-      Object.keys(userData[0].facets).forEach(facet => {
-        document.getElementById(facet).style.order =
-          userData[0].facets[facet].position;
-      });
-    }
+
+    if (!userData) return null;
+
+    const customFacetsData = userData.find(
+      data => data.customFacets && Array.isArray(data.customFacets)
+    );
+
+    if (!customFacetsData) return null;
+
+    customFacetsData.customFacets.forEach(facet => {
+      const element = document.getElementById(facet.name);
+
+      if (element) {
+        element.style.order = facet.position;
+      }
+    });
   }
 });
 
