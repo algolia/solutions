@@ -70,12 +70,12 @@ class PredictiveSearchBox {
   }
 
   registerSearchBoxHandlers = (helper, searchBox, clearButton) => {
-    searchBox.addEventListener("input", this.updateTabActionSuggestion);
     searchBox.addEventListener("keydown", this.onSearchBoxKeyDown);
-    clearButton.addEventListener("click", this.clear);
     searchBox.addEventListener("input", event => {
+      this.updateTabActionSuggestion(event);
       helper.setQuery(event.currentTarget.value).search();
     });
+    clearButton.addEventListener("click", this.clear);
   };
 
   setSearchBoxValue = value => {
@@ -93,11 +93,9 @@ class PredictiveSearchBox {
       !event.currentTarget.value ||
       (!isKey(event, 9, "Tab") && !isKey(event, 39, "ArrowRight"))
     ) {
+      this.previousSearchBoxEvent = null;
       return;
     }
-
-    const isAlreadySelectedSuggestion =
-      event.currentTarget.value === this.tabActionSuggestion;
 
     const isPressingTabTwice =
       this.previousSearchBoxEvent &&
@@ -112,15 +110,12 @@ class PredictiveSearchBox {
     // Store previous event so we can skip navigation later
     this.previousSearchBoxEvent = event;
 
-    if (
-      isPressingTabTwice ||
-      isPressingArrowRightTwice ||
-      isAlreadySelectedSuggestion
-    ) {
+    if (isPressingTabTwice || isPressingArrowRightTwice) {
       return;
     }
 
     event.preventDefault();
+    this.predictiveSearchBoxItem.innerText = "";
     this.searchBoxInput.value = this.tabActionSuggestion;
   };
 
@@ -135,6 +130,7 @@ class PredictiveSearchBox {
 
       suggestionElement.addEventListener("click", () => {
         this.setSearchBoxValue(suggestion.query);
+        this.predictiveSearchBoxItem.innerText = "";
       });
       this.suggestionTagsContainer.append(suggestionElement);
     });
@@ -144,6 +140,7 @@ class PredictiveSearchBox {
     const query = event.currentTarget.value;
 
     if (!query) {
+      this.clearSuggestionTags();
       this.predictiveSearchBox.style.display = "none";
       this.clearButton.style.display = "none";
       return;
@@ -157,13 +154,17 @@ class PredictiveSearchBox {
         );
 
         if (!suggestions.length) {
-          this.clearPredictiveSearchBox();
+          this.clearSuggestions();
           return [];
         }
 
-        this.predictiveSearchBox.style.display = "flex";
-        this.predictiveSearchBoxItem.innerText = suggestions[0].query;
-        this.tabActionSuggestion = suggestions[0].query;
+        if (suggestions[0].query === query) {
+          this.predictiveSearchBoxItem.innerText = "";
+        } else {
+          this.predictiveSearchBox.style.display = "flex";
+          this.predictiveSearchBoxItem.innerText = suggestions[0].query;
+          this.tabActionSuggestion = suggestions[0].query;
+        }
         return suggestions;
       })
       .then(this.updateSuggestionTags);
@@ -173,7 +174,7 @@ class PredictiveSearchBox {
     this.suggestionTagsContainer.innerHTML = "";
   };
 
-  clearPredictiveSearchBox = () => {
+  clearSuggestions = () => {
     this.tabActionSuggestion = null;
     this.predictiveSearchBoxItem.innerText = "";
   };
