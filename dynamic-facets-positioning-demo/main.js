@@ -57,6 +57,7 @@ search.addWidget({
   render(renderOptions) {
     const results = renderOptions.results;
     const userData = results.userData;
+    const facetsContainer = document.querySelector("#facets-container");
 
     if (!userData) return null;
 
@@ -66,11 +67,15 @@ search.addWidget({
 
     if (!customFacetsData) return null;
 
+    Array.from(facetsContainer.children).forEach((node, index) => {
+      node.style.order = index + 1;
+    });
+
     customFacetsData.customFacets.forEach(facet => {
       const element = document.getElementById(facet.name);
 
       if (element) {
-        element.style.order = facet.position;
+        element.style.order = facet.position - 1;
       }
     });
   }
