@@ -3,7 +3,7 @@
 }
 
 .search-box-container {
-  height: 50px;
+  height: 49px;
 }
 
 .search-box-container input {
@@ -21,11 +21,12 @@
 }
 
 #predictive-box {
-  height: 50px;
+  height: 49px;
   padding: 0 !important;
   display: flex;
   align-items: center;
   position: absolute;
+  border-bottom: 1px solid transparent;
 }
 
 #predictive-box-text {

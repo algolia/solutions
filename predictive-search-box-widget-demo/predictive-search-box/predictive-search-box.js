@@ -34,7 +34,8 @@ class PredictiveSearchBox {
       this.querySuggestionsIndex
     );
 
-    this.tabActionSuggestion = "";
+    this.tabActionSuggestion = null;
+    this.previousSearchBoxEvent = null;
   }
 
   init(initOptions) {
@@ -70,7 +71,7 @@ class PredictiveSearchBox {
 
   registerSearchBoxHandlers = (helper, searchBox, clearButton) => {
     searchBox.addEventListener("input", this.updateTabActionSuggestion);
-    searchBox.addEventListener("keydown", this.onTabSelection);
+    searchBox.addEventListener("keydown", this.onSearchBoxKeyDown);
     clearButton.addEventListener("click", this.clear);
     searchBox.addEventListener("input", event => {
       helper.setQuery(event.currentTarget.value).search();
@@ -82,11 +83,45 @@ class PredictiveSearchBox {
     this.searchBoxInput.dispatchEvent(new Event("input"));
   };
 
-  onTabSelection = event => {
-    if (!isKey(event, 39, "ArrowRight")) return;
+  onSearchBoxKeyDown = event => {
+    // If there is no suggestion, jump to next element
+    // If user presses tab once, highlight selection
+    // If user presses tab twice, jump to next element
+    // If input value = suggestion, jump to next element
+    if (
+      !this.tabActionSuggestion ||
+      !event.currentTarget.value ||
+      (!isKey(event, 9, "Tab") && !isKey(event, 39, "ArrowRight"))
+    ) {
+      return;
+    }
+
+    const isAlreadySelectedSuggestion =
+      event.currentTarget.value === this.tabActionSuggestion;
+
+    const isPressingTabTwice =
+      this.previousSearchBoxEvent &&
+      isKey(event, 9, "Tab") &&
+      isKey(this.previousSearchBoxEvent, 9, "Tab");
+
+    const isPressingArrowRightTwice =
+      this.previousSearchBoxEvent &&
+      isKey(event, 39, "ArrowRight") &&
+      isKey(this.previousSearchBoxEvent, 39, "ArrowRight");
+
+    // Store previous event so we can skip navigation later
+    this.previousSearchBoxEvent = event;
+
+    if (
+      isPressingTabTwice ||
+      isPressingArrowRightTwice ||
+      isAlreadySelectedSuggestion
+    ) {
+      return;
+    }
 
     event.preventDefault();
-    this.setSearchBoxValue(this.tabActionSuggestion);
+    this.searchBoxInput.value = this.tabActionSuggestion;
   };
 
   updateSuggestionTags = hits => {
@@ -129,7 +164,7 @@ class PredictiveSearchBox {
         this.predictiveSearchBox.style.display = "flex";
         this.predictiveSearchBoxItem.innerText = suggestions[0].query;
         this.tabActionSuggestion = suggestions[0].query;
-        return suggestions.slice(1);
+        return suggestions;
       })
       .then(this.updateSuggestionTags);
   };
@@ -139,7 +174,8 @@ class PredictiveSearchBox {
   };
 
   clearPredictiveSearchBox = () => {
-    this.tabActionSuggestion = "";
+    this.tabActionSuggestion = null;
+    this.predictiveSearchBoxItem.innerText = "";
   };
 
   clear = event => {
@@ -147,7 +183,7 @@ class PredictiveSearchBox {
     this.predictiveSearchBoxItem.innerText = "";
     this.clearSuggestionTags();
 
-    this.tabActionSuggestion = "";
+    this.tabActionSuggestion = null;
     event.target.style.display = "none";
     searchBoxInput.dispatchEvent(new Event("input"));
   };
