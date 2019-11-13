@@ -183,22 +183,22 @@ class FederatedSearchWidget {
 
     this.widgetContainer = document.querySelector(options.container);
     this.widgetContainer.innerHTML = `
-    <div id="searchbox">
-    <div class="search-box-container">
-    <input autocapitalize="off"
-    autocomplete="off"
-    autocorrect="off"
-    placeholder="${options.placeholder || ""}"
-    role="textbox"
-    spellcheck="false"
-    type="text"
-    value=""
-    id="search-box-input">
-    </div>
-    <div id="clear-input"><i class="fas fa-times"></i></div>
-    <div id="federated-results-container" style="display: none"></div>
-    </div>
-    `;
+      <div id="searchbox">
+        <div class="search-box-container">
+        <input autocapitalize="off"
+        autocomplete="off"
+        autocorrect="off"
+        placeholder="${options.placeholder || ""}"
+        role="textbox"
+        spellcheck="false"
+        type="text"
+        value=""
+        id="search-box-input">
+        </div>
+        <div id="clear-input"><i class="fas fa-times"></i></div>
+        <div id="federated-results-container" style="display: none"></div>
+      </div>
+      `;
     this.searchBoxInput = this.widgetContainer.querySelector(
       "#search-box-input"
     );
@@ -213,7 +213,7 @@ class FederatedSearchWidget {
     }
   }
 
-  init(initOptions) {
+  init(instantSearchOptions) {
     this.columns = renderColumns(this.resultsContainer, this.columnsMetaData);
 
     this.searchBoxInput.addEventListener("input", event => {
@@ -242,7 +242,7 @@ class FederatedSearchWidget {
                 facets: column.facets
               })
               .then(response => {
-                renderFacets(column, response, query, initOptions);
+                renderFacets(column, response, query, instantSearchOptions);
                 return response;
               });
             break;
@@ -266,7 +266,7 @@ class FederatedSearchWidget {
                 clickAnalytics: column.clickAnalytics
               })
               .then(response => {
-                renderSearchHits(column, response, query);
+                renderSearchHits(column, response, query, instantSearchOptions);
                 return response;
               });
             break;
@@ -284,7 +284,7 @@ class FederatedSearchWidget {
   }
 }
 
-const renderFacets = (column, response, query, initOptions) => {
+const renderFacets = (column, response, query, instantSearchOptions) => {
   column.facets.forEach((facet, index) => {
     const facetsNode = column.columnNode.childNodes[index].lastChild;
     facetsNode.innerHTML = "";
@@ -324,7 +324,7 @@ const renderQuerySuggestions = (column, response, query) => {
   });
 };
 
-const renderSearchHits = (column, response, query) => {
+const renderSearchHits = (column, response, query, instantSearchOptions) => {
   const hits = response.queryID
     ? enrichHitsWithClickAnalyticsData(response.hits, response.queryID)
     : response.hits;
@@ -338,30 +338,12 @@ const renderSearchHits = (column, response, query) => {
 
   hits.forEach(hit => {
     const element = document.createElement("li");
-
-    if (response.queryID) {
-      element.addEventListener("click", function(e) {
-        // To send a click event
-        aa("clickedObjectIDsAfterSearch", {
-          eventName: "product_clicked",
-          index: column.indexName,
-          queryID: hit.__queryID,
-          objectIDs: [hit.objectID],
-          positions: [hit.__position]
-        });
-
-        // To send a conversion event
-        aa("convertedObjectIDsAfterSearch", {
-          eventName: "product_clicked",
-          index: column.indexName,
-          queryID: hit.__queryID,
-          objectIDs: [hit.objectID]
-        });
-      });
-    }
-
     element.innerHTML = column.itemRenderer(hit);
     column.columnNode.append(element);
+
+    if (typeof column.afterItemRenderer === "function") {
+      column.afterItemRenderer(element, hit, response, instantSearchOptions);
+    }
   });
 };
 

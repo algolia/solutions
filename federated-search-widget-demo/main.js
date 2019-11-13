@@ -113,11 +113,34 @@ search.addWidget(
             <div>
               <p>${hit._highlightResult.title.value}</p>
               <p class="text-right">${hit.price}€</p>
+              <button class="click-button">CLICK</button>
+              <button class="buy-button">BUY</button>
             </div>
           </div>`,
         noResultsRenderer: (query, response) =>
           `No Matching Products for query ${query}`,
-        redirectAttribute: "url"
+        afterItemRenderer: (element, hit, response, helper) => {
+          element
+            .querySelector(".click-button")
+            .addEventListener("click", () => {
+              aa("clickedObjectIDsAfterSearch", {
+                eventName: "product_clicked",
+                index: "atis-prods",
+                queryID: hit.__queryID,
+                objectIDs: [hit.objectID],
+                positions: [hit.__position]
+              });
+            });
+
+          element.querySelector(".buy-button").addEventListener("click", () => {
+            aa("convertedObjectIDsAfterSearch", {
+              eventName: "product_clicked",
+              index: "atis-prods",
+              queryID: hit.__queryID,
+              objectIDs: [hit.objectID]
+            });
+          });
+        }
       },
       {
         type: "Facets",
@@ -130,7 +153,7 @@ search.addWidget(
             facet === "categories" ? "Matched Categories" : "Matched Brand"
           }</h3>`,
         itemRenderer: (facet, facetCategory) => `
-          <a href="">${facet.name} ${facet.count}</a>
+          <a href="http://localhost:3000/?refinementList%5Bbrand%5D%5B0%5D=Brand%3A%20Zebra">${facet.name} ${facet.count}</a>
         `,
         noResultsRenderer: (query, response) =>
           `No Matching Facet for query ${query}`,
