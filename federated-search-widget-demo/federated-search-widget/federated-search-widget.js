@@ -21,6 +21,19 @@ const validateMandatoryColumnOptions = column => {
   return errors;
 };
 
+const validateQuerySuggestionsColumnOptions = column => {
+  const errors = [];
+  if (typeof column.itemRenderer !== "function") {
+    errors.push(
+      new Error(
+        "Search column requires itemRenderer function param that returns the string you want to render"
+      )
+    );
+  }
+
+  return errors;
+};
+
 const validateSearchColumnOptions = column => {
   const errors = [];
   if (typeof column.itemRenderer !== "function") {
@@ -65,7 +78,7 @@ const validateFacetColumnOptions = column => {
 
 const COLUMN_TYPE_VALIDATORS = {
   Search: validateSearchColumnOptions,
-  QuerySuggestions: () => [],
+  QuerySuggestions: validateQuerySuggestionsColumnOptions,
   Facets: validateFacetColumnOptions
 };
 
@@ -125,7 +138,7 @@ const renderColumns = (resultsContainer, columns) => {
 
     const resultsHTML =
       typeof column.resultsTemplate === "function"
-        ? column.resultsTemplate([])
+        ? column.resultsTemplate()
         : DEFAULT_RESULTS();
 
     if (column.type !== "Facets") {
@@ -226,7 +239,6 @@ class FederatedSearchWidget {
       }
 
       this.clearButton.style.display = "block";
-      //@TODO Set display to inherit
       this.resultsContainer.style.display = "";
 
       // Perfom a search for each index
@@ -254,7 +266,12 @@ class FederatedSearchWidget {
                 clickAnalytics: column.clickAnalytics
               })
               .then(response => {
-                renderQuerySuggestions(column, response, query);
+                renderQuerySuggestions(
+                  column,
+                  response,
+                  query,
+                  instantSearchOptions
+                );
                 return response;
               });
             break;
@@ -297,14 +314,19 @@ const renderFacets = (column, response, query, instantSearchOptions) => {
     Object.entries(response.facets[facet])
       .slice(0, column.limit)
       .forEach(([value, count]) => {
+        const hit = {
+          name: value,
+          category: facet,
+          count
+        };
         const element = document.createElement("li");
-        element.innerHTML = column.itemRenderer({ name: value, count }, facet);
+        element.innerHTML = column.itemRenderer(hit);
         facetsNode.appendChild(element);
 
         if (typeof column.afterItemRenderer === "function") {
           column.afterItemRenderer(
             element,
-            { name: value, count, category: facet },
+            hit,
             response,
             instantSearchOptions
           );
