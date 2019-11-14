@@ -71,11 +71,36 @@ search.addWidget(
     searchablePlaceholder: "Search our brands",
     sortBy(a, b) {
       const userData = search.helper.lastResults.userData;
-      if (userData != undefined) {
-        return facetSort(a, b, "brand", userData);
-      } else {
+      const attributeToSort = "brand";
+
+      const customFacetSortData =
+        userData &&
+        userData.find(data => {
+          return (
+            data.facets &&
+            data.facets[attributeToSort] &&
+            data.facets[attributeToSort].sortBy
+          );
+        });
+
+      if (!customFacetSortData) return 1;
+
+      const facetSort = customFacetSortData.facets[attributeToSort].sortBy;
+      const sort = Array.isArray(facetSort) ? "position" : facetSort;
+
+      const [sortBy, direction = "ascending"] = sort.split(":");
+
+      if (typeof SORTS[sortBy] !== "function") {
+        console.log(
+          `Sorting function not found for ${sortBy} - ${attributeToSort}`
+        );
         return 1;
       }
+
+      if (sort === "position") {
+        return SORTS[sortBy](a, b, facetSort);
+      }
+      return SORTS[sortBy](a, b, direction);
     }
   })
 );
@@ -96,34 +121,60 @@ search.addWidget(
     limit: 3,
     showMore: false,
     searchable: false,
-    sortBy(a, b) {
+    sortBy: (a, b) => {
       const userData = search.helper.lastResults.userData;
-      if (userData != undefined) {
-        return facetSort(a, b, "gender", userData);
-      } else {
+      const attributeToSort = "gender";
+
+      const customFacetSortData =
+        userData &&
+        userData.find(data => {
+          return (
+            data.facets &&
+            data.facets[attributeToSort] &&
+            data.facets[attributeToSort].sortBy
+          );
+        });
+
+      if (!customFacetSortData) return 1;
+
+      const facetSort = customFacetSortData.facets[attributeToSort].sortBy;
+      const sort = Array.isArray(facetSort) ? "position" : facetSort;
+
+      const [sortBy, direction = "ascending"] = sort.split(":");
+
+      if (typeof SORTS[sortBy] !== "function") {
+        console.log(
+          `Sorting function not found for ${sortBy} - ${attributeToSort}`
+        );
         return 1;
       }
+
+      if (sort === "position") {
+        return SORTS[sortBy](a, b, facetSort);
+      }
+      return SORTS[sortBy](a, b, direction);
     }
   })
 );
 
 search.start();
 
-function facetSort(a, b, attribute, userData) {
-  if (userData[0].facets[attribute].sortBy == "alpha:asc") {
-    return a.name > b.name ? 1 : -1;
-  } else if (userData[0].facets[attribute].sortBy == "alpha:desc") {
-    return a.name < b.name ? 1 : -1;
-  } else if (userData[0].facets[attribute].sortBy == "count:asc") {
-    return a.count > b.count ? 1 : -1;
-  } else if (userData[0].facets[attribute].sortBy == "count:desc") {
-    return a.count < b.count ? 1 : -1;
-  } else {
-    if (Array.isArray(userData[0].facets[attribute].sortBy)) {
-      const array = userData[0].facets[attribute].sortBy;
-      return array.indexOf(a.name) - array.indexOf(b.name);
-    } else {
-      return 1;
-    }
-  }
-}
+const positionSort = (a, b, positions) => {
+  return positions.indexOf(a.name) - positions.indexOf(b.name);
+};
+
+const alphabeticalSort = (a, b, direction = "ascending") => {
+  const ascendingScore = a.name > b.name ? 1 : -1;
+  return direction === "ascending" ? ascendingScore : ascendingScore * -1;
+};
+
+const countSort = (a, b, direction = "ascending") => {
+  const ascendingScore = a.count > b.count ? 1 : -1;
+  return direction === "ascending" ? ascendingScore : ascendingScore * -1;
+};
+
+const SORTS = {
+  alphabetical: alphabeticalSort,
+  count: countSort,
+  position: positionSort
+};
