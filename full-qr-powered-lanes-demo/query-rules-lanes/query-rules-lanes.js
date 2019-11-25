@@ -27,9 +27,7 @@ const queryRulesLanes = instantsearch.connectors.connectQueryRules(
 
     // We unmount all previous lanes indices to have an updated InstantSearch
     // tree.
-    state.lanesIndices.forEach(contentShelvesIndex => {
-      contentShelvesIndex.dispose();
-    });
+    instantSearchInstance.mainIndex.removeWidgets(state.lanesIndices);
 
     const lanesIndices = lanes.map(lane => {
       const laneContainer = document.createElement("div");
