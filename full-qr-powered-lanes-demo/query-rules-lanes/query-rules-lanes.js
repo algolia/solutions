@@ -1,7 +1,4 @@
-const state = {
-  lastLanesReceived: null,
-  lanesIndices: [],
-};
+const states = {};
 
 const queryRulesLanes = instantsearch.connectors.connectQueryRules(
   ({ items, widgetParams, instantSearchInstance }) => {
@@ -11,6 +8,7 @@ const queryRulesLanes = instantsearch.connectors.connectQueryRules(
       return;
     }
 
+    const state = getState(widgetParams.container);
     const lanes = items[0].lanes;
     lanes.sort(function(a, b) {
       return a.position - b.position;
@@ -62,5 +60,14 @@ const queryRulesLanes = instantsearch.connectors.connectQueryRules(
     container.append(...lanesContainers);
   }
 );
+
+function getState(key) {
+  states[key] = states[key] || {
+    lastLanesReceived: null,
+    lanesIndices: [],
+  };
+
+  return states[key];
+}
 
 export default queryRulesLanes;
