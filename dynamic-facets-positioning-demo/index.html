@@ -26,7 +26,12 @@
     </nav>
     <div class="content">
       <div class="left-part">
-        <div class="facets">
+        <!-- 
+          Facets container should contain all facet widgets
+          This is the only way we can ensure that rules will continue
+          to work even if your data changes
+        -->
+        <div id="facets-container" class="facets">
           <div id="gender"></div>
           <div id="brand"></div>
         </div>
