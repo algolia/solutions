@@ -1,3 +1,7 @@
+* {
+  box-sizing: border-box;
+}
+
 #searchbox {
   width: 100%;
   position: relative;

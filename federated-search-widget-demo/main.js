@@ -6,7 +6,7 @@ const apiKey = "6a187532e8e703464da52c20555c37cf";
 const renderQuerySuggestionWithCategory = (suggestion, sourceIndex) => {
   if (!suggestion[sourceIndex]) {
     return `
-      <a href="https://www.mywebsite.com/search?q=${suggestion.query}" target="_blank">
+      <a href="http://localhost:3000/?q=${suggestion.query}" target="_blank">
         ${suggestion._highlightResult.query.value}
       </a>`;
   }
@@ -22,7 +22,7 @@ const renderQuerySuggestionWithCategory = (suggestion, sourceIndex) => {
     });
 
   return `
-      <a href="https://www.mywebsite.com/search?q=${suggestion.query}" target="_blank">
+      <a href="http://localhost:3000/?q=${suggestion.query}" target="_blank">
         <div style="padding: 10px;">
           <span class="inverted-highlight">
             ${suggestion._highlightResult.query.value}
@@ -85,6 +85,8 @@ search.addWidget(
     appID,
     apiKey,
     placeholder: "Search for products and brands",
+    closeOnBlur: true,
+    openOnFocus: true,
     columns: [
       {
         type: "QuerySuggestions",
@@ -95,12 +97,24 @@ search.addWidget(
           `No Matching Suggestion for ${query}`,
         itemRenderer: hit => {
           return renderQuerySuggestionWithCategory(hit, "atis-prods");
-        }
+        },
         // itemRenderer: suggestion => `
-        //   <a href="https://www.mywebsite.com/search?q=${suggestion.query}" target="_blank">
+        //   <a href="http://localhost:3000/?q=${suggestion.query}" target="_blank">
         //     ${suggestion._highlightResult.query.value}
         //   </a>
         // `
+        afterItemRenderer: (element, hit, response, options) => {
+          element.querySelector("a").addEventListener("click", event => {
+            event.preventDefault();
+
+            document.querySelector("#search-box-input").value = hit.query;
+            options.helper.setQuery(hit.query).search();
+
+            document.querySelector(
+              "#federated-results-container"
+            ).style.display = "none";
+          });
+        }
       },
       {
         type: "Search",
@@ -113,11 +127,35 @@ search.addWidget(
             <div>
               <p>${hit._highlightResult.title.value}</p>
               <p class="text-right">${hit.price}€</p>
+              <button class="click-button">CLICK</button>
+              <button class="buy-button">BUY</button>
             </div>
           </div>`,
         noResultsRenderer: (query, response) =>
           `No Matching Products for query ${query}`,
-        redirectAttribute: "url"
+        afterItemRenderer: (element, hit, response, options) => {
+          // Example of sending a click event
+          element
+            .querySelector(".click-button")
+            .addEventListener("click", () => {
+              aa("clickedObjectIDsAfterSearch", {
+                eventName: "product_clicked",
+                index: "atis-prods",
+                queryID: response.queryID,
+                objectIDs: [hit.objectID],
+                positions: [hit.__position]
+              });
+            });
+          // Example of sending a conversion event
+          element.querySelector(".buy-button").addEventListener("click", () => {
+            aa("convertedObjectIDsAfterSearch", {
+              eventName: "product_clicked",
+              index: "atis-prods",
+              queryID: response.queryID,
+              objectIDs: [hit.objectID]
+            });
+          });
+        }
       },
       {
         type: "Facets",
@@ -130,11 +168,21 @@ search.addWidget(
             facet === "categories" ? "Matched Categories" : "Matched Brand"
           }</h3>`,
         itemRenderer: (facet, facetCategory) => `
-          <a href="">${facet.name} ${facet.count}</a>
+          <a href="http://localhost:3000/#">${facet.name} ${facet.count}</a>
         `,
         noResultsRenderer: (query, response) =>
           `No Matching Facet for query ${query}`,
-        titleRenderer: () => ""
+        afterItemRenderer: (element, hit, response, options) => {
+          // Add the facet refinement
+          element.querySelector("a").addEventListener("click", event => {
+            event.preventDefault();
+            const nextState = options.helper.state.addDisjunctiveFacetRefinement(
+              hit.category,
+              hit.name
+            );
+            window.location.href = options.createURL(nextState);
+          });
+        }
       }
     ]
   })
