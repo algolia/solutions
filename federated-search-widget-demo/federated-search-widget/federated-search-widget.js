@@ -212,15 +212,15 @@ class FederatedSearchWidget {
     this.widgetContainer.innerHTML = `
       <div id="searchbox">
         <div class="search-box-container">
-        <input autocapitalize="off"
-        autocomplete="off"
-        autocorrect="off"
-        placeholder="${this.widgetOptions.placeholder}"
-        role="textbox"
-        spellcheck="false"
-        type="text"
-        value=""
-        id="search-box-input">
+          <input autocapitalize="off"
+          autocomplete="off"
+          autocorrect="off"
+          placeholder="${this.widgetOptions.placeholder}"
+          role="textbox"
+          spellcheck="false"
+          type="text"
+          value=""
+          id="search-box-input">
         </div>
         <div id="clear-input"><i class="fas fa-times"></i></div>
         <div id="federated-results-container" style="display: none"></div>
@@ -243,7 +243,7 @@ class FederatedSearchWidget {
     }
   }
 
-  init(instantSearchOptions) {
+  init(initOptions) {
     this.columns = renderColumns(this.resultsContainer, this.columnsMetaData);
     this.searchBoxInput.addEventListener("input", event => {
       const query = event.currentTarget.value;
@@ -339,7 +339,7 @@ class FederatedSearchWidget {
   };
 }
 
-const renderFacets = (column, response, query, instantSearchOptions) => {
+const renderFacets = (column, response, query, initOptions) => {
   column.facets.forEach((facet, index) => {
     const facetsNode = column.columnNode.childNodes[index].lastChild;
     facetsNode.innerHTML = "";
@@ -401,7 +401,7 @@ const renderQuerySuggestions = (
   });
 };
 
-const renderSearchHits = (column, response, query, instantSearchOptions) => {
+const renderSearchHits = (column, response, query) => {
   const hits = response.queryID
     ? enrichHitsWithClickAnalyticsData(response.hits, response.queryID)
     : response.hits;
@@ -415,12 +415,30 @@ const renderSearchHits = (column, response, query, instantSearchOptions) => {
 
   hits.forEach(hit => {
     const element = document.createElement("li");
+
+    if (response.queryID) {
+      element.addEventListener("click", function(e) {
+        // To send a click event
+        aa("clickedObjectIDsAfterSearch", {
+          eventName: "product_clicked",
+          index: column.indexName,
+          queryID: hit.__queryID,
+          objectIDs: [hit.objectID],
+          positions: [hit.__position]
+        });
+
+        // To send a conversion event
+        aa("convertedObjectIDsAfterSearch", {
+          eventName: "product_clicked",
+          index: column.indexName,
+          queryID: hit.__queryID,
+          objectIDs: [hit.objectID]
+        });
+      });
+    }
+
     element.innerHTML = column.itemRenderer(hit);
     column.columnNode.append(element);
-
-    if (typeof column.afterItemRenderer === "function") {
-      column.afterItemRenderer(element, hit, response, instantSearchOptions);
-    }
   });
 };
 

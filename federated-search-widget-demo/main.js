@@ -127,8 +127,6 @@ search.addWidget(
             <div>
               <p>${hit._highlightResult.title.value}</p>
               <p class="text-right">${hit.price}€</p>
-              <button class="click-button">CLICK</button>
-              <button class="buy-button">BUY</button>
             </div>
           </div>`,
         noResultsRenderer: (query, response) =>
@@ -168,7 +166,7 @@ search.addWidget(
             facet === "categories" ? "Matched Categories" : "Matched Brand"
           }</h3>`,
         itemRenderer: (facet, facetCategory) => `
-          <a href="http://localhost:3000/#">${facet.name} ${facet.count}</a>
+          <a href="">${facet.name} ${facet.count}</a>
         `,
         noResultsRenderer: (query, response) =>
           `No Matching Facet for query ${query}`,
