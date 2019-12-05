@@ -19,18 +19,20 @@ search.addWidget(
     container: "#hits",
     templates: {
       empty: "No results",
-      item: `
+      item(hit) {
+        return `
             <div class="item">
-                <div class="centered"><img src="{{image}}" alt=""></div>
+                <div class="centered"><img src="${hit.largeImage}" alt=""></div>
                 <div class="centered"><div class="add-to-cart"><i class="fas fa-cart-plus"></i> Add <span class="hide-mobile hide-tablet">to Cart</span></div></div>
                 <div class="item-content">
-                    <p class="brand">{{{_highlightResult.brand.value}}}</p>
-                    <p class="name">{{{_highlightResult.name.value}}}</p>
+                    <p class="brand">${hit._highlightResult.brand.value}</p>
+                    <p class="name">${hit._highlightResult.title.value}</p>
                 </div>
             </div>
-            <p class="price">Price: {{{price}}}€</p>
-            <br>`
+            <p class="price">\$${hit.price}</p>
+            <br>`;
     }
+  }
   })
 );
 

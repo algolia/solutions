@@ -21,6 +21,19 @@ const validateMandatoryColumnOptions = column => {
   return errors;
 };
 
+const validateQuerySuggestionsColumnOptions = column => {
+  const errors = [];
+  if (typeof column.itemRenderer !== "function") {
+    errors.push(
+      new Error(
+        "Search column requires itemRenderer function param that returns the string you want to render"
+      )
+    );
+  }
+
+  return errors;
+};
+
 const validateSearchColumnOptions = column => {
   const errors = [];
   if (typeof column.itemRenderer !== "function") {
@@ -65,7 +78,7 @@ const validateFacetColumnOptions = column => {
 
 const COLUMN_TYPE_VALIDATORS = {
   Search: validateSearchColumnOptions,
-  QuerySuggestions: () => [],
+  QuerySuggestions: validateQuerySuggestionsColumnOptions,
   Facets: validateFacetColumnOptions
 };
 
@@ -125,7 +138,7 @@ const renderColumns = (resultsContainer, columns) => {
 
     const resultsHTML =
       typeof column.resultsTemplate === "function"
-        ? column.resultsTemplate([])
+        ? column.resultsTemplate()
         : DEFAULT_RESULTS();
 
     if (column.type !== "Facets") {
@@ -175,30 +188,44 @@ class FederatedSearchWidget {
 
     if (customColumnErrors.length > 0) throw customColumnErrors;
 
+    this.widgetOptions = {
+      container: options.container,
+      appID: options.appID,
+      apiKey: options.apiKey,
+      placeholder: options.placeholder || "Search by Algolia",
+      closeOnBlur:
+        typeof options.closeOnBlur !== "undefined" ? options.closeOnBlur : true,
+      openOnFocus:
+        typeof options.openOnFocus !== "undefined" ? options.openOnFocus : false
+    };
+
     this.columnsMetaData = options.columns;
 
     // DOM Element references
-    this.client = algoliasearch(options.appID, options.apiKey);
-    this.indices = initializeIndices(options.columns, this.client);
+    this.client = algoliasearch(
+      this.widgetOptions.appID,
+      this.widgetOptions.apiKey
+    );
+    this.indices = initializeIndices(this.columnsMetaData, this.client);
 
-    this.widgetContainer = document.querySelector(options.container);
+    this.widgetContainer = document.querySelector(this.widgetOptions.container);
     this.widgetContainer.innerHTML = `
-    <div id="searchbox">
-    <div class="search-box-container">
-    <input autocapitalize="off"
-    autocomplete="off"
-    autocorrect="off"
-    placeholder="${options.placeholder || ""}"
-    role="textbox"
-    spellcheck="false"
-    type="text"
-    value=""
-    id="search-box-input">
-    </div>
-    <div id="clear-input"><i class="fas fa-times"></i></div>
-    <div id="federated-results-container" style="display: none"></div>
-    </div>
-    `;
+      <div id="searchbox">
+        <div class="search-box-container">
+          <input autocapitalize="off"
+          autocomplete="off"
+          autocorrect="off"
+          placeholder="${this.widgetOptions.placeholder}"
+          role="textbox"
+          spellcheck="false"
+          type="text"
+          value=""
+          id="search-box-input">
+        </div>
+        <div id="clear-input"><i class="fas fa-times"></i></div>
+        <div id="federated-results-container" style="display: none"></div>
+      </div>
+      `;
     this.searchBoxInput = this.widgetContainer.querySelector(
       "#search-box-input"
     );
@@ -209,13 +236,15 @@ class FederatedSearchWidget {
     );
 
     if (this.columnsMetaData.some(column => column.clickAnalytics)) {
-      initializeSearchInsights(options.appID, options.apiKey);
+      initializeSearchInsights(
+        this.widgetOptions.appID,
+        this.widgetOptions.apiKey
+      );
     }
   }
 
   init(initOptions) {
     this.columns = renderColumns(this.resultsContainer, this.columnsMetaData);
-
     this.searchBoxInput.addEventListener("input", event => {
       const query = event.currentTarget.value;
 
@@ -225,54 +254,26 @@ class FederatedSearchWidget {
         return;
       }
 
-      this.clearButton.style.display = "block";
-      //@TODO Set display to inherit
-      this.resultsContainer.style.display = "";
-
-      // Perfom a search for each index
-      this.columns.forEach(column => {
-        const index = this.indices[column.indexName];
-
-        switch (column.type) {
-          case "Facets":
-            index
-              .search({
-                query,
-                hitsPerPage: 1,
-                facets: column.facets
-              })
-              .then(response => {
-                renderFacets(column, response, query, initOptions);
-                return response;
-              });
-            break;
-          case "QuerySuggestions":
-            index
-              .search({
-                query,
-                hitsPerPage: column.limit,
-                clickAnalytics: column.clickAnalytics
-              })
-              .then(response => {
-                renderQuerySuggestions(column, response, query);
-                return response;
-              });
-            break;
-          case "Search":
-            index
-              .search({
-                query,
-                hitsPerPage: column.limit,
-                clickAnalytics: column.clickAnalytics
-              })
-              .then(response => {
-                renderSearchHits(column, response, query);
-                return response;
-              });
-            break;
-        }
-      });
+      this.search(query, instantSearchOptions);
     });
+
+    if (this.widgetOptions.openOnFocus) {
+      this.searchBoxInput.addEventListener("focus", event => {
+        const query = event.currentTarget.value;
+        this.search(query, instantSearchOptions);
+      });
+    }
+
+    if (this.widgetOptions.closeOnBlur) {
+      document.addEventListener("click", event => {
+        if (this.widgetContainer.contains(event.target)) {
+          // Click has happened inside the widget
+          return;
+        }
+        this.clearButton.style.display = "none";
+        this.resultsContainer.style.display = "none";
+      });
+    }
 
     // Clear button
     this.clearButton.addEventListener("click", e => {
@@ -282,6 +283,60 @@ class FederatedSearchWidget {
       this.searchBoxInput.dispatchEvent(event);
     });
   }
+
+  search = (query, instantSearchOptions) => {
+    this.clearButton.style.display = "block";
+    this.resultsContainer.style.display = "";
+
+    // Perfom a search for each index
+    this.columns.forEach(column => {
+      const index = this.indices[column.indexName];
+
+      switch (column.type) {
+        case "Facets":
+          index
+            .search({
+              query,
+              hitsPerPage: 1,
+              facets: column.facets
+            })
+            .then(response => {
+              renderFacets(column, response, query, instantSearchOptions);
+              return response;
+            });
+          break;
+        case "QuerySuggestions":
+          index
+            .search({
+              query,
+              hitsPerPage: column.limit,
+              clickAnalytics: column.clickAnalytics
+            })
+            .then(response => {
+              renderQuerySuggestions(
+                column,
+                response,
+                query,
+                instantSearchOptions
+              );
+              return response;
+            });
+          break;
+        case "Search":
+          index
+            .search({
+              query,
+              hitsPerPage: column.limit,
+              clickAnalytics: column.clickAnalytics
+            })
+            .then(response => {
+              renderSearchHits(column, response, query, instantSearchOptions);
+              return response;
+            });
+          break;
+      }
+    });
+  };
 }
 
 const renderFacets = (column, response, query, initOptions) => {
@@ -297,14 +352,33 @@ const renderFacets = (column, response, query, initOptions) => {
     Object.entries(response.facets[facet])
       .slice(0, column.limit)
       .forEach(([value, count]) => {
+        const hit = {
+          name: value,
+          category: facet,
+          count
+        };
         const element = document.createElement("li");
-        element.innerHTML = column.itemRenderer({ name: value, count }, facet);
+        element.innerHTML = column.itemRenderer(hit);
         facetsNode.appendChild(element);
+
+        if (typeof column.afterItemRenderer === "function") {
+          column.afterItemRenderer(
+            element,
+            hit,
+            response,
+            instantSearchOptions
+          );
+        }
       });
   });
 };
 
-const renderQuerySuggestions = (column, response, query) => {
+const renderQuerySuggestions = (
+  column,
+  response,
+  query,
+  instantSearchOptions
+) => {
   column.columnNode.innerHTML = "";
   const hits = response.hits;
 
@@ -321,6 +395,9 @@ const renderQuerySuggestions = (column, response, query) => {
         : hit._highlightResult.query.value;
 
     column.columnNode.append(element);
+    if (typeof column.afterItemRenderer === "function") {
+      column.afterItemRenderer(element, hit, response, instantSearchOptions);
+    }
   });
 };
 
