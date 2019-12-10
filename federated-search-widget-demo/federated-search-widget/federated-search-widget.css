@@ -30,7 +30,7 @@
   z-index: 1;
 }
 
-#federated-results-container {
+#search-results-container {
   padding-top: 0;
   padding-bottom: 0;
   align-items: top;
@@ -48,58 +48,58 @@
 }
 
 
-#federated-results-container em {
+#search-results-container em {
   font-weight: bold;
   font-style: normal;
 }
 
-#federated-results-container .inverted-highlight {
+#search-results-container .inverted-highlight {
   font-weight: bold;
 }
 
-#federated-results-container .inverted-highlight em {
+#search-results-container .inverted-highlight em {
   font-style: normal;
   font-weight: normal;
 }
 
-#federated-results-container .in-facet {
+#search-results-container .in-facet {
   font-size: 12px;
 }
 
 
 /* Start Custom Views */
 /* 1. Regular display*/
-#federated-results-container {
+#search-results-container {
   grid-template-areas: 
     "suggestions search facets"
 }
-#federated-results-container div:first-child {
+#search-results-container div:first-child {
   grid-area: suggestions
 }
-#federated-results-container div:nth-child(2) {
+#search-results-container div:nth-child(2) {
   grid-area: search
 }
-#federated-results-container div:nth-child(3) {
+#search-results-container div:nth-child(3) {
   grid-area: facets
 }
 
 /* 2. Suggestions on top view (uncomment to see changes) */
-/* #federated-results-container {
+/* #search-results-container {
   grid-template-areas: 
     "suggestions suggestions"
     "search      facets"
 }
-#federated-results-container div:first-child {
+#search-results-container div:first-child {
   grid-area: suggestions
 }
-#federated-results-container div:nth-child(2) {
+#search-results-container div:nth-child(2) {
   grid-area: search
 }
-#federated-results-container div:nth-child(3) {
+#search-results-container div:nth-child(3) {
   grid-area: facets
 } */
 /* Inline suggestions so we keep everything visual*/
-/* #federated-results-container div:first-child li {
+/* #search-results-container div:first-child li {
   display: inline-block;
 } */
 

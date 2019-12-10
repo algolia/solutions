@@ -211,19 +211,24 @@ class FederatedSearchWidget {
     this.widgetContainer = document.querySelector(this.widgetOptions.container);
     this.widgetContainer.innerHTML = `
       <div id="searchbox">
-        <div class="search-box-container">
+        <div 
+          class="search-box-container"
+          role="combobox"
+          aria-haspopup="grid"
+          aria-expanded="false"
+          aria-owns="
+          >
           <input autocapitalize="off"
-          autocomplete="off"
-          autocorrect="off"
-          placeholder="${this.widgetOptions.placeholder}"
-          role="textbox"
-          spellcheck="false"
-          type="text"
-          value=""
-          id="search-box-input">
+            id="search-box-input"
+            placeholder="${this.widgetOptions.placeholder}"
+            value=""
+            type="text"
+            aria-autocomplete="both"
+            aria-controls="suggestion-tags"
+            aria-activedescendant/>
         </div>
         <div id="clear-input"><i class="fas fa-times"></i></div>
-        <div id="federated-results-container" style="display: none"></div>
+        <div id="search-results-container" style="display: none"></div>
       </div>
       `;
     this.searchBoxInput = this.widgetContainer.querySelector(
@@ -232,7 +237,7 @@ class FederatedSearchWidget {
 
     this.clearButton = this.widgetContainer.querySelector("#clear-input");
     this.resultsContainer = this.widgetContainer.querySelector(
-      "#federated-results-container"
+      "#search-results-container"
     );
 
     if (this.columnsMetaData.some(column => column.clickAnalytics)) {
@@ -243,7 +248,7 @@ class FederatedSearchWidget {
     }
   }
 
-  init(initOptions) {
+  init(instantSearchOptions) {
     this.columns = renderColumns(this.resultsContainer, this.columnsMetaData);
     this.searchBoxInput.addEventListener("input", event => {
       const query = event.currentTarget.value;
@@ -339,7 +344,7 @@ class FederatedSearchWidget {
   };
 }
 
-const renderFacets = (column, response, query, initOptions) => {
+const renderFacets = (column, response, query, instantSearchOptions) => {
   column.facets.forEach((facet, index) => {
     const facetsNode = column.columnNode.childNodes[index].lastChild;
     facetsNode.innerHTML = "";
