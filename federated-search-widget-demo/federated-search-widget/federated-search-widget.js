@@ -1,3 +1,26 @@
+const renderSearchBoxContainer = (placeholder, value) => `
+  <div id="searchbox">
+    <div 
+      id="search-box-container"
+      role="combobox"
+      aria-haspopup="grid"
+      aria-expanded="false"
+      aria-owns="
+      >
+      <input autocapitalize="off"
+        id="search-box-input"
+        placeholder="${placeholder}"
+        value="${value}"
+        type="text"
+        aria-autocomplete="both"
+        aria-controls="suggestion-tags"
+        aria-activedescendant/>
+    </div>
+    <div id="clear-input"><i class="fas fa-times"></i></div>
+    <div id="search-results-container" style="display: none"></div>
+  </div>
+`;
+
 const validateMandatoryColumnOptions = column => {
   const COLUMN_TYPES = ["QuerySuggestions", "Facets", "Search"];
   const MANDATORY_PARAMS = ["indexName", "type", "noResultsRenderer"];
@@ -206,31 +229,17 @@ class FederatedSearchWidget {
       this.widgetOptions.appID,
       this.widgetOptions.apiKey
     );
-    this.indices = initializeIndices(this.columnsMetaData, this.client);
 
+    this.indices = initializeIndices(this.columnsMetaData, this.client);
+  }
+
+  init(instantSearchOptions) {
     this.widgetContainer = document.querySelector(this.widgetOptions.container);
-    this.widgetContainer.innerHTML = `
-      <div id="searchbox">
-        <div 
-          class="search-box-container"
-          role="combobox"
-          aria-haspopup="grid"
-          aria-expanded="false"
-          aria-owns="
-          >
-          <input autocapitalize="off"
-            id="search-box-input"
-            placeholder="${this.widgetOptions.placeholder}"
-            value=""
-            type="text"
-            aria-autocomplete="both"
-            aria-controls="suggestion-tags"
-            aria-activedescendant/>
-        </div>
-        <div id="clear-input"><i class="fas fa-times"></i></div>
-        <div id="search-results-container" style="display: none"></div>
-      </div>
-      `;
+    this.widgetContainer.innerHTML = renderSearchBoxContainer(
+      this.widgetOptions.placeholder,
+      instantSearchOptions.helper.state.query
+    );
+
     this.searchBoxInput = this.widgetContainer.querySelector(
       "#search-box-input"
     );
@@ -246,9 +255,7 @@ class FederatedSearchWidget {
         this.widgetOptions.apiKey
       );
     }
-  }
 
-  init(instantSearchOptions) {
     this.columns = renderColumns(this.resultsContainer, this.columnsMetaData);
     this.searchBoxInput.addEventListener("input", event => {
       const query = event.currentTarget.value;
