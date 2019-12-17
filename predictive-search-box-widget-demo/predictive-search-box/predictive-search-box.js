@@ -4,16 +4,20 @@ const renderSearchBoxContainer = (placeholder, value) => {
         <div id="predictive-box" style="display: none;">
           <span id="predictive-box-text"></span>
         </div>
-        <div class="search-box-container">
+        <div
+          id="search-box-container"
+          class="search-box-container"
+          role="combobox"
+          aria-expanded="false"
+          aria-haspopup="listbos"
+          aria-owns="suggestion-tags"
+          >
           <input 
             id="search-box-input"
             placeholder="${placeholder}"
             value="${value}"
-            role="combobox"
             type="text"
-            aria-expanded="false"
-            aria-haspopup="true"
-            aria-autocomplete="both"
+            aria-autocomplete="list"
             aria-controls="suggestion-tags"
             aria-activedescendant/>
         </div>
@@ -49,7 +53,7 @@ class PredictiveSearchBox {
     this.previousSearchBoxEvent = null;
   }
 
-  init(initOptions) {
+  init(instantSearchOptions) {
     const widgetContainer = document.querySelector(this.container);
 
     if (!widgetContainer) {
@@ -60,13 +64,17 @@ class PredictiveSearchBox {
 
     widgetContainer.innerHTML = renderSearchBoxContainer(
       this.placeholder,
-      initOptions.helper.state.query
+      instantSearchOptions.helper.state.query
     );
 
     this.predictiveSearchBox = widgetContainer.querySelector("#predictive-box");
     this.predictiveSearchBoxItem = widgetContainer.querySelector(
       "#predictive-box-text"
     );
+    this.predictiveSearchBoxContainer = widgetContainer.querySelector(
+      "#search-box-container"
+    );
+
     this.clearButton = widgetContainer.querySelector("#clear-input");
     this.searchBoxInput = widgetContainer.querySelector("#search-box-input");
     this.suggestionTagsContainer = widgetContainer.querySelector(
@@ -74,7 +82,7 @@ class PredictiveSearchBox {
     );
 
     this.registerSearchBoxHandlers(
-      initOptions.helper,
+      instantSearchOptions.helper,
       this.searchBoxInput,
       this.clearButton
     );
@@ -295,9 +303,10 @@ class PredictiveSearchBox {
   // a11y helpers
   updateExpandedA11y = expanded => {
     if (
-      this.searchBoxInput.getAttribute("aria-expanded") !== String(expanded)
+      this.predictiveSearchBoxContainer.getAttribute("aria-expanded") !==
+      String(expanded)
     ) {
-      this.searchBoxInput.setAttribute("aria-expanded", expanded);
+      this.predictiveSearchBoxContainer.setAttribute("aria-expanded", expanded);
     }
   };
 
