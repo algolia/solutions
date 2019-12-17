@@ -3,23 +3,38 @@ const renderSearchBoxContainer = (placeholder, value) => `
     <div 
       id="search-box-container"
       role="combobox"
-      aria-haspopup="grid"
       aria-expanded="false"
-      aria-owns="
+      aria-owns="search-results-container"
+      aria-haspopup="grid"
       >
-      <input autocapitalize="off"
-        id="search-box-input"
+      <input 
+        aria-autocomplete="list"
+        aria-controls="search-results-container"
         placeholder="${placeholder}"
         value="${value}"
         type="text"
-        aria-autocomplete="both"
-        aria-controls="suggestion-tags"
-        aria-activedescendant/>
+        id="search-box-input"
+      >
     </div>
     <div id="clear-input"><i class="fas fa-times"></i></div>
-    <div id="search-results-container" style="display: none"></div>
+    <div 
+      style="display: none"
+      id="search-results-container"
+      role="grid">
+    </div>
   </div>
 `;
+
+const suppressComboBoxFocus = event => {
+  if (isKey(event, 40, "ArrowDown")) return "ArrowDown";
+  if (isKey(event, 38, "ArrowUp")) return "ArrowUp";
+  if (isKey(event, 13, "Enter")) return "Enter";
+  if (isKey(event, 27, "Escape")) return "Escape";
+  return null;
+};
+
+const isKey = (event, code, name) =>
+  event.which === code || event.keyCode === code || event.key === name;
 
 const validateMandatoryColumnOptions = column => {
   const COLUMN_TYPES = ["QuerySuggestions", "Facets", "Search"];
@@ -240,6 +255,9 @@ class FederatedSearchWidget {
       instantSearchOptions.helper.state.query
     );
 
+    this.searchBoxContainer = this.widgetContainer.querySelector(
+      "#search-box-container"
+    );
     this.searchBoxInput = this.widgetContainer.querySelector(
       "#search-box-input"
     );
@@ -257,12 +275,15 @@ class FederatedSearchWidget {
     }
 
     this.columns = renderColumns(this.resultsContainer, this.columnsMetaData);
+
+    this.searchBoxInput.addEventListener("keydown", this.onKeyBoardNavigation);
     this.searchBoxInput.addEventListener("input", event => {
       const query = event.currentTarget.value;
 
       if (!query) {
         this.clearButton.style.display = "none";
         this.resultsContainer.style.display = "none";
+        this.updateExpandedA11y(false);
         return;
       }
 
@@ -296,9 +317,93 @@ class FederatedSearchWidget {
     });
   }
 
+  // Keyboard navigation
+  onKeyBoardNavigation = event => {
+    const hijackedKey = suppressComboBoxFocus(event);
+    // Keep the focus inside the textbox
+    if (hijackedKey) event.preventDefault();
+
+    if (hijackedKey === "Enter") {
+      const currentSelectedElement = this.resultsContainer.querySelector(
+        '[aria-selected="true"]'
+      );
+
+      currentSelectedElement.dispatchEvent(new Event("click"));
+    }
+
+    if (hijackedKey === "ArrowDown") {
+      // Handle ArrowDown
+      const currentSelectedElement = this.resultsContainer.querySelector(
+        '[aria-selected="true"]'
+      );
+
+      const suggestions = Array.from(
+        this.resultsContainer.querySelectorAll("li")
+      );
+      if (!suggestions.length) return;
+
+      // Set first element to selected
+      if (!currentSelectedElement) {
+        const firstSuggestion = suggestions[0];
+        firstSuggestion.setAttribute("aria-selected", true);
+        // this.updateActiveDescendantA11y(firstSuggestion.id);
+        return;
+      }
+
+      // Set next element to selected
+      const nextSelectedElement =
+        suggestions[
+          (suggestions.indexOf(currentSelectedElement) + 1) % suggestions.length
+        ];
+
+      currentSelectedElement.removeAttribute("aria-selected");
+      nextSelectedElement.setAttribute("aria-selected", true);
+      // this.updateActiveDescendantA11y(nextSelectedElement.id);
+    }
+
+    // Handle ArrowUp
+    if (hijackedKey === "ArrowUp") {
+      const currentSelectedElement = this.resultsContainer.querySelector(
+        '[aria-selected="true"]'
+      );
+
+      const suggestions = Array.from(
+        this.resultsContainer.querySelectorAll("li")
+      );
+      if (!suggestions.length) return;
+
+      // Set last element to selected
+      if (!currentSelectedElement) {
+        const lastSuggestion = suggestions[suggestions.length - 1];
+        lastSuggestion.setAttribute("aria-selected", true);
+        // this.updateActiveDescendantA11y(lastSuggestion.id);
+        return;
+      }
+
+      // Set previous element to selected
+      const currentIndex = suggestions.indexOf(currentSelectedElement) - 1;
+      const nextSelectedElement =
+        suggestions[
+          currentIndex === -1
+            ? suggestions.length - 1
+            : currentIndex % suggestions.length
+        ];
+
+      currentSelectedElement.removeAttribute("aria-selected");
+      nextSelectedElement.setAttribute("aria-selected", true);
+      // this.updateActiveDescendantA11y(nextSelectedElement.id);
+    }
+
+    if (hijackedKey === "Escape") {
+      this.clear();
+      this.updateActiveDescendantA11y();
+    }
+  };
+
   search = (query, instantSearchOptions) => {
     this.clearButton.style.display = "block";
     this.resultsContainer.style.display = "";
+    this.updateExpandedA11y(true);
 
     // Perfom a search for each index
     this.columns.forEach(column => {
@@ -348,6 +453,14 @@ class FederatedSearchWidget {
           break;
       }
     });
+  };
+
+  updateExpandedA11y = expanded => {
+    if (
+      this.searchBoxContainer.getAttribute("aria-expanded") !== String(expanded)
+    ) {
+      this.searchBoxContainer.setAttribute("aria-expanded", expanded);
+    }
   };
 }
 

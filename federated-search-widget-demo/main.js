@@ -5,10 +5,7 @@ const apiKey = "6a187532e8e703464da52c20555c37cf";
 
 const renderQuerySuggestionWithCategory = (suggestion, sourceIndex) => {
   if (!suggestion[sourceIndex]) {
-    return `
-      <a href="http://localhost:3000/?q=${suggestion.query}" target="_blank">
-        ${suggestion._highlightResult.query.value}
-      </a>`;
+    return suggestion._highlightResult.query.value;
   }
 
   const bestMatchedFacet = Object.values(
@@ -22,7 +19,6 @@ const renderQuerySuggestionWithCategory = (suggestion, sourceIndex) => {
     });
 
   return `
-      <a href="http://localhost:3000/?q=${suggestion.query}" target="_blank">
         <div style="padding: 10px;">
           <span class="inverted-highlight">
             ${suggestion._highlightResult.query.value}
@@ -33,7 +29,7 @@ const renderQuerySuggestionWithCategory = (suggestion, sourceIndex) => {
             </i>
           </span>
         </div>
-      </a>`;
+      `;
 };
 
 const virutalRefinementList = instantsearch.connectors.connectRefinementList(
@@ -95,24 +91,22 @@ search.addWidget(
         title: "Matching Keywords",
         noResultsRenderer: (query, response) =>
           `No Matching Suggestion for ${query}`,
-        itemRenderer: hit => {
-          return renderQuerySuggestionWithCategory(hit, "atis-prods");
-        },
+        itemRenderer: hit =>
+          renderQuerySuggestionWithCategory(hit, "atis-prods"),
         // itemRenderer: suggestion => `
         //   <a href="http://localhost:3000/?q=${suggestion.query}" target="_blank">
         //     ${suggestion._highlightResult.query.value}
         //   </a>
         // `
         afterItemRenderer: (element, hit, response, options) => {
-          element.querySelector("a").addEventListener("click", event => {
+          element.addEventListener("click", event => {
             event.preventDefault();
 
             document.querySelector("#search-box-input").value = hit.query;
             options.helper.setQuery(hit.query).search();
 
-            document.querySelector(
-              "#federated-results-container"
-            ).style.display = "none";
+            document.querySelector("#search-results-container").style.display =
+              "none";
           });
         }
       },
@@ -132,10 +126,12 @@ search.addWidget(
         noResultsRenderer: (query, response) =>
           `No Matching Products for query ${query}`,
         afterItemRenderer: (element, hit, response, options) => {
+          element.addEventListener;
           // Example of sending a click event
           element
             .querySelector(".click-button")
-            .addEventListener("click", () => {
+            .addEventListener("click", event => {
+              event.stopPropagation();
               aa("clickedObjectIDsAfterSearch", {
                 eventName: "product_clicked",
                 index: "atis-prods",
@@ -145,14 +141,17 @@ search.addWidget(
               });
             });
           // Example of sending a conversion event
-          element.querySelector(".buy-button").addEventListener("click", () => {
-            aa("convertedObjectIDsAfterSearch", {
-              eventName: "product_clicked",
-              index: "atis-prods",
-              queryID: response.queryID,
-              objectIDs: [hit.objectID]
+          element
+            .querySelector(".buy-button")
+            .addEventListener("click", event => {
+              event.stopPropagation();
+              aa("convertedObjectIDsAfterSearch", {
+                eventName: "product_clicked",
+                index: "atis-prods",
+                queryID: response.queryID,
+                objectIDs: [hit.objectID]
+              });
             });
-          });
         }
       },
       {
@@ -166,13 +165,13 @@ search.addWidget(
             facet === "categories" ? "Matched Categories" : "Matched Brand"
           }</h3>`,
         itemRenderer: (facet, facetCategory) => `
-          <a href="">${facet.name} ${facet.count}</a>
+          ${facet.name} ${facet.count}
         `,
         noResultsRenderer: (query, response) =>
           `No Matching Facet for query ${query}`,
         afterItemRenderer: (element, hit, response, options) => {
           // Add the facet refinement
-          element.querySelector("a").addEventListener("click", event => {
+          element.addEventListener("click", event => {
             event.preventDefault();
             const nextState = options.helper.state.addDisjunctiveFacetRefinement(
               hit.category,

@@ -66,6 +66,10 @@
   font-size: 12px;
 }
 
+#search-results-container li[aria-selected=true]{
+  color: red !important;
+}
+
 
 /* Start Custom Views */
 /* 1. Regular display*/
