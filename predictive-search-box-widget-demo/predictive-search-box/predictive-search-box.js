@@ -19,7 +19,8 @@ const renderSearchBoxContainer = (placeholder, value) => {
             type="text"
             aria-autocomplete="list"
             aria-controls="suggestion-tags"
-            aria-activedescendant/>
+            aria-activedescendant
+          >
         </div>
         <div id="clear-input"><i class="fas fa-times"></i></div>
         <ul id="suggestion-tags" role="listbox" label="Suggestions"></ul>
@@ -36,9 +37,8 @@ const suppressComboBoxFocus = event => {
 };
 
 const sanitizeQuery = query => query.replace(/\s+/gm, "");
-const isKey = (event, code, name) => {
-  return event.which === code || event.keyCode === code || event.key === name;
-};
+const isKey = (event, code, name) =>
+  event.which === code || event.keyCode === code || event.key === name;
 
 class PredictiveSearchBox {
   constructor(options) {
