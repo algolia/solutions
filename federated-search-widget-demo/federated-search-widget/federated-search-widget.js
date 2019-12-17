@@ -346,7 +346,6 @@ class FederatedSearchWidget {
       if (!currentSelectedElement) {
         const firstSuggestion = suggestions[0];
         firstSuggestion.setAttribute("aria-selected", true);
-        // this.updateActiveDescendantA11y(firstSuggestion.id);
         return;
       }
 
@@ -358,7 +357,6 @@ class FederatedSearchWidget {
 
       currentSelectedElement.removeAttribute("aria-selected");
       nextSelectedElement.setAttribute("aria-selected", true);
-      // this.updateActiveDescendantA11y(nextSelectedElement.id);
     }
 
     // Handle ArrowUp
@@ -376,7 +374,6 @@ class FederatedSearchWidget {
       if (!currentSelectedElement) {
         const lastSuggestion = suggestions[suggestions.length - 1];
         lastSuggestion.setAttribute("aria-selected", true);
-        // this.updateActiveDescendantA11y(lastSuggestion.id);
         return;
       }
 
@@ -391,12 +388,10 @@ class FederatedSearchWidget {
 
       currentSelectedElement.removeAttribute("aria-selected");
       nextSelectedElement.setAttribute("aria-selected", true);
-      // this.updateActiveDescendantA11y(nextSelectedElement.id);
     }
 
     if (hijackedKey === "Escape") {
       this.clear();
-      this.updateActiveDescendantA11y();
     }
   };
 
