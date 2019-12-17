@@ -121,12 +121,25 @@ search.addWidget(
             <div>
               <p>${hit._highlightResult.title.value}</p>
               <p class="text-right">${hit.price}€</p>
+              <div>
+                <button class="click-button">Click Button</button>
+                <button class="buy-button">Buy</button>
+              </div>
             </div>
           </div>`,
         noResultsRenderer: (query, response) =>
           `No Matching Products for query ${query}`,
         afterItemRenderer: (element, hit, response, options) => {
-          element.addEventListener;
+          element.addEventListener("click", event => {
+            event.stopPropagation();
+            aa("clickedObjectIDsAfterSearch", {
+              eventName: "product_clicked",
+              index: "atis-prods",
+              queryID: response.queryID,
+              objectIDs: [hit.objectID],
+              positions: [hit.__position]
+            });
+          });
           // Example of sending a click event
           element
             .querySelector(".click-button")

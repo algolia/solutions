@@ -526,7 +526,7 @@ const renderQuerySuggestions = (
   });
 };
 
-const renderSearchHits = (column, response, query) => {
+const renderSearchHits = (column, response, query, instantSearchOptions) => {
   const hits = response.queryID
     ? enrichHitsWithClickAnalyticsData(response.hits, response.queryID)
     : response.hits;
@@ -541,29 +541,12 @@ const renderSearchHits = (column, response, query) => {
   hits.forEach(hit => {
     const element = document.createElement("li");
 
-    if (response.queryID) {
-      element.addEventListener("click", function(e) {
-        // To send a click event
-        aa("clickedObjectIDsAfterSearch", {
-          eventName: "product_clicked",
-          index: column.indexName,
-          queryID: hit.__queryID,
-          objectIDs: [hit.objectID],
-          positions: [hit.__position]
-        });
-
-        // To send a conversion event
-        aa("convertedObjectIDsAfterSearch", {
-          eventName: "product_clicked",
-          index: column.indexName,
-          queryID: hit.__queryID,
-          objectIDs: [hit.objectID]
-        });
-      });
-    }
-
     element.innerHTML = column.itemRenderer(hit);
     column.columnNode.append(element);
+
+    if (typeof column.afterItemRenderer === "function") {
+      column.afterItemRenderer(element, hit, response, instantSearchOptions);
+    }
   });
 };
 
