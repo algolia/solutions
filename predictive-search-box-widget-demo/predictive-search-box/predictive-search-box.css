@@ -45,11 +45,59 @@
 
 #suggestion-tags {
   width: 100%;
-  margin-top: 0.5em;
   border: none;
-  margin: .5em 0 0 0;
-  padding: 0;
+  margin: 8px 0 0 0;
+  padding: 8px;
   list-style-type: none;
+  white-space: nowrap;
+  /* Remove scrollbar but still allow scroll */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;
+}
+/* WebKit scrollbar */
+#suggestion-tags::-webkit-scrollbar { 
+  width: 0;
+  height: 0;
+}
+
+.suggestion-tags-container {
+  position: relative;
+  overflow: auto;
+}
+
+.suggestion-tags-container:before,
+.suggestion-tags-container:after {
+  width: 16px;
+  height: 100%;
+  content: "";
+  display: block;
+  position: absolute;
+  top: 0;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 10;
+  transition: 120ms cubic-bezier(0.075, 0.82, 0.165, 1);
+}
+
+.suggestion-tags-container:before { 
+  right: 0;
+  background-image: linear-gradient(90deg, rgba(255,255,255, 0) 0%, #f1f1f1 50%, #f1f1f1);
+}
+.suggestion-tags-container:after { 
+  left: 0;
+  background-image: linear-gradient(-90deg, rgba(255,255,255, 0) 0%, #f1f1f1 50%, #f1f1f1);
+}
+
+.suggestion-tags-container.overflowing-indicator-right:before {
+  opacity: 1;
+}
+
+.suggestion-tags-container.overflowing-indicator-left:after {
+  opacity: 1;
+}
+
+#suggestion-tags {
+  overflow: auto;
 }
 
 .suggestion-tag {
@@ -69,8 +117,8 @@
   transform: translateY(-2px);
 }
 
-.suggestion-tag:not(:last-child){
-  margin-right: 20px;
+.suggestion-tag{
+  margin: 0 8px 10px 8px;
 }
 
 .suggestion-tag em {
