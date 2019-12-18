@@ -32,7 +32,7 @@ const suppressComboBoxFocus = event => {
   if (isKey(event, 27, "Escape")) return "Escape";
   return null;
 };
-
+const sanitizeQuery = query => query.replace(/\s+/gm, "");
 const isKey = (event, code, name) =>
   event.which === code || event.keyCode === code || event.key === name;
 
@@ -189,7 +189,7 @@ const renderColumns = (resultsContainer, columns) => {
         columnNode: columnNode.lastChild
       };
     } else {
-      column.facets.forEach(facet => {
+      column.facets.forEach((facet, index) => {
         const innerColumn = document.createElement("div");
         const facetTitleHTML = column.facetTitleRenderer(facet);
         const resultsHTML =
@@ -346,6 +346,7 @@ class FederatedSearchWidget {
       if (!currentSelectedElement) {
         const firstSuggestion = suggestions[0];
         firstSuggestion.setAttribute("aria-selected", true);
+        this.updateActiveDescendantA11y(firstSuggestion.id);
         return;
       }
 
@@ -357,6 +358,7 @@ class FederatedSearchWidget {
 
       currentSelectedElement.removeAttribute("aria-selected");
       nextSelectedElement.setAttribute("aria-selected", true);
+      this.updateActiveDescendantA11y(nextSelectedElement.id);
     }
 
     // Handle ArrowUp
@@ -374,6 +376,7 @@ class FederatedSearchWidget {
       if (!currentSelectedElement) {
         const lastSuggestion = suggestions[suggestions.length - 1];
         lastSuggestion.setAttribute("aria-selected", true);
+        this.updateActiveDescendantA11y(lastSuggestion.id);
         return;
       }
 
@@ -388,10 +391,12 @@ class FederatedSearchWidget {
 
       currentSelectedElement.removeAttribute("aria-selected");
       nextSelectedElement.setAttribute("aria-selected", true);
+      this.updateActiveDescendantA11y(nextSelectedElement.id);
     }
 
     if (hijackedKey === "Escape") {
       this.clear();
+      this.updateActiveDescendantA11y();
     }
   };
 
@@ -457,6 +462,20 @@ class FederatedSearchWidget {
       this.searchBoxContainer.setAttribute("aria-expanded", expanded);
     }
   };
+
+  updateActiveDescendantA11y = activeDescendantID => {
+    if (
+      activeDescendantID &&
+      this.searchBoxInput.getAttribute("aria-activedescendant") !==
+        String(activeDescendantID)
+    ) {
+      return this.searchBoxInput.setAttribute(
+        "aria-activedescendant",
+        activeDescendantID
+      );
+    }
+    this.searchBoxInput.removeAttribute("aria-activedescendant");
+  };
 }
 
 const renderFacets = (column, response, query, instantSearchOptions) => {
@@ -478,6 +497,9 @@ const renderFacets = (column, response, query, instantSearchOptions) => {
           count
         };
         const element = document.createElement("li");
+        // ID is required to manage aria-activedescendant
+        element.id = `${facet}-${sanitizeQuery(value)}-${index}`;
+
         element.innerHTML = column.itemRenderer(hit);
         facetsNode.appendChild(element);
 
@@ -507,8 +529,10 @@ const renderQuerySuggestions = (
     return;
   }
 
-  hits.forEach(hit => {
+  hits.forEach((hit, index) => {
     const element = document.createElement("li");
+    // ID is required to manage aria-activedescendant
+    element.id = `${sanitizeQuery(hit.query)}-${index}`;
     element.innerHTML =
       typeof column.itemRenderer === "function"
         ? column.itemRenderer(hit)
@@ -533,8 +557,10 @@ const renderSearchHits = (column, response, query, instantSearchOptions) => {
     return;
   }
 
-  hits.forEach(hit => {
+  hits.forEach((hit, index) => {
     const element = document.createElement("li");
+    // ID is required to manage aria-activedescendant
+    element.id = `${sanitizeQuery(hit.objectID)}-${index}`;
 
     element.innerHTML = column.itemRenderer(hit);
     column.columnNode.append(element);
