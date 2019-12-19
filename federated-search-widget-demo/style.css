@@ -214,13 +214,3 @@ nav ul {
     width: calc(50% - 1rem);
   }
 }
-
-.hit {
-  display: flex;
-  align-items: center;
-  justify-content: space-around;
-}
-
-.hit img {
-  width: 60px;
-}

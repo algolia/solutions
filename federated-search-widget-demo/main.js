@@ -19,7 +19,7 @@ const renderQuerySuggestionWithCategory = (suggestion, sourceIndex) => {
     });
 
   return `
-        <div style="padding: 10px;">
+        <div>
           <span class="inverted-highlight">
             ${suggestion._highlightResult.query.value}
           </span>
@@ -31,6 +31,9 @@ const renderQuerySuggestionWithCategory = (suggestion, sourceIndex) => {
         </div>
       `;
 };
+
+const numberWithCommas = n =>
+  n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
 const virutalRefinementList = instantsearch.connectors.connectRefinementList(
   () => {}
@@ -89,6 +92,7 @@ search.addWidget(
         indexName: "atis-prods_query_suggestions",
         clickAnalytics: true,
         title: "Matching Keywords",
+        limit: 10,
         noResultsRenderer: (query, response) =>
           `No Matching Suggestion for ${query}`,
         itemRenderer: hit =>
@@ -118,12 +122,16 @@ search.addWidget(
         itemRenderer: hit => `
           <div class='hit'>
             <img src="${hit.largeImage}" alt="">
-            <div>
-              <p>${hit._highlightResult.title.value}</p>
-              <p class="text-right">${hit.price}€</p>
-              <div>
-                <button class="click-button">Click Button</button>
-                <button class="buy-button">Buy</button>
+            <div class="hit-info">
+              <p class="hit-title">${hit._highlightResult.title.value}</p>
+              <div class="hit-actions">
+                <div>
+                  <span class="hit-price">${hit.price}€</span>
+                </div>
+                <div class="hit-buttons">
+                  <button class="click-button">View</button>
+                  <button class="buy-button">Buy</button>
+                </div>
               </div>
             </div>
           </div>`,
@@ -178,7 +186,9 @@ search.addWidget(
             facet === "categories" ? "Matched Categories" : "Matched Brand"
           }</h3>`,
         itemRenderer: (facet, facetCategory) => `
-          ${facet.name} ${facet.count}
+          <span class="facet">${facet.name}</span> ${numberWithCommas(
+          facet.count
+        )}
         `,
         noResultsRenderer: (query, response) =>
           `No Matching Facet for query ${query}`,

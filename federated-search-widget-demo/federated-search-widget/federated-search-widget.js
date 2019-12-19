@@ -8,12 +8,14 @@ const renderSearchBoxContainer = (placeholder, value) => `
       aria-haspopup="grid"
       >
       <input 
+        id="search-box-input"
+        autocomplete="off"
+        autofocus="true"
         aria-autocomplete="list"
         aria-controls="search-results-container"
         placeholder="${placeholder}"
         value="${value}"
         type="text"
-        id="search-box-input"
       >
     </div>
     <div id="clear-input"><i class="fas fa-times"></i></div>
@@ -475,6 +477,11 @@ class FederatedSearchWidget {
       );
     }
     this.searchBoxInput.removeAttribute("aria-activedescendant");
+  };
+
+  clear = () => {
+    this.clearButton.style.display = "none";
+    this.resultsContainer.style.display = "none";
   };
 }
 

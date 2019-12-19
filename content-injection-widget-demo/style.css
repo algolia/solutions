@@ -95,6 +95,15 @@ nav ul {
   align-content: flex-end;
 }
 
+#hits {
+  list-style-type: none;
+  padding-left: 0;
+}
+
+#hits li {
+  width: 25%;
+}
+
 .ais-Hits-item {
   height: 340px;
   background-color: white;
@@ -104,6 +113,10 @@ nav ul {
 
 .item {
   padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  align-items: center;
 }
 
 .ais-Hits-item .price {
@@ -145,7 +158,7 @@ nav ul {
 }
 
 .item .item-content .name {
-  margin-bottom: 40px;
+  margin-bottom: 24px;
 }
 
 #pagination {

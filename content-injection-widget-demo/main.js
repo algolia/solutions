@@ -17,14 +17,55 @@ search.addWidget(
 
 search.addWidget(
   new HitsWithContent({
-    container: '#hits'
+    container: "#hits",
+    templates: {
+      item: hit => `
+        <div class="item">
+          <img src="${hit.image_link}" alt="">
+          <button class="add-to-cart">
+            <i class="fas fa-cart-plus"></i> Add to Cart
+          </button>
+          <div class="item-content">
+            <p class="brand">${hit.brand}</p>
+            <p class="name">${hit._highlightResult.item_title.value}</p>
+          </div>
+          <p class="price">Price: ${hit.price}</p>
+        </div>
+      `,
+      injectedItem: hit => `
+        <div class="item">
+          <img src="${hit.image}" alt="">
+          <a class="price" href="${hit.target}">${hit.button}</a>
+        </div>
+      `,
+      noResults: response => `
+        <div>No Results found for query <b>${response.query}</b></div>
+      `
+    },
+    afterItemRenderer: (element, hit, response) => {
+      const button = element.querySelector("button");
+
+      if (button) {
+        button.addEventListener("click", event => {
+          event.stopPropagation();
+
+          // aa("clickedObjectIDsAfterSearch", {
+          //   eventName: "product_clicked",
+          //   index: "atis-prods",
+          //   queryID: response.queryID,
+          //   objectIDs: [hit.objectID],
+          //   positions: [hit.__position]
+          // });
+        });
+      }
+    }
   })
 );
 
 search.addWidget(
   instantsearch.widgets.searchBox({
     container: "#search-box",
-    placeholder: "Type 'bag' and see the 5th result",
+    placeholder: "Type 'bag' and see the 5th result"
   })
 );
 
