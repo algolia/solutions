@@ -1,3 +1,43 @@
+const renderSearchBoxContainer = (placeholder, value) => `
+  <div id="searchbox">
+    <div 
+      id="search-box-container"
+      role="combobox"
+      aria-expanded="false"
+      aria-owns="search-results-container"
+      aria-haspopup="grid"
+      >
+      <input 
+        id="search-box-input"
+        autocomplete="off"
+        autofocus="true"
+        aria-autocomplete="list"
+        aria-controls="search-results-container"
+        placeholder="${placeholder}"
+        value="${value}"
+        type="text"
+      >
+    </div>
+    <div id="clear-input"><i class="fas fa-times"></i></div>
+    <div 
+      style="display: none"
+      id="search-results-container"
+      role="grid">
+    </div>
+  </div>
+`;
+
+const suppressComboBoxFocus = event => {
+  if (isKey(event, 40, "ArrowDown")) return "ArrowDown";
+  if (isKey(event, 38, "ArrowUp")) return "ArrowUp";
+  if (isKey(event, 13, "Enter")) return "Enter";
+  if (isKey(event, 27, "Escape")) return "Escape";
+  return null;
+};
+const sanitizeQuery = query => query.replace(/\s+/gm, "");
+const isKey = (event, code, name) =>
+  event.which === code || event.keyCode === code || event.key === name;
+
 const validateMandatoryColumnOptions = column => {
   const COLUMN_TYPES = ["QuerySuggestions", "Facets", "Search"];
   const MANDATORY_PARAMS = ["indexName", "type", "noResultsRenderer"];
@@ -151,7 +191,7 @@ const renderColumns = (resultsContainer, columns) => {
         columnNode: columnNode.lastChild
       };
     } else {
-      column.facets.forEach(facet => {
+      column.facets.forEach((facet, index) => {
         const innerColumn = document.createElement("div");
         const facetTitleHTML = column.facetTitleRenderer(facet);
         const resultsHTML =
@@ -206,33 +246,27 @@ class FederatedSearchWidget {
       this.widgetOptions.appID,
       this.widgetOptions.apiKey
     );
-    this.indices = initializeIndices(this.columnsMetaData, this.client);
 
+    this.indices = initializeIndices(this.columnsMetaData, this.client);
+  }
+
+  init(instantSearchOptions) {
     this.widgetContainer = document.querySelector(this.widgetOptions.container);
-    this.widgetContainer.innerHTML = `
-      <div id="searchbox">
-        <div class="search-box-container">
-          <input autocapitalize="off"
-          autocomplete="off"
-          autocorrect="off"
-          placeholder="${this.widgetOptions.placeholder}"
-          role="textbox"
-          spellcheck="false"
-          type="text"
-          value=""
-          id="search-box-input">
-        </div>
-        <div id="clear-input"><i class="fas fa-times"></i></div>
-        <div id="federated-results-container" style="display: none"></div>
-      </div>
-      `;
+    this.widgetContainer.innerHTML = renderSearchBoxContainer(
+      this.widgetOptions.placeholder,
+      instantSearchOptions.helper.state.query
+    );
+
+    this.searchBoxContainer = this.widgetContainer.querySelector(
+      "#search-box-container"
+    );
     this.searchBoxInput = this.widgetContainer.querySelector(
       "#search-box-input"
     );
 
     this.clearButton = this.widgetContainer.querySelector("#clear-input");
     this.resultsContainer = this.widgetContainer.querySelector(
-      "#federated-results-container"
+      "#search-results-container"
     );
 
     if (this.columnsMetaData.some(column => column.clickAnalytics)) {
@@ -241,16 +275,17 @@ class FederatedSearchWidget {
         this.widgetOptions.apiKey
       );
     }
-  }
 
-  init(initOptions) {
     this.columns = renderColumns(this.resultsContainer, this.columnsMetaData);
+
+    this.searchBoxInput.addEventListener("keydown", this.onKeyBoardNavigation);
     this.searchBoxInput.addEventListener("input", event => {
       const query = event.currentTarget.value;
 
       if (!query) {
         this.clearButton.style.display = "none";
         this.resultsContainer.style.display = "none";
+        this.updateExpandedA11y(false);
         return;
       }
 
@@ -284,9 +319,93 @@ class FederatedSearchWidget {
     });
   }
 
+  // Keyboard navigation
+  onKeyBoardNavigation = event => {
+    const hijackedKey = suppressComboBoxFocus(event);
+    // Keep the focus inside the textbox
+    if (hijackedKey) event.preventDefault();
+
+    if (hijackedKey === "Enter") {
+      const currentSelectedElement = this.resultsContainer.querySelector(
+        '[aria-selected="true"]'
+      );
+
+      currentSelectedElement.dispatchEvent(new Event("click"));
+    }
+
+    if (hijackedKey === "ArrowDown") {
+      // Handle ArrowDown
+      const currentSelectedElement = this.resultsContainer.querySelector(
+        '[aria-selected="true"]'
+      );
+
+      const suggestions = Array.from(
+        this.resultsContainer.querySelectorAll("li")
+      );
+      if (!suggestions.length) return;
+
+      // Set first element to selected
+      if (!currentSelectedElement) {
+        const firstSuggestion = suggestions[0];
+        firstSuggestion.setAttribute("aria-selected", true);
+        this.updateActiveDescendantA11y(firstSuggestion.id);
+        return;
+      }
+
+      // Set next element to selected
+      const nextSelectedElement =
+        suggestions[
+          (suggestions.indexOf(currentSelectedElement) + 1) % suggestions.length
+        ];
+
+      currentSelectedElement.removeAttribute("aria-selected");
+      nextSelectedElement.setAttribute("aria-selected", true);
+      this.updateActiveDescendantA11y(nextSelectedElement.id);
+    }
+
+    // Handle ArrowUp
+    if (hijackedKey === "ArrowUp") {
+      const currentSelectedElement = this.resultsContainer.querySelector(
+        '[aria-selected="true"]'
+      );
+
+      const suggestions = Array.from(
+        this.resultsContainer.querySelectorAll("li")
+      );
+      if (!suggestions.length) return;
+
+      // Set last element to selected
+      if (!currentSelectedElement) {
+        const lastSuggestion = suggestions[suggestions.length - 1];
+        lastSuggestion.setAttribute("aria-selected", true);
+        this.updateActiveDescendantA11y(lastSuggestion.id);
+        return;
+      }
+
+      // Set previous element to selected
+      const currentIndex = suggestions.indexOf(currentSelectedElement) - 1;
+      const nextSelectedElement =
+        suggestions[
+          currentIndex === -1
+            ? suggestions.length - 1
+            : currentIndex % suggestions.length
+        ];
+
+      currentSelectedElement.removeAttribute("aria-selected");
+      nextSelectedElement.setAttribute("aria-selected", true);
+      this.updateActiveDescendantA11y(nextSelectedElement.id);
+    }
+
+    if (hijackedKey === "Escape") {
+      this.clear();
+      this.updateActiveDescendantA11y();
+    }
+  };
+
   search = (query, instantSearchOptions) => {
     this.clearButton.style.display = "block";
     this.resultsContainer.style.display = "";
+    this.updateExpandedA11y(true);
 
     // Perfom a search for each index
     this.columns.forEach(column => {
@@ -337,9 +456,36 @@ class FederatedSearchWidget {
       }
     });
   };
+
+  updateExpandedA11y = expanded => {
+    if (
+      this.searchBoxContainer.getAttribute("aria-expanded") !== String(expanded)
+    ) {
+      this.searchBoxContainer.setAttribute("aria-expanded", expanded);
+    }
+  };
+
+  updateActiveDescendantA11y = activeDescendantID => {
+    if (
+      activeDescendantID &&
+      this.searchBoxInput.getAttribute("aria-activedescendant") !==
+        String(activeDescendantID)
+    ) {
+      return this.searchBoxInput.setAttribute(
+        "aria-activedescendant",
+        activeDescendantID
+      );
+    }
+    this.searchBoxInput.removeAttribute("aria-activedescendant");
+  };
+
+  clear = () => {
+    this.clearButton.style.display = "none";
+    this.resultsContainer.style.display = "none";
+  };
 }
 
-const renderFacets = (column, response, query, initOptions) => {
+const renderFacets = (column, response, query, instantSearchOptions) => {
   column.facets.forEach((facet, index) => {
     const facetsNode = column.columnNode.childNodes[index].lastChild;
     facetsNode.innerHTML = "";
@@ -358,6 +504,9 @@ const renderFacets = (column, response, query, initOptions) => {
           count
         };
         const element = document.createElement("li");
+        // ID is required to manage aria-activedescendant
+        element.id = `${facet}-${sanitizeQuery(value)}-${index}`;
+
         element.innerHTML = column.itemRenderer(hit);
         facetsNode.appendChild(element);
 
@@ -387,8 +536,10 @@ const renderQuerySuggestions = (
     return;
   }
 
-  hits.forEach(hit => {
+  hits.forEach((hit, index) => {
     const element = document.createElement("li");
+    // ID is required to manage aria-activedescendant
+    element.id = `${sanitizeQuery(hit.query)}-${index}`;
     element.innerHTML =
       typeof column.itemRenderer === "function"
         ? column.itemRenderer(hit)
@@ -401,7 +552,7 @@ const renderQuerySuggestions = (
   });
 };
 
-const renderSearchHits = (column, response, query) => {
+const renderSearchHits = (column, response, query, instantSearchOptions) => {
   const hits = response.queryID
     ? enrichHitsWithClickAnalyticsData(response.hits, response.queryID)
     : response.hits;
@@ -413,32 +564,17 @@ const renderSearchHits = (column, response, query) => {
     return;
   }
 
-  hits.forEach(hit => {
+  hits.forEach((hit, index) => {
     const element = document.createElement("li");
-
-    if (response.queryID) {
-      element.addEventListener("click", function(e) {
-        // To send a click event
-        aa("clickedObjectIDsAfterSearch", {
-          eventName: "product_clicked",
-          index: column.indexName,
-          queryID: hit.__queryID,
-          objectIDs: [hit.objectID],
-          positions: [hit.__position]
-        });
-
-        // To send a conversion event
-        aa("convertedObjectIDsAfterSearch", {
-          eventName: "product_clicked",
-          index: column.indexName,
-          queryID: hit.__queryID,
-          objectIDs: [hit.objectID]
-        });
-      });
-    }
+    // ID is required to manage aria-activedescendant
+    element.id = `${sanitizeQuery(hit.objectID)}-${index}`;
 
     element.innerHTML = column.itemRenderer(hit);
     column.columnNode.append(element);
+
+    if (typeof column.afterItemRenderer === "function") {
+      column.afterItemRenderer(element, hit, response, instantSearchOptions);
+    }
   });
 };
 
