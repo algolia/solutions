@@ -1,0 +1,75 @@
+const states = {};
+
+const rulePoweredContentShelves = instantsearch.connectors.connectQueryRules(
+  ({ items, widgetParams, instantSearchInstance }) => {
+    // We don't display anything if we don't receive any shelves from the
+    // Query Rules.
+    if (items.length === 0 || !items[0].shelves) {
+      return;
+    }
+
+    const state = getState(widgetParams.container);
+    const shelves = items[0].shelves;
+    shelves.sort(function(a, b) {
+      return a.position - b.position;
+    });
+
+    // If the shelves haven't changed after a refinement, we don't need to update
+    // the DOM.
+    if (state.lastShelvesReceived === JSON.stringify(shelves)) {
+      return;
+    }
+
+    state.lastShelvesReceived = JSON.stringify(shelves);
+    const container = document.querySelector(widgetParams.container);
+
+    // We unmount all previous shelves indices to have an updated InstantSearch
+    // tree.
+    instantSearchInstance.mainIndex.removeWidgets(state.shelvesIndices);
+
+    const shelvesIndices = shelves.map(shelf => {
+      const shelfContainer = document.createElement("div");
+      const shelfTitle = document.createElement("h2");
+      shelfTitle.innerText = shelf.label;
+      const shelfRow = document.createElement("div");
+
+      shelfContainer.append(shelfTitle, shelfRow);
+
+      const shelfIndex = instantsearch.widgets
+        .index({ indexName: instantSearchInstance.indexName })
+        .addWidgets([
+          instantsearch.widgets.configure({
+            hitsPerPage: shelf.nbProducts,
+            ruleContexts: [shelf.ruleContext],
+          }),
+          instantsearch.widgets.hits({
+            container: shelfRow,
+            templates: {
+              item: widgetParams.template,
+            },
+          }),
+        ]);
+
+      return [shelfIndex, shelfContainer];
+    });
+
+    state.shelvesIndices = shelvesIndices.map(shelvesIndex => shelvesIndex[0]);
+    const shelvesContainers = shelvesIndices.map(
+      shelvesIndex => shelvesIndex[1]
+    );
+
+    instantSearchInstance.mainIndex.addWidgets(state.shelvesIndices);
+    container.append(...shelvesContainers);
+  }
+);
+
+function getState(key) {
+  states[key] = states[key] || {
+    lastShelvesReceived: null,
+    shelvesIndices: [],
+  };
+
+  return states[key];
+}
+
+export default rulePoweredContentShelves;
