@@ -1,6 +1,6 @@
 const state = {
   lastShelvesReceived: null,
-  shelvesIndices: [],
+  shelfIndices: [],
 };
 
 const rulePoweredContentShelves = instantsearch.connectors.connectQueryRules(
@@ -27,9 +27,9 @@ const rulePoweredContentShelves = instantsearch.connectors.connectQueryRules(
 
     // We unmount all previous shelves indices to have an updated InstantSearch
     // tree.
-    instantSearchInstance.mainIndex.removeWidgets(state.shelvesIndices);
+    instantSearchInstance.mainIndex.removeWidgets(state.shelfIndices);
 
-    const shelvesIndices = shelves.map(shelf => {
+    const shelfIndices = shelves.map(shelf => {
       const shelfContainer = document.createElement("div");
       const shelfTitle = document.createElement("h2");
       shelfTitle.innerText = shelf.label;
@@ -55,13 +55,11 @@ const rulePoweredContentShelves = instantsearch.connectors.connectQueryRules(
       return [shelfIndex, shelfContainer];
     });
 
-    state.shelvesIndices = shelvesIndices.map(shelvesIndex => shelvesIndex[0]);
-    const shelvesContainers = shelvesIndices.map(
-      shelvesIndex => shelvesIndex[1]
-    );
+    state.shelfIndices = shelfIndices.map(shelvesIndex => shelvesIndex[0]);
+    const shelfContainers = shelfIndices.map(shelvesIndex => shelvesIndex[1]);
 
-    instantSearchInstance.mainIndex.addWidgets(state.shelvesIndices);
-    container.append(...shelvesContainers);
+    instantSearchInstance.mainIndex.addWidgets(state.shelfIndices);
+    container.append(...shelfContainers);
   }
 );
 
