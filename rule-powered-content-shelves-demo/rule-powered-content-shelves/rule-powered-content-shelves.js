@@ -1,4 +1,7 @@
-const states = {};
+const state = {
+  lastShelvesReceived: null,
+  shelvesIndices: [],
+};
 
 const rulePoweredContentShelves = instantsearch.connectors.connectQueryRules(
   ({ items, widgetParams, instantSearchInstance }) => {
@@ -8,7 +11,6 @@ const rulePoweredContentShelves = instantsearch.connectors.connectQueryRules(
       return;
     }
 
-    const state = getState(widgetParams.container);
     const shelves = items[0].shelves;
     shelves.sort(function(a, b) {
       return a.position - b.position;
@@ -62,14 +64,5 @@ const rulePoweredContentShelves = instantsearch.connectors.connectQueryRules(
     container.append(...shelvesContainers);
   }
 );
-
-function getState(key) {
-  states[key] = states[key] || {
-    lastShelvesReceived: null,
-    shelvesIndices: [],
-  };
-
-  return states[key];
-}
 
 export default rulePoweredContentShelves;
