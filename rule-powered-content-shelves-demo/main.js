@@ -1,4 +1,4 @@
-import queryRulesLanes from "./query-rules-lanes/query-rules-lanes.js";
+import rulePoweredContentShelves from "./rule-powered-content-shelves/rule-powered-content-shelves.js";
 
 const search = instantsearch({
   indexName: "solution_retail_dataset",
@@ -8,10 +8,10 @@ const search = instantsearch({
 search.addWidgets([
   instantsearch.widgets.configure({
     hitsPerPage: 8,
-    ruleContexts: ["get_lanes"],
+    ruleContexts: ["get_shelves"],
   }),
-  queryRulesLanes({
-    container: "#lanes",
+  rulePoweredContentShelves({
+    container: "#shelves",
     template: `
 <div class="item">
   <div class="centered">

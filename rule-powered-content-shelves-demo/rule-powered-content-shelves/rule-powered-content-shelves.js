@@ -1,73 +1,75 @@
 const states = {};
 
-const queryRulesLanes = instantsearch.connectors.connectQueryRules(
+const rulePoweredContentShelves = instantsearch.connectors.connectQueryRules(
   ({ items, widgetParams, instantSearchInstance }) => {
-    // We don't display anything if we don't receive any lanes from the
+    // We don't display anything if we don't receive any shelves from the
     // Query Rules.
-    if (items.length === 0 || !items[0].lanes) {
+    if (items.length === 0 || !items[0].shelves) {
       return;
     }
 
     const state = getState(widgetParams.container);
-    const lanes = items[0].lanes;
-    lanes.sort(function(a, b) {
+    const shelves = items[0].shelves;
+    shelves.sort(function(a, b) {
       return a.position - b.position;
     });
 
-    // If the lanes haven't changed after a refinement, we don't need to update
+    // If the shelves haven't changed after a refinement, we don't need to update
     // the DOM.
-    if (state.lastLanesReceived === JSON.stringify(lanes)) {
+    if (state.lastShelvesReceived === JSON.stringify(shelves)) {
       return;
     }
 
-    state.lastLanesReceived = JSON.stringify(lanes);
+    state.lastShelvesReceived = JSON.stringify(shelves);
     const container = document.querySelector(widgetParams.container);
 
-    // We unmount all previous lanes indices to have an updated InstantSearch
+    // We unmount all previous shelves indices to have an updated InstantSearch
     // tree.
-    instantSearchInstance.mainIndex.removeWidgets(state.lanesIndices);
+    instantSearchInstance.mainIndex.removeWidgets(state.shelvesIndices);
 
-    const lanesIndices = lanes.map(lane => {
-      const laneContainer = document.createElement("div");
-      const laneTitle = document.createElement("h2");
-      laneTitle.innerText = lane.label;
-      const laneRow = document.createElement("div");
+    const shelvesIndices = shelves.map(shelf => {
+      const shelfContainer = document.createElement("div");
+      const shelfTitle = document.createElement("h2");
+      shelfTitle.innerText = shelf.label;
+      const shelfRow = document.createElement("div");
 
-      laneContainer.append(laneTitle, laneRow);
+      shelfContainer.append(shelfTitle, shelfRow);
 
-      const laneIndex = instantsearch.widgets
+      const shelfIndex = instantsearch.widgets
         .index({ indexName: instantSearchInstance.indexName })
         .addWidgets([
           instantsearch.widgets.configure({
-            hitsPerPage: lane.nbProducts,
-            ruleContexts: [lane.ruleContext],
+            hitsPerPage: shelf.nbProducts,
+            ruleContexts: [shelf.ruleContext],
           }),
           instantsearch.widgets.hits({
-            container: laneRow,
+            container: shelfRow,
             templates: {
               item: widgetParams.template,
             },
           }),
         ]);
 
-      return [laneIndex, laneContainer];
+      return [shelfIndex, shelfContainer];
     });
 
-    state.lanesIndices = lanesIndices.map(lanesIndex => lanesIndex[0]);
-    const lanesContainers = lanesIndices.map(lanesIndex => lanesIndex[1]);
+    state.shelvesIndices = shelvesIndices.map(shelvesIndex => shelvesIndex[0]);
+    const shelvesContainers = shelvesIndices.map(
+      shelvesIndex => shelvesIndex[1]
+    );
 
-    instantSearchInstance.mainIndex.addWidgets(state.lanesIndices);
-    container.append(...lanesContainers);
+    instantSearchInstance.mainIndex.addWidgets(state.shelvesIndices);
+    container.append(...shelvesContainers);
   }
 );
 
 function getState(key) {
   states[key] = states[key] || {
-    lastLanesReceived: null,
-    lanesIndices: [],
+    lastShelvesReceived: null,
+    shelvesIndices: [],
   };
 
   return states[key];
 }
 
-export default queryRulesLanes;
+export default rulePoweredContentShelves;

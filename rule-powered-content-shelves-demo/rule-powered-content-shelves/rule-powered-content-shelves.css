@@ -1,14 +1,4 @@
-.lane{
-  margin-top: 20px;
-}
-
-.lane .label{
-  font-weight: bold;
-  font-size: 20px;
-  margin-bottom: 10px;
-}
-
-.ais-Hits-list{
+.ais-Hits-list {
   flex-wrap: nowrap;
   display: -webkit-box;
   overflow-x: scroll;
