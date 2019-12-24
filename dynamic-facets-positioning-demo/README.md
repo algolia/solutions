@@ -3,14 +3,13 @@
 Create a Query Rule with "Return Custom Data" as a consequence that returns this type of object:
 
 ```javascript
+
 {
-    "facets": {
-        "facetName": {
-          "position": 1
-        },
-        "facetName": {
-          "position": 2
-        }
-     }
+   "facetPositioning": [
+      {"name": "facetName1", "position": 2}, 
+      {"name": "facetName2", "position": 1}
+    ]
 }
+
 ```
+
