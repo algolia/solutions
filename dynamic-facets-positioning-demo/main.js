@@ -57,27 +57,30 @@ search.addWidget({
   render(renderOptions) {
     const results = renderOptions.results;
     const userData = results.userData;
+    const userDataType = 'facetPositioning'; //update this value depending on the custom data of the query rule 
     const facetsContainer = document.querySelector("#facets-container");
 
-    if (!userData) return null;
-
-    const customFacetsData = userData.find(
-      data => data.customFacets && Array.isArray(data.customFacets)
-    );
-
-    if (!customFacetsData) return null;
-
+    //Revert to default order of facets
     Array.from(facetsContainer.children).forEach((node, index) => {
       node.style.order = index + 1;
     });
 
-    customFacetsData.customFacets.forEach(facet => {
-      const element = document.getElementById(facet.name);
+    if (!userData) return null;
 
+    //Update order of facets per query 
+    const customFacetsData = userData.find(
+      data => data[userDataType] && Array.isArray(data[userDataType])
+    );
+
+    if (!customFacetsData) return null;
+
+    customFacetsData[userDataType].forEach(facet => {
+      const element = document.getElementById(facet.name);
       if (element) {
         element.style.order = facet.position - 1;
-      }
+      } 
     });
+
   }
 });
 
