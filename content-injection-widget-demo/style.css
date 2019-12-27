@@ -86,37 +86,33 @@ nav ul {
 #hits {
   margin-top: 20px;
 
-  display: flex;
-  align-items: center;
-  justify-content: space-evenly;
-  flex-direction: row;
-  flex-wrap: wrap;
-  flex-flow: row wrap;
-  align-content: flex-end;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(20%, 1fr));
+  grid-row-gap: 16px;
+  grid-column-gap: 16px;
 }
+
+
 
 #hits {
   list-style-type: none;
   padding-left: 0;
 }
 
-#hits li {
-  width: 25%;
-}
-
 .ais-Hits-item {
   height: 340px;
-  background-color: white;
   padding: 0;
   position: relative;
 }
 
 .item {
+  background-color: white;
   padding: 1rem;
   display: flex;
   flex-direction: column;
   text-align: center;
   align-items: center;
+  box-shadow: 0 5px 15px 0 rgba(37,44,97,.15), 0 2px 4px 0 rgba(93,100,148,.2)
 }
 
 .ais-Hits-item .price {
@@ -158,7 +154,12 @@ nav ul {
 }
 
 .item .item-content .name {
-  margin-bottom: 24px;
+  margin: 16px auto;
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: 60%;
+  text-overflow: ellipsis;
+  text-align: center;
 }
 
 #pagination {
@@ -188,8 +189,8 @@ nav ul {
     width: 65%;
   }
 
-  .ais-Hits-item {
-    width: calc(33.3% - 1rem);
+  #hits {
+    grid-template-columns: repeat(3, minmax(30%, 1fr));
   }
 }
 
@@ -242,8 +243,8 @@ nav ul {
     margin-bottom: 15px;
   }
 
-  .ais-Hits-item {
-    width: calc(50% - 1rem);
+  #hits {
+    grid-template-columns: repeat(2, minmax(45%, 1fr));
   }
 
   #bars {
