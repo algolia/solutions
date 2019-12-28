@@ -121,9 +121,13 @@
   margin: 0 8px 10px 8px;
 }
 
+.suggestion-tag {
+  font-weight: bold;
+}
+
 .suggestion-tag em {
-    font-style: normal;
-    font-weight: bold;
+  font-style: normal;
+  font-weight: normal;
 }
 
 #clear-input {
