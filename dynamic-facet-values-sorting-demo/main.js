@@ -77,15 +77,15 @@ search.addWidget(
         userData &&
         userData.find(data => {
           return (
-            data.facets &&
-            data.facets[attributeToSort] &&
-            data.facets[attributeToSort].sortBy
+            data.facetSorts &&
+            data.facetSorts[attributeToSort] &&
+            data.facetSorts[attributeToSort].sortBy
           );
         });
         
       if (!customFacetSortData) return 1;
 
-      const facetSort = customFacetSortData.facets[attributeToSort].sortBy;
+      const facetSort = customFacetSortData.facetSorts[attributeToSort].sortBy;
       const sort = Array.isArray(facetSort) ? "position" : facetSort;
       const [sortBy, direction = "asc"] = sort.split(":");
 
@@ -128,15 +128,15 @@ search.addWidget(
         userData &&
         userData.find(data => {
           return (
-            data.facets &&
-            data.facets[attributeToSort] &&
-            data.facets[attributeToSort].sortBy
+            data.facetSorts &&
+            data.facetSorts[attributeToSort] &&
+            data.facetSorts[attributeToSort].sortBy
           );
         });
         
       if (!customFacetSortData) return 1;
 
-      const facetSort = customFacetSortData.facets[attributeToSort].sortBy;
+      const facetSort = customFacetSortData.facetSorts[attributeToSort].sortBy;
       const sort = Array.isArray(facetSort) ? "position" : facetSort;
       const [sortBy, direction = "asc"] = sort.split(":");
 

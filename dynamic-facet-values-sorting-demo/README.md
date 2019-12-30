@@ -4,7 +4,7 @@ Create a Query Rule with "Return Custom Data" as a consequence that returns this
 
 ```javascript
 {
-    "facets": {
+    "facetSorts": {
         "facetName": {
           "sortBy": "alpha:asc"
         },
