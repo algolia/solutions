@@ -7,19 +7,6 @@ import * as RecentSearchesGlobalImport from "./../node_modules/recent-searches/d
 
 const RecentSearches = window.RecentSearches.default;
 
-const isVisible = (container, element) => {
-  let scrollTop = container.scrollTop;
-  let scrollRight = scrollTop + container.clientHeight;
-
-  let elementTop = element.offsetTop;
-  let elementRight = elementTop + element.clientHeight;
-
-  let visible = elementTop >= scrollTop && elementRight <= scrollRight;
-  return {
-    visible
-  };
-};
-
 const filterUniques = (suggestions, query) => {
   const uniques = suggestions.reduce((acc, suggestion) => {
     if (acc[suggestion.query] || query === suggestion.query) return acc;
@@ -101,6 +88,7 @@ class PredictiveSearchBox {
   }
 
   init(instantSearchOptions) {
+    this.helper = instantSearchOptions.helper;
     this.widgetContainer = document.querySelector(this.container);
 
     if (!this.widgetContainer) {
@@ -156,8 +144,12 @@ class PredictiveSearchBox {
   };
 
   setSearchBoxValue = value => {
-    this.searchBoxInput.value = value;
+    this.searchBoxInput.value = value || "";
     this.searchBoxInput.dispatchEvent(new Event("input"));
+  };
+
+  setPredictiveSearchBoxValue = value => {
+    this.predictiveSearchBoxItem.innerText = value || "";
   };
 
   onSearchBoxKeyDown = event => {
@@ -192,7 +184,8 @@ class PredictiveSearchBox {
     if (isPressingTabTwice || isPressingArrowRightTwice) return null;
 
     event.preventDefault();
-    this.predictiveSearchBoxItem.innerText = "";
+
+    this.setPredictiveSearchBoxValue();
     this.setSearchBoxValue(this.tabActionSuggestion);
     this.closeSuggestionTags();
   };
@@ -212,6 +205,7 @@ class PredictiveSearchBox {
         "id",
         `suggestion-${sanitizeQuery(suggestion.query)}`
       );
+      suggestionElement.dataset.query = suggestion.query;
 
       suggestionElement.classList.add("suggestion-tag");
       suggestionElement.innerHTML = suggestion.__recent__
@@ -220,9 +214,11 @@ class PredictiveSearchBox {
 
       suggestionElement.addEventListener("click", () => {
         this.RecentSearches.setRecentSearch(suggestion.query, suggestion);
-        this.predictiveSearchBoxItem.innerText = "";
-        this.setSearchBoxValue(suggestion.query);
+        this.setPredictiveSearchBoxValue();
         this.closeSuggestionTags();
+
+        this.searchBoxInput.value = suggestion.query;
+        this.helper.setQuery(suggestion.query).search();
       });
 
       suggestionElement.addEventListener("mouseenter", event => {
@@ -243,12 +239,7 @@ class PredictiveSearchBox {
       this.suggestionTagsContainer.append(suggestionElement);
     });
 
-    this.updateScrollIndicator();
     this.updateExpandedA11y(hits.length > 0);
-
-    if (this.suggestionTagsContainer.firstChild) {
-      this.scrollElementToView(this.suggestionTagsContainer.firstChild);
-    }
   };
 
   updateTabActionSuggestion = event => {
@@ -266,7 +257,7 @@ class PredictiveSearchBox {
       this.tabActionSuggestion &&
       !this.tabActionSuggestion.startsWith(query)
     ) {
-      this.predictiveSearchBoxItem.innerText = "";
+      this.setPredictiveSearchBoxValue();
     }
 
     this.querySuggestionsIndex
@@ -277,6 +268,7 @@ class PredictiveSearchBox {
         const recentSearches = this.RecentSearches.getRecentSearches(query)
           .slice(0, this.maxSavedSearchesPerQuery)
           .map(suggestion => ({ ...suggestion.data, __recent__: true }));
+
         const suggestions = filterUniques(
           recentSearches.concat(response.hits),
           query
@@ -291,12 +283,14 @@ class PredictiveSearchBox {
           return [];
         }
 
-        if (suggestions[0].query.startsWith(query)) {
+        const prediction = suggestions[0].query;
+
+        if (prediction.startsWith(query)) {
           this.predictiveSearchBox.style.display = "flex";
-          this.predictiveSearchBoxItem.innerText = suggestions[0].query;
-          this.tabActionSuggestion = suggestions[0].query;
+          this.setPredictiveSearchBoxValue(prediction);
+          this.tabActionSuggestion = prediction;
         } else {
-          this.predictiveSearchBoxItem.innerText = "";
+          this.setPredictiveSearchBoxValue();
         }
         return suggestions;
       })
@@ -313,18 +307,16 @@ class PredictiveSearchBox {
 
   clearSuggestions = () => {
     this.tabActionSuggestion = null;
-    this.predictiveSearchBoxItem.innerText = "";
+    this.setPredictiveSearchBoxValue();
   };
 
   clear = () => {
-    this.searchBoxInput.value = "";
-    this.predictiveSearchBoxItem.innerText = "";
-
     this.clearSuggestionTags();
+    this.setPredictiveSearchBoxValue();
     this.updateExpandedA11y(false);
 
     this.tabActionSuggestion = null;
-    this.searchBoxInput.dispatchEvent(new Event("input"));
+    this.setSearchBoxValue();
   };
 
   // Keyboard navigation
@@ -341,7 +333,6 @@ class PredictiveSearchBox {
 
       if (currentSelectedElement) {
         currentSelectedElement.dispatchEvent(new Event("click"));
-        this.searchBoxInput.dispatchEvent(new Event("input"));
         this.closeSuggestionTags();
         this.clearSuggestions();
       }
@@ -362,8 +353,10 @@ class PredictiveSearchBox {
       // Set first element to selected
       if (!currentSelectedElement) {
         const firstSuggestion = suggestions[0];
+        this.setPredictiveSearchBoxValue();
+        this.searchBoxInput.value = firstSuggestion.dataset.query;
+
         firstSuggestion.setAttribute("aria-selected", true);
-        this.scrollElementToView(firstSuggestion);
         this.updateActiveDescendantA11y(firstSuggestion.id);
         return;
       }
@@ -374,12 +367,11 @@ class PredictiveSearchBox {
           (suggestions.indexOf(currentSelectedElement) + 1) % suggestions.length
         ];
 
+      this.setPredictiveSearchBoxValue();
+      this.searchBoxInput.value = nextSelectedElement.dataset.query;
+
       currentSelectedElement.removeAttribute("aria-selected");
       nextSelectedElement.setAttribute("aria-selected", true);
-      this.scrollElementToView(
-        nextSelectedElement,
-        suggestions.indexOf(currentSelectedElement) !== suggestions.length - 1
-      );
       this.updateActiveDescendantA11y(nextSelectedElement.id);
     }
 
@@ -395,8 +387,11 @@ class PredictiveSearchBox {
       // Set last element to selected
       if (!currentSelectedElement) {
         const lastSuggestion = suggestions[suggestions.length - 1];
+
+        this.setPredictiveSearchBoxValue();
+        this.searchBoxInput.value = lastSuggestion.dataset.query;
+
         lastSuggestion.setAttribute("aria-selected", true);
-        this.scrollElementToView(lastSuggestion);
         this.updateActiveDescendantA11y(lastSuggestion.id);
         return;
       }
@@ -410,9 +405,11 @@ class PredictiveSearchBox {
             : currentIndex % suggestions.length
         ];
 
+      this.setPredictiveSearchBoxValue();
+      this.searchBoxInput.value = nextSelectedElement.dataset.query;
+
       currentSelectedElement.removeAttribute("aria-selected");
       nextSelectedElement.setAttribute("aria-selected", true);
-      this.scrollElementToView(nextSelectedElement);
       this.updateActiveDescendantA11y(nextSelectedElement.id);
     }
 
@@ -444,42 +441,6 @@ class PredictiveSearchBox {
       );
     }
     this.searchBoxInput.removeAttribute("aria-activedescendant");
-  };
-
-  updateScrollIndicator = () => {
-    const container = this.suggestionTagsContainer;
-    if (
-      container.offsetHeight < container.scrollHeight ||
-      container.offsetWidth < container.scrollWidth
-    ) {
-      container.parentNode.classList.add("overflowing-indicator-right");
-      container.addEventListener("scroll", this.onSuggestionScroll);
-    } else {
-      container.parentNode.classList.remove("overflowing-indicator");
-    }
-  };
-
-  scrollElementToView = (element, forward) => {
-    const { visible } = isVisible(this.suggestionTagsContainer, element);
-
-    if (!visible) {
-      this.animatedElementID = element.id;
-
-      const scrollableParent = this.suggestionTagsContainer.parentNode
-        .parentNode;
-      const parentRects = scrollableParent.getBoundingClientRect();
-      const clientRects = element.getBoundingClientRect();
-
-      const currentScroll = this.suggestionTagsContainer.scrollTop;
-
-      const position =
-        scrollableParent.scrollTop + clientRects.top - parentRects.top - 16;
-
-      if (forward) {
-        return this.animateToView(currentScroll, clientRects.width + 16);
-      }
-      this.animateToView(currentScroll, position);
-    }
   };
 }
 
