@@ -1,16 +1,21 @@
-const isVisible = (container, element) => {
-  let scrollLeft = container.scrollLeft;
-  let scrollRight = scrollLeft + container.clientWidth;
+// You may need to change the import, depending on what build system you use
+// this demo uses browserSync, so we globally assign the library - you probably should not use this
+import * as RecentSearchesGlobalImport from "./../node_modules/recent-searches/dist/index.js";
 
-  let elementLeft = element.offsetLeft;
-  let elementRight = elementLeft + element.clientWidth;
+// Webpack
+// import RecentSearches from "recent-searches"
 
-  let visible = elementLeft >= scrollLeft && elementRight <= scrollRight;
-  return {
-    visible
-  };
+const RecentSearches = window.RecentSearches.default;
+
+const filterUniques = (suggestions, query) => {
+  const uniques = suggestions.reduce((acc, suggestion) => {
+    if (acc[suggestion.query] || query === suggestion.query) return acc;
+    acc[suggestion.query] = suggestion;
+    return acc;
+  }, {});
+
+  return Object.values(uniques);
 };
-
 const renderSearchBoxContainer = (placeholder, value) => {
   return `
       <div id="searchbox">
@@ -23,23 +28,22 @@ const renderSearchBoxContainer = (placeholder, value) => {
           role="combobox"
           aria-expanded="false"
           aria-haspopup="listbos"
-          aria-owns="suggestion-tags"
+          aria-owns="searches-suggestions"
           >
           <input 
             id="search-box-input"
             autocomplete="off"
             autofocus="true"
-            placeholder="${placeholder || ""}"
+            placeholder="${placeholder || "Search"}"
             value="${value || ""}"
             type="text"
             aria-autocomplete="list"
-            aria-controls="suggestion-tags"
+            aria-controls="searches-suggestions"
             aria-activedescendant
           >
         </div>
-        <div id="clear-input"><i class="fas fa-times"></i></div>
-        <div class="suggestion-tags-container">
-          <ul id="suggestion-tags" role="listbox" label="Suggestions"></ul>
+        <div class="recent-searches-container">
+          <ul id="recent-searches-tags" role="listbox" label="Searches" style="display: none">
         </div>
       </div>
     `;
@@ -61,6 +65,19 @@ class PredictiveSearchBox {
   constructor(options) {
     Object.assign(this, options);
 
+    if (typeof options.noResultsRenderer !== "function") {
+      throw new Error(
+        "You are required to pass a noResultRendered function that will render a no result message"
+      );
+    }
+    // Default options
+    this.maxSuggestions = this.maxSuggestions || 10;
+    this.maxSavedSearchesPerQuery = this.maxSavedSearchesPerQuery || 4;
+
+    this.RecentSearches = new RecentSearches({
+      namespace: this.querySuggestionsIndex
+    });
+
     this.client = algoliasearch(options.appID, options.apiKey);
     this.querySuggestionsIndex = this.client.initIndex(
       this.querySuggestionsIndex
@@ -71,52 +88,68 @@ class PredictiveSearchBox {
   }
 
   init(instantSearchOptions) {
-    const widgetContainer = document.querySelector(this.container);
+    this.helper = instantSearchOptions.helper;
+    this.widgetContainer = document.querySelector(this.container);
 
-    if (!widgetContainer) {
+    if (!this.widgetContainer) {
       throw new Error(
         `Could not find widget container ${this.container} inside the DOM`
       );
     }
 
-    widgetContainer.innerHTML = renderSearchBoxContainer(
+    this.widgetContainer.innerHTML = renderSearchBoxContainer(
       this.placeholder,
       instantSearchOptions.helper.state.query
     );
 
-    this.predictiveSearchBox = widgetContainer.querySelector("#predictive-box");
-    this.predictiveSearchBoxItem = widgetContainer.querySelector(
+    this.predictiveSearchBox = this.widgetContainer.querySelector(
+      "#predictive-box"
+    );
+    this.predictiveSearchBoxItem = this.widgetContainer.querySelector(
       "#predictive-box-text"
     );
-    this.predictiveSearchBoxContainer = widgetContainer.querySelector(
+    this.predictiveSearchBoxContainer = this.widgetContainer.querySelector(
       "#search-box-container"
     );
 
-    this.clearButton = widgetContainer.querySelector("#clear-input");
-    this.searchBoxInput = widgetContainer.querySelector("#search-box-input");
-    this.suggestionTagsContainer = widgetContainer.querySelector(
-      "#suggestion-tags"
+    this.searchBoxInput = this.widgetContainer.querySelector(
+      "#search-box-input"
+    );
+    this.suggestionTagsContainer = this.widgetContainer.querySelector(
+      "#recent-searches-tags"
     );
 
     this.registerSearchBoxHandlers(
       instantSearchOptions.helper,
-      this.searchBoxInput,
-      this.clearButton
+      this.searchBoxInput
     );
   }
 
-  registerSearchBoxHandlers = (helper, searchBox, clearButton) => {
+  registerSearchBoxHandlers = (helper, searchBox) => {
     searchBox.addEventListener("keydown", this.onSearchBoxKeyDown);
     searchBox.addEventListener("input", event => {
       this.updateTabActionSuggestion(event);
       helper.setQuery(event.currentTarget.value).search();
     });
-    clearButton.addEventListener("click", this.clear);
+
+    searchBox.addEventListener("focus", event => {
+      this.updateTabActionSuggestion(event);
+      helper.setQuery(event.currentTarget.value).search();
+    });
+
+    document.addEventListener("click", event => {
+      if (this.widgetContainer.contains(event.target)) return;
+      this.closeSuggestionTags();
+    });
   };
 
   setSearchBoxValue = value => {
-    this.searchBoxInput.value = value;
+    this.searchBoxInput.value = value || "";
     this.searchBoxInput.dispatchEvent(new Event("input"));
+  };
+
+  setPredictiveSearchBoxValue = value => {
+    this.predictiveSearchBoxItem.innerText = value || "";
   };
 
   onSearchBoxKeyDown = event => {
@@ -151,12 +184,16 @@ class PredictiveSearchBox {
     if (isPressingTabTwice || isPressingArrowRightTwice) return null;
 
     event.preventDefault();
-    this.predictiveSearchBoxItem.innerText = "";
+
+    this.setPredictiveSearchBoxValue();
     this.setSearchBoxValue(this.tabActionSuggestion);
+    this.closeSuggestionTags();
   };
 
   updateSuggestionTags = hits => {
-    if (!this.maxSuggestions || this.maxSuggestions <= 0) return hits;
+    if (!this.maxSuggestions || this.maxSuggestions <= 0 || !hits.length) {
+      return hits;
+    }
 
     this.clearSuggestionTags();
 
@@ -168,54 +205,100 @@ class PredictiveSearchBox {
         "id",
         `suggestion-${sanitizeQuery(suggestion.query)}`
       );
+      suggestionElement.dataset.query = suggestion.query;
 
       suggestionElement.classList.add("suggestion-tag");
-      suggestionElement.innerHTML = suggestion._highlightResult.query.value;
+      suggestionElement.innerHTML = suggestion.__recent__
+        ? `<span><i class="fas fa-clock"></i>${suggestion.query}</span>`
+        : `<span><i class="fas fa-search"></i>${suggestion._highlightResult.query.value}</span>`;
 
       suggestionElement.addEventListener("click", () => {
-        this.setSearchBoxValue(suggestion.query);
-        this.predictiveSearchBoxItem.innerText = "";
+        this.RecentSearches.setRecentSearch(suggestion.query, suggestion);
+        this.setPredictiveSearchBoxValue();
+        this.closeSuggestionTags();
+
+        this.searchBoxInput.value = suggestion.query;
+        this.helper.setQuery(suggestion.query).search();
+      });
+
+      suggestionElement.addEventListener("mouseenter", event => {
+        const currentSelectedElement = this.suggestionTagsContainer.querySelector(
+          '[aria-selected="true"]'
+        );
+
+        if (currentSelectedElement) {
+          currentSelectedElement.removeAttribute("aria-selected");
+        }
+
+        event.currentTarget.setAttribute("aria-selected", true);
+      });
+
+      suggestionElement.addEventListener("mouseleave", event => {
+        event.currentTarget.removeAttribute("aria-selected");
       });
       this.suggestionTagsContainer.append(suggestionElement);
     });
 
-    this.updateScrollIndicator();
     this.updateExpandedA11y(hits.length > 0);
-
-    if (this.suggestionTagsContainer.firstChild) {
-      this.scrollElementToView(this.suggestionTagsContainer.firstChild);
-    }
   };
 
   updateTabActionSuggestion = event => {
     const query = event.currentTarget.value;
 
     if (!query) {
-      this.clearSuggestionTags();
+      this.closeSuggestionTags();
       this.updateExpandedA11y(false);
       this.predictiveSearchBox.style.display = "none";
-      this.clearButton.style.display = "none";
       return;
+    }
+
+    // If new query does not match prefix, reset the prediction
+    if (
+      this.tabActionSuggestion &&
+      !this.tabActionSuggestion.startsWith(query)
+    ) {
+      this.setPredictiveSearchBoxValue();
     }
 
     this.querySuggestionsIndex
       .search({ query })
       .then(response => {
-        const suggestions = response.hits.filter(
-          hit => hit.query.startsWith(query) && hit.query !== query
+        this.suggestionTagsContainer.style.display = "";
+
+        const recentSearches = this.RecentSearches.getRecentSearches(query)
+          .slice(0, this.maxSavedSearchesPerQuery)
+          .map(suggestion => ({ ...suggestion.data, __recent__: true }));
+
+        const suggestions = filterUniques(
+          recentSearches.concat(response.hits),
+          query
         );
 
         if (!suggestions.length) {
           this.clearSuggestions();
+          this.suggestionTagsContainer.innerHTML = this.noResultsRenderer(
+            query,
+            response
+          );
           return [];
         }
 
-        this.predictiveSearchBox.style.display = "flex";
-        this.predictiveSearchBoxItem.innerText = suggestions[0].query;
-        this.tabActionSuggestion = suggestions[0].query;
+        const prediction = suggestions[0].query;
+
+        if (prediction.startsWith(query)) {
+          this.predictiveSearchBox.style.display = "flex";
+          this.setPredictiveSearchBoxValue(prediction);
+          this.tabActionSuggestion = prediction;
+        } else {
+          this.setPredictiveSearchBoxValue();
+        }
         return suggestions;
       })
       .then(this.updateSuggestionTags);
+  };
+
+  closeSuggestionTags = () => {
+    this.suggestionTagsContainer.style.display = "none";
   };
 
   clearSuggestionTags = () => {
@@ -224,18 +307,16 @@ class PredictiveSearchBox {
 
   clearSuggestions = () => {
     this.tabActionSuggestion = null;
-    this.predictiveSearchBoxItem.innerText = "";
+    this.setPredictiveSearchBoxValue();
   };
 
   clear = () => {
-    this.searchBoxInput.value = "";
-    this.predictiveSearchBoxItem.innerText = "";
-
     this.clearSuggestionTags();
+    this.setPredictiveSearchBoxValue();
     this.updateExpandedA11y(false);
 
     this.tabActionSuggestion = null;
-    this.searchBoxInput.dispatchEvent(new Event("input"));
+    this.setSearchBoxValue();
   };
 
   // Keyboard navigation
@@ -251,9 +332,9 @@ class PredictiveSearchBox {
       );
 
       if (currentSelectedElement) {
+        currentSelectedElement.dispatchEvent(new Event("click"));
+        this.closeSuggestionTags();
         this.clearSuggestions();
-        this.searchBoxInput.value = currentSelectedElement.textContent;
-        this.searchBoxInput.dispatchEvent(new Event("input"));
       }
     }
 
@@ -272,8 +353,10 @@ class PredictiveSearchBox {
       // Set first element to selected
       if (!currentSelectedElement) {
         const firstSuggestion = suggestions[0];
+        this.setPredictiveSearchBoxValue();
+        this.searchBoxInput.value = firstSuggestion.dataset.query;
+
         firstSuggestion.setAttribute("aria-selected", true);
-        this.scrollElementToView(firstSuggestion);
         this.updateActiveDescendantA11y(firstSuggestion.id);
         return;
       }
@@ -284,12 +367,11 @@ class PredictiveSearchBox {
           (suggestions.indexOf(currentSelectedElement) + 1) % suggestions.length
         ];
 
+      this.setPredictiveSearchBoxValue();
+      this.searchBoxInput.value = nextSelectedElement.dataset.query;
+
       currentSelectedElement.removeAttribute("aria-selected");
       nextSelectedElement.setAttribute("aria-selected", true);
-      this.scrollElementToView(
-        nextSelectedElement,
-        suggestions.indexOf(currentSelectedElement) !== suggestions.length - 1
-      );
       this.updateActiveDescendantA11y(nextSelectedElement.id);
     }
 
@@ -305,8 +387,11 @@ class PredictiveSearchBox {
       // Set last element to selected
       if (!currentSelectedElement) {
         const lastSuggestion = suggestions[suggestions.length - 1];
+
+        this.setPredictiveSearchBoxValue();
+        this.searchBoxInput.value = lastSuggestion.dataset.query;
+
         lastSuggestion.setAttribute("aria-selected", true);
-        this.scrollElementToView(lastSuggestion);
         this.updateActiveDescendantA11y(lastSuggestion.id);
         return;
       }
@@ -320,9 +405,11 @@ class PredictiveSearchBox {
             : currentIndex % suggestions.length
         ];
 
+      this.setPredictiveSearchBoxValue();
+      this.searchBoxInput.value = nextSelectedElement.dataset.query;
+
       currentSelectedElement.removeAttribute("aria-selected");
       nextSelectedElement.setAttribute("aria-selected", true);
-      this.scrollElementToView(nextSelectedElement);
       this.updateActiveDescendantA11y(nextSelectedElement.id);
     }
 
@@ -354,92 +441,6 @@ class PredictiveSearchBox {
       );
     }
     this.searchBoxInput.removeAttribute("aria-activedescendant");
-  };
-
-  updateScrollIndicator = () => {
-    const container = this.suggestionTagsContainer;
-    if (
-      container.offsetHeight < container.scrollHeight ||
-      container.offsetWidth < container.scrollWidth
-    ) {
-      container.parentNode.classList.add("overflowing-indicator-right");
-      container.addEventListener("scroll", this.onSuggestionScroll);
-    } else {
-      container.parentNode.classList.remove("overflowing-indicator");
-    }
-  };
-
-  scrollElementToView = (element, forward) => {
-    const { visible } = isVisible(this.suggestionTagsContainer, element);
-
-    if (!visible) {
-      this.animatedElementID = element.id;
-
-      const scrollableParent = this.suggestionTagsContainer.parentNode
-        .parentNode;
-      const parentRects = scrollableParent.getBoundingClientRect();
-      const clientRects = element.getBoundingClientRect();
-
-      const currentScroll = this.suggestionTagsContainer.scrollLeft;
-
-      const position =
-        scrollableParent.scrollLeft + clientRects.left - parentRects.left - 16;
-
-      if (forward) {
-        return this.animateToView(currentScroll, clientRects.width + 16);
-      }
-      this.animateToView(currentScroll, position);
-    }
-  };
-
-  animateToView = (startValue, change) => {
-    const DURATION = 600;
-    const start = performance.now();
-    // Used for cancellation of the animation
-    const elementID = this.animatedElementID;
-    // https://github.com/danro/jquery-easing/blob/master/jquery.easing.js
-    const sineEasing = (t, b, c, d) =>
-      c * Math.sin((t / d) * (Math.PI / 2)) + b;
-
-    const animate = () => {
-      window.requestAnimationFrame(() => {
-        const elapsed = performance.now() - start;
-        if (elapsed > DURATION || this.animatedElementID !== elementID) return;
-
-        const position = sineEasing(elapsed, startValue, change, DURATION);
-        this.suggestionTagsContainer.scrollLeft = position;
-        animate();
-      });
-    };
-    animate();
-  };
-
-  onSuggestionScroll = () => {
-    window.requestAnimationFrame(() => {
-      const width =
-        this.suggestionTagsContainer.scrollWidth -
-        this.suggestionTagsContainer.offsetWidth;
-
-      const scroll = this.suggestionTagsContainer.scrollLeft;
-      const container = this.suggestionTagsContainer.parentNode;
-
-      if (scroll === 0) {
-        container.classList.add("overflowing-indicator-right");
-        container.classList.remove("overflowing-indicator-left");
-        return;
-      }
-
-      if (scroll === width) {
-        container.classList.remove("overflowing-indicator-right");
-        container.classList.add("overflowing-indicator-left");
-        return;
-      }
-
-      container.classList.add(
-        "overflowing-indicator-right",
-        "overflowing-indicator-left"
-      );
-    });
   };
 }
 
