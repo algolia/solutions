@@ -71,7 +71,7 @@ search.addWidget(
     searchablePlaceholder: "Search our brands",
     sortBy(a, b) {
       const userData = search.helper.lastResults.userData;
-      const attributeToSort = "brand";
+      const attributeToSort = "brand"; //modify this value to match the attribute
 
       const customFacetSortData =
         userData &&
@@ -82,13 +82,12 @@ search.addWidget(
             data.facets[attributeToSort].sortBy
           );
         });
-
+        
       if (!customFacetSortData) return 1;
 
       const facetSort = customFacetSortData.facets[attributeToSort].sortBy;
       const sort = Array.isArray(facetSort) ? "position" : facetSort;
-
-      const [sortBy, direction = "ascending"] = sort.split(":");
+      const [sortBy, direction = "asc"] = sort.split(":");
 
       if (typeof SORTS[sortBy] !== "function") {
         console.log(
@@ -121,9 +120,9 @@ search.addWidget(
     limit: 3,
     showMore: false,
     searchable: false,
-    sortBy: (a, b) => {
+    sortBy(a, b) {
       const userData = search.helper.lastResults.userData;
-      const attributeToSort = "gender";
+      const attributeToSort = "gender"; //modify this value to match the attribute
 
       const customFacetSortData =
         userData &&
@@ -134,13 +133,12 @@ search.addWidget(
             data.facets[attributeToSort].sortBy
           );
         });
-
+        
       if (!customFacetSortData) return 1;
 
       const facetSort = customFacetSortData.facets[attributeToSort].sortBy;
       const sort = Array.isArray(facetSort) ? "position" : facetSort;
-
-      const [sortBy, direction = "ascending"] = sort.split(":");
+      const [sortBy, direction = "asc"] = sort.split(":");
 
       if (typeof SORTS[sortBy] !== "function") {
         console.log(
@@ -159,22 +157,23 @@ search.addWidget(
 
 search.start();
 
+//Utility functions
 const positionSort = (a, b, positions) => {
   return positions.indexOf(a.name) - positions.indexOf(b.name);
 };
 
-const alphabeticalSort = (a, b, direction = "ascending") => {
+const alphabeticalSort = (a, b, direction = "asc") => {
   const ascendingScore = a.name > b.name ? 1 : -1;
-  return direction === "ascending" ? ascendingScore : ascendingScore * -1;
+  return direction === "asc" ? ascendingScore : ascendingScore * -1;
 };
 
-const countSort = (a, b, direction = "ascending") => {
+const countSort = (a, b, direction = "asc") => {
   const ascendingScore = a.count > b.count ? 1 : -1;
-  return direction === "ascending" ? ascendingScore : ascendingScore * -1;
+  return direction === "asc" ? ascendingScore : ascendingScore * -1;
 };
 
 const SORTS = {
-  alphabetical: alphabeticalSort,
+  alpha: alphabeticalSort,
   count: countSort,
   position: positionSort
 };
