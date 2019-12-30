@@ -9,7 +9,7 @@ Create a Query Rule with "Return Custom Data" as a consequence that returns this
           "sortBy": "alpha:asc"
         },
         "facetName": {
-          "sortBy": "count:desc"
+          "sortBy": "count:asc"
         },
         "facetName": {
           "sortBy": "alpha:desc"
