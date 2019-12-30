@@ -57,7 +57,6 @@ search.addWidget({
   render(renderOptions) {
     const results = renderOptions.results;
     const userData = results.userData;
-    const userDataType = 'facetPositioning'; //update this value depending on the custom data of the query rule 
     const facetsContainer = document.querySelector("#facets-container");
 
     //Revert to default order of facets
@@ -69,12 +68,12 @@ search.addWidget({
 
     //Update order of facets per query 
     const customFacetsData = userData.find(
-      data => data[userDataType] && Array.isArray(data[userDataType])
+      data => data.facetPositions && Array.isArray(data.facetPositions)
     );
 
     if (!customFacetsData) return null;
 
-    customFacetsData[userDataType].forEach(facet => {
+    customFacetsData.facetPositions.forEach(facet => {
       const element = document.getElementById(facet.name);
       if (element) {
         element.style.order = facet.position - 1;
