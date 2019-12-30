@@ -251,6 +251,7 @@ class FederatedSearchWidget {
   }
 
   init(instantSearchOptions) {
+    this.helper = instantSearchOptions.helper;
     this.widgetContainer = document.querySelector(this.widgetOptions.container);
     this.widgetContainer.innerHTML = renderSearchBoxContainer(
       this.widgetOptions.placeholder,
@@ -330,7 +331,12 @@ class FederatedSearchWidget {
         '[aria-selected="true"]'
       );
 
-      currentSelectedElement.dispatchEvent(new Event("click"));
+      if (currentSelectedElement) {
+        return currentSelectedElement.dispatchEvent(new Event("click"));
+      }
+
+      this.helper.setQuery(this.searchBoxInput.value).search();
+      this.resultsContainer.style.display = "none";
     }
 
     if (hijackedKey === "ArrowDown") {

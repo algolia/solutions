@@ -22,14 +22,17 @@ search.addWidget(
       item: hit => `
         <div class="item">
           <img src="${hit.image_link}" alt="">
-          <button class="add-to-cart">
-            <i class="fas fa-cart-plus"></i> Add to Cart
-          </button>
           <div class="item-content">
             <p class="brand">${hit.brand}</p>
             <p class="name">${hit._highlightResult.item_title.value}</p>
+            <p class="price">Price: <span>${hit.price}</span></p>
+            <div class="item-actions">
+              <button class="view-button">View</button>
+              <button class="add-to-cart">
+                <i class="fas fa-cart-plus"></i> Buy
+              </button>
+            </div>
           </div>
-          <p class="price">Price: ${hit.price}</p>
         </div>
       `,
       injectedItem: hit => `

@@ -141,9 +141,7 @@ search.addWidget(
       const [sortBy, direction = "asc"] = sort.split(":");
 
       if (typeof SORTS[sortBy] !== "function") {
-        console.log(
-          `Sorting function not found for ${sortBy} - ${attributeToSort}`
-        );
+        // Sorting function not found for ${sortBy} - ${attributeToSort}`
         return 1;
       }
 

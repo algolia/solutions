@@ -91,7 +91,7 @@ search.addWidget(
         type: "QuerySuggestions",
         indexName: "atis-prods_query_suggestions",
         clickAnalytics: true,
-        title: "Matching Keywords",
+        title: "Suggestions",
         limit: 10,
         noResultsRenderer: (query, response) =>
           `No Matching Suggestion for ${query}`,
@@ -117,7 +117,7 @@ search.addWidget(
       {
         type: "Search",
         indexName: "atis-prods",
-        title: "Matching Products",
+        title: "Products",
         clickAnalytics: true,
         itemRenderer: hit => `
           <div class='hit'>
@@ -183,7 +183,7 @@ search.addWidget(
         clickAnalytics: true,
         facetTitleRenderer: facet =>
           `<h3 class="column-title">${
-            facet === "categories" ? "Matched Categories" : "Matched Brand"
+            facet === "categories" ? "Categories" : "Brands"
           }</h3>`,
         itemRenderer: (facet, facetCategory) => `
           <span class="facet">${facet.name}</span> ${numberWithCommas(
