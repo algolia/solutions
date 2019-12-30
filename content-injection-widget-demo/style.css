@@ -182,6 +182,10 @@ nav ul {
   font-weight: bold;
 }
 
+.injected-item-button {
+  display: inline-block;
+}
+
 #pagination {
   margin-top: 20px;
 }
@@ -271,3 +275,4 @@ nav ul {
     display: none;
   }
 }
+

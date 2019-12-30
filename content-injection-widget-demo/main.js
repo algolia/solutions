@@ -38,7 +38,7 @@ search.addWidget(
       injectedItem: hit => `
         <div class="item">
           <img src="${hit.image}" alt="">
-          <a class="price" href="${hit.target}">${hit.button}</a>
+          <a class="injected-item-button" href="${hit.target}">${hit.button}</a>
         </div>
       `,
       noResults: response => `
