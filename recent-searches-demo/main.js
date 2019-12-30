@@ -1,7 +1,4 @@
-import * as test from "./node_modules/recent-searches/dist/index.js";
 import RecentSearchesWidget from "./recent-searches/recent-searches.js";
-
-console.log(test);
 
 let appID = "932LAAGOT3";
 let apiKey = "6a187532e8e703464da52c20555c37cf";
@@ -43,7 +40,10 @@ search.addWidget(
     appID: appID,
     apiKey: apiKey,
     querySuggestionsIndex: "atis-prods_query_suggestions",
-    placeholder: "Search with query suggestions"
+    placeholder: "Search with query suggestions",
+    maxSavedSearchesPerQuery: 5,
+    noResultsRenderer: (query, response) =>
+      `<li class="no-results">No Matching Suggestion for <b>${query}</b></li>`
   })
 );
 

@@ -29,8 +29,8 @@ const renderSearchBoxContainer = (placeholder, value) => {
             id="search-box-input"
             autocomplete="off"
             autofocus="true"
-            placeholder="${placeholder}"
-            value="${value}"
+            placeholder="${placeholder || ""}"
+            value="${value || ""}"
             type="text"
             aria-autocomplete="list"
             aria-controls="suggestion-tags"
@@ -250,9 +250,11 @@ class PredictiveSearchBox {
         '[aria-selected="true"]'
       );
 
-      this.clearSuggestions();
-      this.searchBoxInput.value = currentSelectedElement.textContent;
-      this.searchBoxInput.dispatchEvent(new Event("input"));
+      if (currentSelectedElement) {
+        this.clearSuggestions();
+        this.searchBoxInput.value = currentSelectedElement.textContent;
+        this.searchBoxInput.dispatchEvent(new Event("input"));
+      }
     }
 
     // Handle ArrowDown

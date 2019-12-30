@@ -1,16 +1,34 @@
+// You may need to change the import, depending on what build system you use
+// this demo uses browserSync, so we globally assign the library - you probably should not use this
+import * as RecentSearchesGlobalImport from "./../node_modules/recent-searches/dist/index.js";
+
+// Webpack
+// import RecentSearches from "recent-searches"
+
+const RecentSearches = window.RecentSearches.default;
+
 const isVisible = (container, element) => {
-  let scrollLeft = container.scrollLeft;
-  let scrollRight = scrollLeft + container.clientWidth;
+  let scrollTop = container.scrollTop;
+  let scrollRight = scrollTop + container.clientHeight;
 
-  let elementLeft = element.offsetLeft;
-  let elementRight = elementLeft + element.clientWidth;
+  let elementTop = element.offsetTop;
+  let elementRight = elementTop + element.clientHeight;
 
-  let visible = elementLeft >= scrollLeft && elementRight <= scrollRight;
+  let visible = elementTop >= scrollTop && elementRight <= scrollRight;
   return {
     visible
   };
 };
 
+const filterUniques = (suggestions, query) => {
+  const uniques = suggestions.reduce((acc, suggestion) => {
+    if (acc[suggestion.query] || query === suggestion.query) return acc;
+    acc[suggestion.query] = suggestion;
+    return acc;
+  }, {});
+
+  return Object.values(uniques);
+};
 const renderSearchBoxContainer = (placeholder, value) => {
   return `
       <div id="searchbox">
@@ -37,9 +55,8 @@ const renderSearchBoxContainer = (placeholder, value) => {
             aria-activedescendant
           >
         </div>
-        <div id="clear-input"><i class="fas fa-times"></i></div>
         <div class="recent-searches-container">
-          <ul id="recent-searches-tags" role="listbox" label="Searches">
+          <ul id="recent-searches-tags" role="listbox" label="Searches" style="display: none">
         </div>
       </div>
     `;
@@ -61,8 +78,18 @@ class PredictiveSearchBox {
   constructor(options) {
     Object.assign(this, options);
 
+    if (typeof options.noResultsRenderer !== "function") {
+      throw new Error(
+        "You are required to pass a noResultRendered function that will render a no result message"
+      );
+    }
     // Default options
     this.maxSuggestions = this.maxSuggestions || 10;
+    this.maxSavedSearchesPerQuery = this.maxSavedSearchesPerQuery || 4;
+
+    this.RecentSearches = new RecentSearches({
+      namespace: this.querySuggestionsIndex
+    });
 
     this.client = algoliasearch(options.appID, options.apiKey);
     this.querySuggestionsIndex = this.client.initIndex(
@@ -74,47 +101,58 @@ class PredictiveSearchBox {
   }
 
   init(instantSearchOptions) {
-    const widgetContainer = document.querySelector(this.container);
+    this.widgetContainer = document.querySelector(this.container);
 
-    if (!widgetContainer) {
+    if (!this.widgetContainer) {
       throw new Error(
         `Could not find widget container ${this.container} inside the DOM`
       );
     }
 
-    widgetContainer.innerHTML = renderSearchBoxContainer(
+    this.widgetContainer.innerHTML = renderSearchBoxContainer(
       this.placeholder,
       instantSearchOptions.helper.state.query
     );
 
-    this.predictiveSearchBox = widgetContainer.querySelector("#predictive-box");
-    this.predictiveSearchBoxItem = widgetContainer.querySelector(
+    this.predictiveSearchBox = this.widgetContainer.querySelector(
+      "#predictive-box"
+    );
+    this.predictiveSearchBoxItem = this.widgetContainer.querySelector(
       "#predictive-box-text"
     );
-    this.predictiveSearchBoxContainer = widgetContainer.querySelector(
+    this.predictiveSearchBoxContainer = this.widgetContainer.querySelector(
       "#search-box-container"
     );
 
-    this.clearButton = widgetContainer.querySelector("#clear-input");
-    this.searchBoxInput = widgetContainer.querySelector("#search-box-input");
-    this.suggestionTagsContainer = widgetContainer.querySelector(
+    this.searchBoxInput = this.widgetContainer.querySelector(
+      "#search-box-input"
+    );
+    this.suggestionTagsContainer = this.widgetContainer.querySelector(
       "#recent-searches-tags"
     );
 
     this.registerSearchBoxHandlers(
       instantSearchOptions.helper,
-      this.searchBoxInput,
-      this.clearButton
+      this.searchBoxInput
     );
   }
 
-  registerSearchBoxHandlers = (helper, searchBox, clearButton) => {
+  registerSearchBoxHandlers = (helper, searchBox) => {
     searchBox.addEventListener("keydown", this.onSearchBoxKeyDown);
     searchBox.addEventListener("input", event => {
       this.updateTabActionSuggestion(event);
       helper.setQuery(event.currentTarget.value).search();
     });
-    clearButton.addEventListener("click", this.clear);
+
+    searchBox.addEventListener("focus", event => {
+      this.updateTabActionSuggestion(event);
+      helper.setQuery(event.currentTarget.value).search();
+    });
+
+    document.addEventListener("click", event => {
+      if (this.widgetContainer.contains(event.target)) return;
+      this.closeSuggestionTags();
+    });
   };
 
   setSearchBoxValue = value => {
@@ -156,10 +194,13 @@ class PredictiveSearchBox {
     event.preventDefault();
     this.predictiveSearchBoxItem.innerText = "";
     this.setSearchBoxValue(this.tabActionSuggestion);
+    this.closeSuggestionTags();
   };
 
   updateSuggestionTags = hits => {
-    if (!this.maxSuggestions || this.maxSuggestions <= 0) return hits;
+    if (!this.maxSuggestions || this.maxSuggestions <= 0 || !hits.length) {
+      return hits;
+    }
 
     this.clearSuggestionTags();
 
@@ -173,11 +214,31 @@ class PredictiveSearchBox {
       );
 
       suggestionElement.classList.add("suggestion-tag");
-      suggestionElement.innerHTML = `<i class="fas fa-search"></i>${suggestion._highlightResult.query.value}`;
+      suggestionElement.innerHTML = suggestion.__recent__
+        ? `<span><i class="fas fa-clock"></i>${suggestion.query}</span>`
+        : `<span><i class="fas fa-search"></i>${suggestion._highlightResult.query.value}</span>`;
 
       suggestionElement.addEventListener("click", () => {
-        this.setSearchBoxValue(suggestion.query);
+        this.RecentSearches.setRecentSearch(suggestion.query, suggestion);
         this.predictiveSearchBoxItem.innerText = "";
+        this.setSearchBoxValue(suggestion.query);
+        this.closeSuggestionTags();
+      });
+
+      suggestionElement.addEventListener("mouseenter", event => {
+        const currentSelectedElement = this.suggestionTagsContainer.querySelector(
+          '[aria-selected="true"]'
+        );
+
+        if (currentSelectedElement) {
+          currentSelectedElement.removeAttribute("aria-selected");
+        }
+
+        event.currentTarget.setAttribute("aria-selected", true);
+      });
+
+      suggestionElement.addEventListener("mouseleave", event => {
+        event.currentTarget.removeAttribute("aria-selected");
       });
       this.suggestionTagsContainer.append(suggestionElement);
     });
@@ -194,31 +255,56 @@ class PredictiveSearchBox {
     const query = event.currentTarget.value;
 
     if (!query) {
-      this.clearSuggestionTags();
+      this.closeSuggestionTags();
       this.updateExpandedA11y(false);
       this.predictiveSearchBox.style.display = "none";
-      this.clearButton.style.display = "none";
       return;
+    }
+
+    // If new query does not match prefix, reset the prediction
+    if (
+      this.tabActionSuggestion &&
+      !this.tabActionSuggestion.startsWith(query)
+    ) {
+      this.predictiveSearchBoxItem.innerText = "";
     }
 
     this.querySuggestionsIndex
       .search({ query })
       .then(response => {
-        const suggestions = response.hits.filter(
-          hit => hit.query.startsWith(query) && hit.query !== query
+        this.suggestionTagsContainer.style.display = "";
+
+        const recentSearches = this.RecentSearches.getRecentSearches(query)
+          .slice(0, this.maxSavedSearchesPerQuery)
+          .map(suggestion => ({ ...suggestion.data, __recent__: true }));
+        const suggestions = filterUniques(
+          recentSearches.concat(response.hits),
+          query
         );
 
         if (!suggestions.length) {
           this.clearSuggestions();
+          this.suggestionTagsContainer.innerHTML = this.noResultsRenderer(
+            query,
+            response
+          );
           return [];
         }
 
-        this.predictiveSearchBox.style.display = "flex";
-        this.predictiveSearchBoxItem.innerText = suggestions[0].query;
-        this.tabActionSuggestion = suggestions[0].query;
+        if (suggestions[0].query.startsWith(query)) {
+          this.predictiveSearchBox.style.display = "flex";
+          this.predictiveSearchBoxItem.innerText = suggestions[0].query;
+          this.tabActionSuggestion = suggestions[0].query;
+        } else {
+          this.predictiveSearchBoxItem.innerText = "";
+        }
         return suggestions;
       })
       .then(this.updateSuggestionTags);
+  };
+
+  closeSuggestionTags = () => {
+    this.suggestionTagsContainer.style.display = "none";
   };
 
   clearSuggestionTags = () => {
@@ -253,9 +339,12 @@ class PredictiveSearchBox {
         '[aria-selected="true"]'
       );
 
-      this.clearSuggestions();
-      this.searchBoxInput.value = currentSelectedElement.textContent;
-      this.searchBoxInput.dispatchEvent(new Event("input"));
+      if (currentSelectedElement) {
+        currentSelectedElement.dispatchEvent(new Event("click"));
+        this.searchBoxInput.dispatchEvent(new Event("input"));
+        this.closeSuggestionTags();
+        this.clearSuggestions();
+      }
     }
 
     // Handle ArrowDown
