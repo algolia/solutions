@@ -1,3 +1,22 @@
+// You may need to change the import, depending on what build system you use
+// this demo uses browserSync, so we globally assign the library - you probably should not use this
+import * as RecentSearchesGlobalImport from "./../node_modules/recent-searches/dist/index.js";
+
+// Webpack
+// import RecentSearches from "recent-searches"
+
+const RecentSearches = window.RecentSearches.default;
+
+const filterUniques = (suggestions, query) => {
+  const uniques = suggestions.reduce((acc, suggestion) => {
+    if (acc[suggestion.query] || query === suggestion.query) return acc;
+    acc[suggestion.query] = suggestion;
+    return acc;
+  }, {});
+
+  return Object.values(uniques);
+};
+
 const renderSearchBoxContainer = (placeholder, value) => `
   <div id="searchbox">
     <div 
@@ -239,6 +258,15 @@ class FederatedSearchWidget {
         typeof options.openOnFocus !== "undefined" ? options.openOnFocus : false
     };
 
+    const querySuggestionOptions = options.columns.find(
+      c => c.type === "QuerySuggestions"
+    );
+
+    this.maxSavedSearchesPerQuery = this.maxSavedSearchesPerQuery || 4;
+    this.RecentSearches = new RecentSearches({
+      namespace: querySuggestionOptions["indexName"]
+    });
+
     this.columnsMetaData = options.columns;
 
     // DOM Element references
@@ -442,7 +470,9 @@ class FederatedSearchWidget {
                 column,
                 response,
                 query,
-                instantSearchOptions
+                instantSearchOptions,
+                this.RecentSearches,
+                this.maxSavedSearchesPerQuery
               );
               return response;
             });
@@ -532,10 +562,18 @@ const renderQuerySuggestions = (
   column,
   response,
   query,
-  instantSearchOptions
+  instantSearchOptions,
+  recentSearches,
+  maxSavedSearchesPerQuery
 ) => {
   column.columnNode.innerHTML = "";
-  const hits = response.hits;
+
+  const searches = recentSearches
+    .getRecentSearches(query)
+    .slice(0, maxSavedSearchesPerQuery)
+    .map(suggestion => ({ ...suggestion.data, __recent__: true }));
+
+  const hits = searches.concat(response.hits);
 
   if (!hits.length) {
     column.columnNode.innerHTML = column.noResultsRenderer(query, response);

@@ -20,6 +20,7 @@ const renderQuerySuggestionWithCategory = (suggestion, sourceIndex) => {
 
   return `
         <div>
+          <i class="fas ${suggestion.__recent__ && "fa-clock"}"></i>
           <span class="inverted-highlight">
             ${suggestion._highlightResult.query.value}
           </span>
