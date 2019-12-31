@@ -44,7 +44,8 @@ search.addWidget(
     appID: appID,
     apiKey: apiKey,
     placeholder: "Search for products and brands",
-    maxSuggestions: 30
+    maxSuggestions: 30,
+    maxSavedSearchesPerQuery: 5
   })
 );
 

@@ -10,5 +10,8 @@
   "license": "ISC",
   "devDependencies": {
     "browser-sync": "^2.18.13"
+  },
+  "dependencies": {
+    "recent-searches": "^1.0.5"
   }
 }

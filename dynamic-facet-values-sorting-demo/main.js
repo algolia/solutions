@@ -82,7 +82,7 @@ search.addWidget(
             data.facetSorts[attributeToSort].sortBy
           );
         });
-        
+
       if (!customFacetSortData) return 1;
 
       const facetSort = customFacetSortData.facetSorts[attributeToSort].sortBy;
@@ -133,7 +133,7 @@ search.addWidget(
             data.facetSorts[attributeToSort].sortBy
           );
         });
-        
+
       if (!customFacetSortData) return 1;
 
       const facetSort = customFacetSortData.facetSorts[attributeToSort].sortBy;

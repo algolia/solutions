@@ -1,3 +1,20 @@
+import * as RecentSearchesGlobalImport from "./../node_modules/recent-searches/dist/index.js";
+
+// Webpack
+// import RecentSearches from "recent-searches"
+
+const RecentSearches = window.RecentSearches.default;
+
+const filterUniques = (suggestions, query) => {
+  const uniques = suggestions.reduce((acc, suggestion) => {
+    if (acc[suggestion.query] || query === suggestion.query) return acc;
+    acc[suggestion.query] = suggestion;
+    return acc;
+  }, {});
+
+  return Object.values(uniques);
+};
+
 const isVisible = (container, element) => {
   let scrollLeft = container.scrollLeft;
   let scrollRight = scrollLeft + container.clientWidth;
@@ -61,7 +78,13 @@ class PredictiveSearchBox {
   constructor(options) {
     Object.assign(this, options);
 
+    this.maxSavedSearchesPerQuery = this.maxSavedSearchesPerQuery || 4;
+
     this.client = algoliasearch(options.appID, options.apiKey);
+    this.RecentSearches = new RecentSearches({
+      namespace: this.querySuggestionsIndex
+    });
+
     this.querySuggestionsIndex = this.client.initIndex(
       this.querySuggestionsIndex
     );
@@ -170,7 +193,8 @@ class PredictiveSearchBox {
       );
 
       suggestionElement.classList.add("suggestion-tag");
-      suggestionElement.innerHTML = suggestion._highlightResult.query.value;
+      suggestionElement.innerHTML = `<span><i class="fas ${suggestion.__recent__ &&
+        "fa-clock"}"></i>${suggestion._highlightResult.query.value}</span>`;
 
       suggestionElement.addEventListener("click", () => {
         this.setSearchBoxValue(suggestion.query);
@@ -201,9 +225,14 @@ class PredictiveSearchBox {
     this.querySuggestionsIndex
       .search({ query })
       .then(response => {
-        const suggestions = response.hits.filter(
-          hit => hit.query.startsWith(query) && hit.query !== query
-        );
+        const recentSearches = this.RecentSearches.getRecentSearches(query)
+          .slice(0, this.maxSavedSearchesPerQuery)
+          .map(suggestion => ({ ...suggestion.data, __recent__: true }));
+
+        const suggestions = filterUniques(
+          recentSearches.concat(response.hits),
+          query
+        ).filter(hit => hit.query.startsWith(query) && hit.query !== query);
 
         if (!suggestions.length) {
           this.clearSuggestions();
