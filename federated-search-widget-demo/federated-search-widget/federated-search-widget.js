@@ -591,7 +591,13 @@ const renderQuerySuggestions = (
 
     column.columnNode.append(element);
     if (typeof column.afterItemRenderer === "function") {
-      column.afterItemRenderer(element, hit, response, instantSearchOptions);
+      column.afterItemRenderer(
+        element,
+        hit,
+        response,
+        instantSearchOptions,
+        recentSearches
+      );
     }
   });
 };
