@@ -66,7 +66,7 @@ search.addWidget({
 
     if (!userData) return null;
 
-    //Update order of facets per query 
+    //Update order of facets per query
     const customFacetsData = userData.find(
       data => data.facetPositions && Array.isArray(data.facetPositions)
     );
@@ -77,9 +77,8 @@ search.addWidget({
       const element = document.getElementById(facet.name);
       if (element) {
         element.style.order = facet.position - 1;
-      } 
+      }
     });
-
   }
 });
 

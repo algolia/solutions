@@ -1,3 +1,20 @@
+import * as RecentSearchesGlobalImport from "./../node_modules/recent-searches/dist/index.js";
+
+// Webpack
+// import RecentSearches from "recent-searches"
+
+const RecentSearches = window.RecentSearches.default;
+
+const filterUniques = (suggestions, query) => {
+  const uniques = suggestions.reduce((acc, suggestion) => {
+    if (acc[suggestion.query] || query === suggestion.query) return acc;
+    acc[suggestion.query] = suggestion;
+    return acc;
+  }, {});
+
+  return Object.values(uniques);
+};
+
 const isVisible = (container, element) => {
   let scrollLeft = container.scrollLeft;
   let scrollRight = scrollLeft + container.clientWidth;
@@ -61,7 +78,13 @@ class PredictiveSearchBox {
   constructor(options) {
     Object.assign(this, options);
 
+    this.maxSavedSearchesPerQuery = this.maxSavedSearchesPerQuery || 4;
+
     this.client = algoliasearch(options.appID, options.apiKey);
+    this.RecentSearches = new RecentSearches({
+      namespace: this.querySuggestionsIndex
+    });
+
     this.querySuggestionsIndex = this.client.initIndex(
       this.querySuggestionsIndex
     );
@@ -151,7 +174,7 @@ class PredictiveSearchBox {
     if (isPressingTabTwice || isPressingArrowRightTwice) return null;
 
     event.preventDefault();
-    this.predictiveSearchBoxItem.innerText = "";
+    this.setPredictiveSearchBoxValue();
     this.setSearchBoxValue(this.tabActionSuggestion);
   };
 
@@ -170,11 +193,13 @@ class PredictiveSearchBox {
       );
 
       suggestionElement.classList.add("suggestion-tag");
-      suggestionElement.innerHTML = suggestion._highlightResult.query.value;
+      suggestionElement.innerHTML = `<span><i class="fas ${suggestion.__recent__ &&
+        "fa-clock"}"></i>${suggestion._highlightResult.query.value}</span>`;
 
       suggestionElement.addEventListener("click", () => {
+        this.RecentSearches.setRecentSearch(suggestion.query, suggestion);
         this.setSearchBoxValue(suggestion.query);
-        this.predictiveSearchBoxItem.innerText = "";
+        this.setPredictiveSearchBoxValue();
       });
       this.suggestionTagsContainer.append(suggestionElement);
     });
@@ -198,12 +223,25 @@ class PredictiveSearchBox {
       return;
     }
 
+    // If new query does not match prefix, reset the prediction
+    if (
+      this.tabActionSuggestion &&
+      !this.tabActionSuggestion.startsWith(query)
+    ) {
+      this.setPredictiveSearchBoxValue();
+    }
+
     this.querySuggestionsIndex
       .search({ query })
       .then(response => {
-        const suggestions = response.hits.filter(
-          hit => hit.query.startsWith(query) && hit.query !== query
-        );
+        const recentSearches = this.RecentSearches.getRecentSearches(query)
+          .slice(0, this.maxSavedSearchesPerQuery)
+          .map(suggestion => ({ ...suggestion.data, __recent__: true }));
+
+        const suggestions = filterUniques(
+          recentSearches.concat(response.hits),
+          query
+        ).filter(hit => hit.query.startsWith(query) && hit.query !== query);
 
         if (!suggestions.length) {
           this.clearSuggestions();
@@ -211,7 +249,7 @@ class PredictiveSearchBox {
         }
 
         this.predictiveSearchBox.style.display = "flex";
-        this.predictiveSearchBoxItem.innerText = suggestions[0].query;
+        this.setPredictiveSearchBoxValue(suggestions[0].query);
         this.tabActionSuggestion = suggestions[0].query;
         return suggestions;
       })
@@ -224,12 +262,12 @@ class PredictiveSearchBox {
 
   clearSuggestions = () => {
     this.tabActionSuggestion = null;
-    this.predictiveSearchBoxItem.innerText = "";
+    this.setPredictiveSearchBoxValue();
   };
 
   clear = () => {
     this.searchBoxInput.value = "";
-    this.predictiveSearchBoxItem.innerText = "";
+    this.setPredictiveSearchBoxValue();
 
     this.clearSuggestionTags();
     this.updateExpandedA11y(false);
@@ -252,7 +290,7 @@ class PredictiveSearchBox {
 
       if (currentSelectedElement) {
         this.clearSuggestions();
-        this.searchBoxInput.value = currentSelectedElement.textContent;
+        currentSelectedElement.dispatchEvent(new Event("click"));
         this.searchBoxInput.dispatchEvent(new Event("input"));
       }
     }
@@ -367,6 +405,10 @@ class PredictiveSearchBox {
     } else {
       container.parentNode.classList.remove("overflowing-indicator");
     }
+  };
+
+  setPredictiveSearchBoxValue = value => {
+    this.predictiveSearchBoxItem.innerText = value || "";
   };
 
   scrollElementToView = (element, forward) => {

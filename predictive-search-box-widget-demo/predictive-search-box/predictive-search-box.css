@@ -104,7 +104,7 @@
   color: #36394d;
   font-size: 14px;
   border-radius: 4px;
-  padding: 8px 32px;
+  padding: 8px 32px 8px 24px;
   background: linear-gradient(#fff,#e4e4e9) no-repeat;
   box-shadow: 0 7px 14px -3px rgba(45,35,66,0.3), 0 2px 4px 0 rgba(45,35,66,0.4), inset 0 -2px 0 0 #cfd1e3;
   display: inline-block;
@@ -119,10 +119,16 @@
 
 .suggestion-tag{
   margin: 0 8px 10px 8px;
+  font-weight: bold;
+  display: inline-flex;
+  align-items: center;
 }
 
-.suggestion-tag {
-  font-weight: bold;
+.suggestion-tag i {
+  display: inline-block;
+  color: #aaaabd;
+  margin-right: 4px;
+  transform: translate(0,1px)
 }
 
 .suggestion-tag em {

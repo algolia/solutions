@@ -3,7 +3,12 @@ import FederatedSearchWidget from "./federated-search-widget/federated-search-wi
 const appID = "932LAAGOT3";
 const apiKey = "6a187532e8e703464da52c20555c37cf";
 
-const renderQuerySuggestionWithCategory = (suggestion, sourceIndex) => {
+const renderQuerySuggestionWithCategory = (
+  suggestion,
+  counter,
+  response,
+  sourceIndex
+) => {
   if (!suggestion[sourceIndex]) {
     return suggestion._highlightResult.query.value;
   }
@@ -18,8 +23,10 @@ const renderQuerySuggestionWithCategory = (suggestion, sourceIndex) => {
       return 0;
     });
 
-  return `
+  if (counter < Math.round(response.hits.length * 0.25)) {
+    return `
         <div>
+          <i class="fas ${suggestion.__recent__ && "fa-clock"}"></i>
           <span class="inverted-highlight">
             ${suggestion._highlightResult.query.value}
           </span>
@@ -30,6 +37,16 @@ const renderQuerySuggestionWithCategory = (suggestion, sourceIndex) => {
           </span>
         </div>
       `;
+  } else {
+    return `
+      <div>
+        <i class="fas ${suggestion.__recent__ && "fa-clock"}"></i>
+        <span class="inverted-highlight">
+          ${suggestion._highlightResult.query.value}
+        </span>
+      </div>
+    `;
+  }
 };
 
 const numberWithCommas = n =>
@@ -63,17 +80,20 @@ search.addWidget(
     container: "#hits",
     templates: {
       empty: "No results",
-      item: `
+      item(hit) {
+        return `
             <div class="item">
-                <div class="centered"><img src="{{image}}" alt=""></div>
+                <div class="centered"><img src="${hit.largeImage}" alt=""></div>
                 <div class="centered"><div class="add-to-cart"><i class="fas fa-cart-plus"></i> Add <span class="hide-mobile hide-tablet">to Cart</span></div></div>
                 <div class="item-content">
-                    <p class="brand">{{{_highlightResult.brand.value}}}</p>
-                    <p class="name">{{{_highlightResult.name.value}}}</p>
+                    <p class="brand">${hit._highlightResult.brand &&
+                      hit._highlightResult.brand.value}</p>
+                    <p class="name">${hit._highlightResult.title.value}</p>
                 </div>
             </div>
-            <p class="price">Price: {{{price}}}€</p>
-            <br>`
+            <p class="price">\$${hit.price}</p>
+            <br>`;
+      }
     }
   })
 );
@@ -84,6 +104,7 @@ search.addWidget(
     appID,
     apiKey,
     placeholder: "Search for products and brands",
+    maxSavedSearchesPerQuery: 4,
     closeOnBlur: true,
     openOnFocus: true,
     columns: [
@@ -95,16 +116,28 @@ search.addWidget(
         limit: 10,
         noResultsRenderer: (query, response) =>
           `No Matching Suggestion for ${query}`,
-        itemRenderer: hit =>
-          renderQuerySuggestionWithCategory(hit, "atis-prods"),
+        itemRenderer: (hit, counter, response) =>
+          renderQuerySuggestionWithCategory(
+            hit,
+            counter,
+            response,
+            "atis-prods"
+          ),
         // itemRenderer: suggestion => `
         //   <a href="http://localhost:3000/?q=${suggestion.query}" target="_blank">
         //     ${suggestion._highlightResult.query.value}
         //   </a>
         // `
-        afterItemRenderer: (element, hit, response, options) => {
+        afterItemRenderer: (
+          element,
+          hit,
+          response,
+          options,
+          recentSearches
+        ) => {
           element.addEventListener("click", event => {
             event.preventDefault();
+            recentSearches.setRecentSearch(hit.query, hit);
 
             document.querySelector("#search-box-input").value = hit.query;
             options.helper.setQuery(hit.query).search();
