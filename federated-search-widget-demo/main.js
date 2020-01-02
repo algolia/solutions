@@ -3,7 +3,12 @@ import FederatedSearchWidget from "./federated-search-widget/federated-search-wi
 const appID = "932LAAGOT3";
 const apiKey = "6a187532e8e703464da52c20555c37cf";
 
-const renderQuerySuggestionWithCategory = (suggestion, sourceIndex) => {
+const renderQuerySuggestionWithCategory = (
+  suggestion,
+  counter,
+  response,
+  sourceIndex
+) => {
   if (!suggestion[sourceIndex]) {
     return suggestion._highlightResult.query.value;
   }
@@ -18,7 +23,8 @@ const renderQuerySuggestionWithCategory = (suggestion, sourceIndex) => {
       return 0;
     });
 
-  return `
+  if (counter < Math.round(response.hits.length * 0.25)) {
+    return `
         <div>
           <i class="fas ${suggestion.__recent__ && "fa-clock"}"></i>
           <span class="inverted-highlight">
@@ -31,6 +37,16 @@ const renderQuerySuggestionWithCategory = (suggestion, sourceIndex) => {
           </span>
         </div>
       `;
+  } else {
+    return `
+      <div>
+        <i class="fas ${suggestion.__recent__ && "fa-clock"}"></i>
+        <span class="inverted-highlight">
+          ${suggestion._highlightResult.query.value}
+        </span>
+      </div>
+    `;
+  }
 };
 
 const numberWithCommas = n =>
@@ -100,8 +116,13 @@ search.addWidget(
         limit: 10,
         noResultsRenderer: (query, response) =>
           `No Matching Suggestion for ${query}`,
-        itemRenderer: hit =>
-          renderQuerySuggestionWithCategory(hit, "atis-prods"),
+        itemRenderer: (hit, counter, response) =>
+          renderQuerySuggestionWithCategory(
+            hit,
+            counter,
+            response,
+            "atis-prods"
+          ),
         // itemRenderer: suggestion => `
         //   <a href="http://localhost:3000/?q=${suggestion.query}" target="_blank">
         //     ${suggestion._highlightResult.query.value}

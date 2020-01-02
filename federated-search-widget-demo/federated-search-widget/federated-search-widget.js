@@ -585,7 +585,7 @@ const renderQuerySuggestions = (
     element.id = `${sanitizeQuery(hit.query)}-${index}`;
     element.innerHTML =
       typeof column.itemRenderer === "function"
-        ? column.itemRenderer(hit)
+        ? column.itemRenderer(hit, index, response)
         : hit._highlightResult.query.value;
 
     column.columnNode.append(element);
