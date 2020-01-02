@@ -85,6 +85,7 @@ search.addWidget(
     appID,
     apiKey,
     placeholder: "Search for products and brands",
+    maxSavedSearchesPerQuery: 4,
     closeOnBlur: true,
     openOnFocus: true,
     columns: [

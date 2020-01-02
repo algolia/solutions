@@ -29,7 +29,6 @@ const renderSearchBoxContainer = (placeholder, value) => `
       <input 
         id="search-box-input"
         autocomplete="off"
-        autofocus="true"
         aria-autocomplete="list"
         aria-controls="search-results-container"
         placeholder="${placeholder}"
@@ -262,7 +261,7 @@ class FederatedSearchWidget {
       c => c.type === "QuerySuggestions"
     );
 
-    this.maxSavedSearchesPerQuery = this.maxSavedSearchesPerQuery || 4;
+    this.maxSavedSearchesPerQuery = options.maxSavedSearchesPerQuery || 4;
     this.RecentSearches = new RecentSearches({
       namespace: querySuggestionOptions["indexName"]
     });
