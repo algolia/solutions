@@ -1,4 +1,4 @@
-import rulePoweredContentShelves from "./rule-powered-content-shelves/rule-powered-content-shelves.js";
+import contentCarousel from "./content-carousel/content-carousel.js";
 
 const search = instantsearch({
   indexName: "solution_retail_dataset",
@@ -8,10 +8,10 @@ const search = instantsearch({
 search.addWidgets([
   instantsearch.widgets.configure({
     hitsPerPage: 8,
-    ruleContexts: ["get_shelves"],
+    ruleContexts: ["get_carousels"],
   }),
-  rulePoweredContentShelves({
-    container: "#shelves",
+  contentCarousel({
+    container: "#carousel",
     template: `
 <div class="item">
   <div class="centered">

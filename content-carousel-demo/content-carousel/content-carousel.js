@@ -1,66 +1,70 @@
 const state = {
-  lastShelvesReceived: null,
-  shelfIndices: [],
+  lastCarouselsReceived: null,
+  carouselIndices: [],
 };
 
-const rulePoweredContentShelves = instantsearch.connectors.connectQueryRules(
+const contentCarousel = instantsearch.connectors.connectQueryRules(
   ({ items, widgetParams, instantSearchInstance }) => {
-    // We don't display anything if we don't receive any shelves from the
+    // We don't display anything if we don't receive any carousels from the
     // Query Rules.
-    if (items.length === 0 || !items[0].shelves) {
+    if (items.length === 0 || !items[0].carousels) {
       return;
     }
 
-    const shelves = items[0].shelves;
-    shelves.sort(function(a, b) {
+    const carousels = items[0].carousels;
+    carousels.sort(function(a, b) {
       return a.position - b.position;
     });
 
-    // If the shelves haven't changed after a refinement, we don't need to update
+    // If the carousels haven't changed after a refinement, we don't need to update
     // the DOM.
-    if (state.lastShelvesReceived === JSON.stringify(shelves)) {
+    if (state.lastCarouselsReceived === JSON.stringify(carousels)) {
       return;
     }
 
-    state.lastShelvesReceived = JSON.stringify(shelves);
+    state.lastCarouselsReceived = JSON.stringify(carousels);
     const container = document.querySelector(widgetParams.container);
 
-    // We unmount all previous shelves indices to have an updated InstantSearch
+    // We unmount all previous carousels indices to have an updated InstantSearch
     // tree.
-    instantSearchInstance.mainIndex.removeWidgets(state.shelfIndices);
+    instantSearchInstance.mainIndex.removeWidgets(state.carouselIndices);
 
-    const shelfIndices = shelves.map(shelf => {
-      const shelfContainer = document.createElement("div");
-      const shelfTitle = document.createElement("h2");
-      shelfTitle.innerText = shelf.label;
-      const shelfRow = document.createElement("div");
+    const carouselIndices = carousels.map(carousel => {
+      const carouselContainer = document.createElement("div");
+      const carouselTitle = document.createElement("h2");
+      carouselTitle.innerText = carousel.label;
+      const carouselRow = document.createElement("div");
 
-      shelfContainer.append(shelfTitle, shelfRow);
+      carouselContainer.append(carouselTitle, carouselRow);
 
-      const shelfIndex = instantsearch.widgets
+      const carouselIndex = instantsearch.widgets
         .index({ indexName: instantSearchInstance.indexName })
         .addWidgets([
           instantsearch.widgets.configure({
-            hitsPerPage: shelf.nbProducts,
-            ruleContexts: [shelf.ruleContext],
+            hitsPerPage: carousel.nbProducts,
+            ruleContexts: [carousel.ruleContext],
           }),
           instantsearch.widgets.hits({
-            container: shelfRow,
+            container: carouselRow,
             templates: {
               item: widgetParams.template,
             },
           }),
         ]);
 
-      return [shelfIndex, shelfContainer];
+      return [carouselIndex, carouselContainer];
     });
 
-    state.shelfIndices = shelfIndices.map(shelvesIndex => shelvesIndex[0]);
-    const shelfContainers = shelfIndices.map(shelvesIndex => shelvesIndex[1]);
+    state.carouselIndices = carouselIndices.map(
+      carouselsIndex => carouselsIndex[0]
+    );
+    const carouselContainers = carouselIndices.map(
+      carouselsIndex => carouselsIndex[1]
+    );
 
-    instantSearchInstance.mainIndex.addWidgets(state.shelfIndices);
-    container.append(...shelfContainers);
+    instantSearchInstance.mainIndex.addWidgets(state.carouselIndices);
+    container.append(...carouselContainers);
   }
 );
 
-export default rulePoweredContentShelves;
+export default contentCarousel;
