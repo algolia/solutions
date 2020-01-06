@@ -104,6 +104,7 @@ search.addWidget(
     appID,
     apiKey,
     placeholder: "Search for products and brands",
+    recentSearchesEnabled: false,
     maxSavedSearchesPerQuery: 4,
     closeOnBlur: true,
     openOnFocus: true,
@@ -137,7 +138,9 @@ search.addWidget(
         ) => {
           element.addEventListener("click", event => {
             event.preventDefault();
-            recentSearches.setRecentSearch(hit.query, hit);
+            if (recentSearches) {
+              recentSearches.setRecentSearch(hit.query, hit);
+            }
 
             document.querySelector("#search-box-input").value = hit.query;
             options.helper.setQuery(hit.query).search();

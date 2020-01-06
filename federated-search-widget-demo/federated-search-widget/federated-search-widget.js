@@ -262,9 +262,12 @@ class FederatedSearchWidget {
     );
 
     this.maxSavedSearchesPerQuery = options.maxSavedSearchesPerQuery || 4;
-    this.RecentSearches = new RecentSearches({
-      namespace: querySuggestionOptions["indexName"]
-    });
+    this.recentSearchesEnabled = options.recentSearchesEnabled || false;
+    if (this.recentSearchesEnabled) {
+      this.RecentSearches = new RecentSearches({
+        namespace: querySuggestionOptions["indexName"]
+      });
+    }
 
     this.columnsMetaData = options.columns;
 
@@ -567,12 +570,18 @@ const renderQuerySuggestions = (
 ) => {
   column.columnNode.innerHTML = "";
 
-  const searches = recentSearches
-    .getRecentSearches(query)
-    .slice(0, maxSavedSearchesPerQuery)
-    .map(suggestion => ({ ...suggestion.data, __recent__: true }));
+  let hits;
 
-  const hits = searches.concat(response.hits);
+  if (recentSearches) {
+    const searches = recentSearches
+      .getRecentSearches(query)
+      .slice(0, maxSavedSearchesPerQuery)
+      .map(suggestion => ({ ...suggestion.data, __recent__: true }));
+
+    hits = searches.concat(response.hits);
+  } else {
+    hits = response.hits;
+  }
 
   if (!hits.length) {
     column.columnNode.innerHTML = column.noResultsRenderer(query, response);
