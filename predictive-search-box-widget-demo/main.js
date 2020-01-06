@@ -45,6 +45,7 @@ search.addWidget(
     apiKey: apiKey,
     placeholder: "Search for products and brands",
     maxSuggestions: 30,
+    recentSearchesEnabled: false,
     maxSavedSearchesPerQuery: 5
   })
 );

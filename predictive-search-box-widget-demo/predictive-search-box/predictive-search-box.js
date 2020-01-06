@@ -79,11 +79,14 @@ class PredictiveSearchBox {
     Object.assign(this, options);
 
     this.maxSavedSearchesPerQuery = this.maxSavedSearchesPerQuery || 4;
+    this.recentSearchesEnabled = this.recentSearchesEnabled || false;
 
     this.client = algoliasearch(options.appID, options.apiKey);
-    this.RecentSearches = new RecentSearches({
-      namespace: this.querySuggestionsIndex
-    });
+    if (this.recentSearchesEnabled) {
+      this.RecentSearches = new RecentSearches({
+        namespace: this.querySuggestionsIndex
+      });
+    }
 
     this.querySuggestionsIndex = this.client.initIndex(
       this.querySuggestionsIndex
@@ -197,7 +200,9 @@ class PredictiveSearchBox {
         "fa-clock"}"></i>${suggestion._highlightResult.query.value}</span>`;
 
       suggestionElement.addEventListener("click", () => {
-        this.RecentSearches.setRecentSearch(suggestion.query, suggestion);
+        if (this.recentSearchesEnabled) {
+          this.RecentSearches.setRecentSearch(suggestion.query, suggestion);
+        }
         this.setSearchBoxValue(suggestion.query);
         this.setPredictiveSearchBoxValue();
       });
@@ -234,14 +239,21 @@ class PredictiveSearchBox {
     this.querySuggestionsIndex
       .search({ query })
       .then(response => {
+        let suggestions;
+        if(this.recentSearchesEnabled){
         const recentSearches = this.RecentSearches.getRecentSearches(query)
           .slice(0, this.maxSavedSearchesPerQuery)
           .map(suggestion => ({ ...suggestion.data, __recent__: true }));
 
-        const suggestions = filterUniques(
+          suggestions = filterUniques(
           recentSearches.concat(response.hits),
           query
         ).filter(hit => hit.query.startsWith(query) && hit.query !== query);
+        }else{
+          suggestions = response.hits.filter(
+            hit => hit.query.startsWith(query) && hit.query !== query
+          );
+        }
 
         if (!suggestions.length) {
           this.clearSuggestions();
