@@ -1,9 +1,5 @@
-import * as RecentSearchesGlobalImport from "./../node_modules/recent-searches/dist/index.js";
-
 // Webpack
-// import RecentSearches from "recent-searches"
-
-const RecentSearches = window.RecentSearches.default;
+import RecentSearches from "recent-searches";
 
 const filterUniques = (suggestions, query) => {
   const uniques = suggestions.reduce((acc, suggestion) => {
