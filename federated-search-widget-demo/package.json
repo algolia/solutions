@@ -4,7 +4,7 @@
   "description": "",
   "main": "main.js",
   "scripts": {
-    "start": "browser-sync start --server --files .",
+    "start": "parcel index.html",
     "test": "npm run lint",
     "lint": "eslint .",
     "lint:fix": "npm run lint -- --fix"
@@ -12,7 +12,10 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "browser-sync": "^2.18.13"
+    "@babel/core": "^7.8.4",
+    "@babel/plugin-proposal-class-properties": "^7.8.3",
+    "@babel/preset-env": "^7.8.4",
+    "parcel": "^1.12.4"
   },
   "dependencies": {
     "babel-eslint": "^10.0.1",
