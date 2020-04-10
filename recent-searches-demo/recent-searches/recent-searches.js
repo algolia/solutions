@@ -1,11 +1,4 @@
-// You may need to change the import, depending on what build system you use
-// this demo uses browserSync, so we globally assign the library - you probably should not use this
-import * as RecentSearchesGlobalImport from "./../node_modules/recent-searches/dist/index.js";
-
-// Webpack
-// import RecentSearches from "recent-searches"
-
-const RecentSearches = window.RecentSearches.default;
+import RecentSearches from "recent-searches";
 
 const filterUniques = (suggestions, query) => {
   const uniques = suggestions.reduce((acc, suggestion) => {
