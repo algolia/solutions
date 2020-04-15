@@ -4,14 +4,19 @@
   "description": "",
   "main": "main.js",
   "scripts": {
-    "start": "browser-sync start --server --files ."
+    "start": "parcel index.html"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "browser-sync": "^2.18.13"
+    "@babel/core": "^7.8.4",
+    "@babel/plugin-proposal-class-properties": "^7.8.3",
+    "@babel/preset-env": "^7.8.4",
+    "parcel": "^1.12.4"
   },
   "dependencies": {
+    "algoliasearch": "^4.1.0",
+    "instantsearch.js": "^4.4.0",
     "recent-searches": "^1.0.5"
   }
 }
