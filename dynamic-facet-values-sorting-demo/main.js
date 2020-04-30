@@ -36,7 +36,7 @@ search.addWidget(
 search.addWidget(
   instantsearch.widgets.searchBox({
     container: "#search-box",
-    placeholder: "Type 'blue dress' to see specific sorting on the two facets"
+    placeholder: "Type 'dress shoes' to see specific sorting on the two facets"
   })
 );
 
