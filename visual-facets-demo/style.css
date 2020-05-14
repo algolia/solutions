@@ -1276,3 +1276,52 @@ html {
           .text-center { text-align: center; }
           .max-w-xs { max-width: 20rem; }
           .mx-auto { margin-left: auto; margin-right: auto; }
+
+
+/* Colors Facets CSS Rules */
+.colors {
+    border: none;
+  }
+  
+  .colors li {
+    position: relative;
+  }
+  
+  .colors input[type="checkbox"]{
+    opacity: 0;
+    width: 16px;
+    height: 16px;
+    pointer-events: none;
+  }
+  
+  .colors input[type="checkbox"] + label {
+    border-radius: 2px;
+    overflow: hidden;
+    position: relative;
+    padding-left: 24px;
+  }
+  
+  .colors input[type="checkbox"] + label .color {
+    width: 16px;
+    height: 16px;
+    border-radius: 2px;
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translate(0, -50%);
+    overflow: hidden;
+  }
+  
+  .colors input[type="checkbox"]:checked + label {
+    font-weight: bold;
+  }
+  
+  .colors input[type="checkbox"]:focus + label .color {
+    outline: 5px auto rgba(0, 150, 255, 1);
+    -webkit-outline: 5px auto rgba(0, 150, 255, 1);
+    -moz-outline: 5px auto rgba(0, 150, 255, 1);
+    -ms-outline: 5px auto rgba(0, 150, 255, 1);
+    -o-outline: 5px auto rgba(0, 150, 255, 1);
+  }
+  /* End Colors Facets CSS Rules */
