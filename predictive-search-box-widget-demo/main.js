@@ -21,16 +21,15 @@ search.addWidget(
       empty: "No results",
       item(hit) {
         return `
-            <div class="item">
-                <div class="centered"><img src="${hit.largeImage}" alt=""></div>
-                <div class="centered"><div class="add-to-cart"><i class="fas fa-cart-plus"></i> Add <span class="hide-mobile hide-tablet">to Cart</span></div></div>
+        <div class="item">
+                <figure class="hit-image-container"><div class="hit-image-container-box"><img class="hit-image" src="${hit.largeImage}" alt=""></div></figure>
+                <p class="hit-category">&#8203;​</p>
                 <div class="item-content">
-                    <p class="brand">${hit._highlightResult.brand &&
-                      hit._highlightResult.brand.value}</p>
+                    <p class="brand hit-tag">${hit._highlightResult.brand ? hit._highlightResult.brand.value : ''}</p>
                     <p class="name">${hit._highlightResult.title.value}</p>
+                    <div class="hit-description"><b class="hit-currency">$</b>${hit.price}</div>
                 </div>
             </div>
-            <p class="price">\$${hit.price}</p>
             <br>`;
       }
     }
@@ -82,9 +81,25 @@ search.addWidget(
 
 search.addWidget(
   instantsearch.widgets.rangeSlider({
-    container: "#price",
-    attribute: "price"
+    container: '#price',
+    attribute: 'price',
+    pips: !1,
+    
+
+    tooltips: {
+        format: function(rawValue) {
+            return Math.round(rawValue).toLocaleString().concat("$")
+        }
+    },
+    cssClasses: {
+      root: ['rheostat', 'DefaultProgressBar_progressBar'],
+      handle: [
+        'DefaultHandle_handle'
+      ],
+      tooltip: 'rheostat-value'
+    },
   })
+  
 );
 
 search.start();

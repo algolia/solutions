@@ -16,16 +16,16 @@
 
 #search-box-container input {
   border: none;
-  border-bottom: 1px solid #cecece;
   width: 100%;
-  font-size: 20px;
+  font-size: .875rem;
   background: transparent;
-  padding: 0 !important;
+
   outline: none;
   height: 100%;
   position: relative;
   z-index: 99;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: Hind, sans-serif;
+  padding-left: 56px;
 }
 
 #predictive-box {
@@ -38,9 +38,10 @@
 }
 
 #predictive-box-text {
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 20px;
+  font-family: Hind, sans-serif;
+  font-size: .875rem;
   color: #a2a2a2;
+  padding-left: 56px;
 }
 
 #suggestion-tags {
@@ -101,7 +102,14 @@
 }
 
 .suggestion-tag {
-  color: #36394d;
+  cursor: pointer;
+    margin: 0 .25rem;
+    padding: .25rem 1rem;
+    font-size: .7rem;
+    background-color: #fff;
+    border-radius: 3px;
+    color: #000;
+  /* color: #36394d;
   font-size: 14px;
   border-radius: 4px;
   padding: 8px 32px 8px 24px;
@@ -109,7 +117,11 @@
   box-shadow: 0 7px 14px -3px rgba(45,35,66,0.3), 0 2px 4px 0 rgba(45,35,66,0.4), inset 0 -2px 0 0 #cfd1e3;
   display: inline-block;
   margin-bottom: 12px;
-  transition: all 300ms cubic-bezier(0.19, 1, 0.22, 1)
+  transition: all 300ms cubic-bezier(0.19, 1, 0.22, 1) */
+}
+
+.suggestion-tag:hover em {
+  font-weight: bold;
 }
 
 .suggestion-tag[aria-selected=true] {
@@ -118,7 +130,7 @@
 }
 
 .suggestion-tag{
-  margin: 0 8px 10px 8px;
+  /* margin: 0 8px 10px 8px; */
   font-weight: bold;
   display: inline-flex;
   align-items: center;
