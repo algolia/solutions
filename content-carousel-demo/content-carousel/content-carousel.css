@@ -1,11 +1,11 @@
 .ais-Hits-list {
-  flex-wrap: nowrap;
-  display: -webkit-box;
-  overflow-x: scroll;
+  flex-wrap: nowrap !important;
+  display: -webkit-box !important;
+  overflow-x: scroll !important;
 }
 
 .ais-Hits-item {
-  width: 20%;
+  width: 23%;
   background-color: white;
   padding: 0;
   position: relative;

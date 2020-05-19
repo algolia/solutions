@@ -13,25 +13,15 @@ search.addWidgets([
   contentCarousel({
     container: "#carousel",
     template: `
-<div class="item">
-  <div class="centered">
-    <img src="{{image_link}}" alt="" />
-  </div>
-
-  <div class="centered">
-    <div class="add-to-cart">
-      <i class="fas fa-cart-plus"></i> Add
-      <span class="hide-mobile hide-tablet">to Cart</span>
+    <div class="item">
+      <figure class="hit-image-container"><div class="hit-image-container-box"><img class="hit-image" src="{{image_link}}" alt=""></div></figure>
+      <p class="hit-category">&#8203;​</p>
+      <div class="item-content">
+          <p class="brand hit-tag">{{{_highlightResult.brand.value}}}</p>
+          <p class="name">{{{_highlightResult.name.value}}}</p>
+          <div class="hit-description">{{{price}}}</div>
+      </div>
     </div>
-  </div>
-
-  <div class="item-content">
-    <p class="brand">{{brand}}</p>
-    <p class="name">{{item_title}}</p>
-  </div>
-</div>
-
-<p class="price">Price: {{price}}</p>
 `,
   }),
 ]);
