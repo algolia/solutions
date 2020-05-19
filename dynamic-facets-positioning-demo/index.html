@@ -2,50 +2,56 @@
 <html>
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/instantsearch.css@7.1.0/themes/reset-min.css"
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/instantsearch.css@7.1.0/themes/algolia-min.css"
-    />
-    <link
-      rel="stylesheet"
-      href="https://use.fontawesome.com/releases/v5.5.0/css/all.css"
-    />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons&display=block" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css?family=Hind:400,600,700|Open+Sans:400,600|Poppins:700&display=swap"
+    rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="style.css" />
     <title>Dynamic Facets Positioning Demo</title>
   </head>
 
   <body>
-    <nav>
+    <header class="header preview-searcharea" style="background-color: #ffffff;">
       <h1>
-        Dynamic Facets Positioning Demo
+        Dynamic Facets Positioning
       </h1>
-    </nav>
-    <div class="content">
-      <div class="left-part">
+      
+      <div class="searchWidget widget">
+          <div class="searchWidgetPreview">
+            <div class="ais-SearchBox-wrapper" id="search-wrapper">
+              <div class="ais-SearchBox" id="search-box"></div>
+            </div>
+          </div>
+          <div class="absolute bottom-0 text-center w-full flex flex-col"></div>
+        </div>
+    </header>
+    <div class="container">
+      <div class="content-container">
         <!-- 
           Facets container should contain all facet widgets
           This is the only way we can ensure that rules will continue
           to work even if your data changes
         -->
-        <div id="facets-container" class="facets">
-          <div id="gender"></div>
-          <div id="brand"></div>
-        </div>
+        <section class="container-filters">
+          <div class="container-header">
+            <h2>Search</h2>
+          </div>
+          <aside class="container-body" id="facets-container" style="display: flex; flex-direction: column;">
+            <div id="gender"></div>
+            <div id="brand"></div>
+          </aside>
+        </section>
       </div>
-      <div class="right-part">
-        <div id="search-box"></div>
-        <div id="stats-container"></div>
+      <div class="container-results">
+        <header class="container-header container-options no-title">
+          <div id="stats-container"></div>
+        </header>
         <div id="hits"></div>
         <div id="pagination"></div>
       </div>
     </div>
   </body>
 
-  <script src="https://cdn.jsdelivr.net/npm/algoliasearch@3.32.0/dist/algoliasearchLite.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/instantsearch.js@3.0.0/dist/instantsearch.production.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/algoliasearch@3.35.1/dist/algoliasearchLite.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/instantsearch.js@4.0.0/dist/instantsearch.production.min.js"></script>
   <script src="main.js" type="module"></script>
 </html>

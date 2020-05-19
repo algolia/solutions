@@ -20,14 +20,14 @@ search.addWidget(
       empty: "No results",
       item: `
             <div class="item">
-                <div class="centered"><img src="{{image_link}}" alt=""></div>
-                <div class="centered"><div class="add-to-cart"><i class="fas fa-cart-plus"></i> Add <span class="hide-mobile hide-tablet">to Cart</span></div></div>
+                <figure class="hit-image-container"><div class="hit-image-container-box"><img class="hit-image" src="{{image_link}}" alt=""></div></figure>
+                <p class="hit-category">&#8203;​</p>
                 <div class="item-content">
-                    <p class="brand">{{{_highlightResult.brand.value}}}</p>
-                    <p class="name">{{{_highlightResult.item_title.value}}}</p>
+                    <p class="brand hit-tag">{{{_highlightResult.brand.value}}}</p>
+                    <p class="name">{{{_highlightResult.name.value}}}</p>
+                    <div class="hit-description">{{{price}}}<b class="hit-currency">€</b></div>
                 </div>
             </div>
-            <p class="price">Price: {{{price}}}€</p>
             <br>`
     }
   })
@@ -57,6 +57,8 @@ search.addWidget({
   render(renderOptions) {
     const results = renderOptions.results;
     const userData = results.userData;
+    console.log(userData);
+    
     const facetsContainer = document.querySelector("#facets-container");
 
     //Revert to default order of facets
