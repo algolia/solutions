@@ -1,3 +1,14 @@
+import instantsearch from 'instantsearch.js';
+import algoliasearch from 'algoliasearch';
+import {
+  configure,
+  hits,
+  searchBox,
+  pagination,
+  stats,
+  refinementList,
+} from 'instantsearch.js/es/widgets';
+
 let appID = '932LAAGOT3';
 let apiKey = '6a187532e8e703464da52c20555c37cf';
 
@@ -7,13 +18,13 @@ const search = instantsearch({
 });
 
 search.addWidget(
-  instantsearch.widgets.configure({
+  configure({
     hitsPerPage: 12,
   })
 );
 
 search.addWidget(
-  instantsearch.widgets.hits({
+  hits({
     container: '#hits',
     templates: {
       empty: 'No results',
@@ -33,7 +44,7 @@ search.addWidget(
 );
 
 search.addWidget(
-  instantsearch.widgets.searchBox({
+  searchBox({
     container: '#search-box',
     placeholder: '',
     showReset: true,
@@ -43,19 +54,19 @@ search.addWidget(
 );
 
 search.addWidget(
-  instantsearch.widgets.pagination({
+  pagination({
     container: '#pagination',
   })
 );
 
 search.addWidget(
-  instantsearch.widgets.stats({
+  stats({
     container: '#stats-container',
   })
 );
 
 search.addWidget(
-  instantsearch.widgets.refinementList({
+  refinementList({
     container: '#brand',
     attribute: 'brand',
     limit: 5,
