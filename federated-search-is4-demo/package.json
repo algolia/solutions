@@ -13,10 +13,7 @@
     "parcel-bundler": "^1.12.4"
   },
   "dependencies": {
-    "parcel-plugin-externals": "^0.4.0"
-  },
-  "externals": {
-    "algoliasearch": "algoliasearch",
-    "instantsearch": "instansearch"
+    "algoliasearch": "^4.2.0",
+    "instantsearch.js": "^4.6.0"
   }
 }
