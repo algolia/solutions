@@ -14,7 +14,7 @@ const search = instantsearch({
   searchClient,
 });
 
-// Customize UI of the Query Suggestion Hits
+// Customize UI of the Carousel
 const renderCarousel = ({ widgetParams, hits }, isFirstRender) => {
   const container = document.querySelector(widgetParams.container);
 
@@ -51,6 +51,7 @@ const carousel = connectHits(renderCarousel);
 
 // Add the widgets
 search.addWidgets([
+  // Carousel #1
   index({
     indexName: 'perso_movies_carousel_trending',
   }).addWidgets([
@@ -61,6 +62,8 @@ search.addWidgets([
       container: '#carousel-trending',
     }),
   ]),
+
+  // Carousel #2
   index({
     indexName: 'perso_movies_carousel',
     indexId: 'popular',
@@ -72,6 +75,8 @@ search.addWidgets([
       container: '#carousel-most-popular',
     }),
   ]),
+
+  // Carousel #3
   index({
     indexName: 'perso_movies_carousel',
     indexId: 'perso',
@@ -85,6 +90,8 @@ search.addWidgets([
       container: '#carousel-personalization',
     }),
   ]),
+
+  // Carousel #4
   index({
     indexName: 'perso_movies_carousel',
     indexId: 'fantaco',
