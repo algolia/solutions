@@ -20,7 +20,7 @@
       style="background-color: #ffffff;"
     >
       <h1>
-        Animated Placeholder
+        Federated Search
       </h1>
 
       <div class="searchWidget widget">
@@ -30,9 +30,24 @@
           </div>
         </div>
         <div class="absolute bottom-0 text-center w-full flex flex-col"></div>
+        <div class="federated-results-container">
+          <div class="column">
+            <h2>Suggestions</h2>
+            <div id="suggestions"></div>
+          </div>
+          <div class="column">
+            <h2>Products</h2>
+            <div id="products"></div>
+            <a href="#">See more products</a>
+          </div>
+          <div class="column">
+            <h2>Categories</h2>
+            <div id="categories"></div>
+          </div>
+        </div>
       </div>
     </header>
-    <div class="content container">
+    <!-- <div class="content container">
       <div class="container-wrapper">
         <section class="container-filters">
           <div class="container-header">
@@ -42,6 +57,10 @@
             <div class="brand ais-Panel">
               <h3 class="ais-Panel-header">Brands</h3>
               <div id="brand"></div>
+            </div>
+            <div class="brand ais-Panel">
+              <h3 class="ais-Panel-header">Categories</h3>
+              <div id="categories"></div>
             </div>
           </aside>
         </section>
@@ -53,7 +72,7 @@
         <div id="hits"></div>
         <div id="pagination"></div>
       </div>
-    </div>
+    </div> -->
   </body>
 
   <script src="https://cdn.jsdelivr.net/npm/algoliasearch@3.35.1/dist/algoliasearchLite.min.js"></script>
