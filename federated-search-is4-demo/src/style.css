@@ -152,7 +152,7 @@ nav ul {
   font-size: 18px;
 }
 
-/*TABLET*/
+/* TABLET
 @media screen and (max-width: 1060px) and (min-width: 656px) {
   .hide-tablet {
     display: none;
@@ -169,7 +169,7 @@ nav ul {
   .ais-Hits-item {
     width: calc(33.3% - 1rem);
   }
-}
+} */
 
 /*MOBILE*/
 @media screen and (max-width: 656px) {
@@ -1829,6 +1829,12 @@ pre {
   display: grid;
   grid-template-columns: 1fr 2fr 1fr;
   display: none;
+}
+
+@media (max-width: 1130px) {
+  .federated-results-container {
+    width: 100vw;
+  }
 }
 
 .federated-results-container .column {
