@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons&display=block"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css?family=Hind:400,600,700|Open+Sans:400,600|Poppins:700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" type="text/css" href="./src/style.css" />
+    <title>Federated Search Box</title>
+  </head>
+
+  <body>
+    <header
+      class="header preview-searcharea"
+      style="background-color: #ffffff;"
+    >
+      <h1>
+        Federated Search Box
+      </h1>
+
+      <div class="searchWidget widget">
+        <div class="searchWidgetPreview">
+          <div class="ais-SearchBox-wrapper" id="search-wrapper">
+            <div class="ais-SearchBox" id="search-box"></div>
+          </div>
+        </div>
+        <div class="absolute bottom-0 text-center w-full flex flex-col"></div>
+        <div class="federated-results-container">
+          <div class="column">
+            <h2>Suggestions</h2>
+            <div id="suggestions"></div>
+          </div>
+          <div class="column">
+            <h2>Products</h2>
+            <div id="products"></div>
+            <a href="#">See more products</a>
+          </div>
+          <div class="column">
+            <h2>Categories</h2>
+            <div id="categories"></div>
+          </div>
+        </div>
+      </div>
+    </header>
+  </body>
+
+  <script src="https://cdn.jsdelivr.net/npm/algoliasearch@3.35.1/dist/algoliasearchLite.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/instantsearch.js@4.0.0/dist/instantsearch.production.min.js"></script>
+  <script src="./src/main.js" type="module"></script>
+</html>
