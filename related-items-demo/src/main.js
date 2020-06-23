@@ -1,8 +1,7 @@
 import instantsearch from 'instantsearch.js';
 import algoliasearch from 'algoliasearch';
-import { configure, index, EXPERIMENTAL_configureRelatedItems } from 'instantsearch.js/es/widgets';
+import { configure, hits, EXPERIMENTAL_configureRelatedItems } from 'instantsearch.js/es/widgets';
 
-import { connectHits } from 'instantsearch.js/es/connectors';
 
 const searchClient = algoliasearch(
   'GENYJWQIK2',
@@ -28,40 +27,6 @@ const referenceHit = {
   objectID: '439434880',
 };
 
-// Customize UI of the Carousel
-const renderCarousel = ({ widgetParams, hits }, isFirstRender) => {
-  const container = document.querySelector(widgetParams.container);
-
-  if (isFirstRender) {
-    const carouselUl = document.createElement('ul');
-    carouselUl.classList.add('carousel-list-container');
-    container.appendChild(carouselUl);
-  }
-
-  container.querySelector('ul').innerHTML = hits
-    .map(
-      (hit) => `
-        <li>
-          <img src="${hit.image}" alt="${hit.title}">
-          <div class="overlay">
-            <h3>${hit.title}</h3>
-            <ul>
-              ${hit.genre
-                .map(
-                  (genre) => `
-                <li>${genre}</li>
-              `
-                )
-                .join('')}
-            </ul>
-          </div>
-        </li>
-      `
-    )
-    .join('');
-};
-
-const carousel = connectHits(renderCarousel);
 
 // Add the widgets
 search.addWidgets([
@@ -76,8 +41,25 @@ search.addWidgets([
       actors: { score: 2 },
     },
   }),
-  carousel({
-    container: '.carousel-container'
+  hits({
+    container: '.carousel-container',
+    templates: {
+      item: (hit) => `
+        <img src="${hit.image}" alt="${hit.title}">
+        <div class="overlay">
+          <h3>${hit.title}</h3>
+          <ul>
+            ${hit.genre
+              .map(
+                (genre) => `
+              <li>${genre}</li>
+            `
+              )
+              .join('')}
+          </ul>
+        </div>
+      `
+    }
   }),
 ]);
 

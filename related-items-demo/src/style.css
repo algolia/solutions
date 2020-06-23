@@ -1828,7 +1828,7 @@ pre {
   width: 100%;
 }
 
-.carousel-list-container > li {
+.carousel-list-container > li, .ais-Hits-list > li {
   min-width: 190px;
   position: relative;
 }
@@ -1852,7 +1852,7 @@ pre {
   padding: 1rem;
 }
 
-.carousel-list-container > li:hover .overlay {
+.carousel-list-container > li:hover .overlay, .ais-Hits-list > li:hover .overlay {
   opacity: 1;
 }
 
@@ -1860,12 +1860,12 @@ pre {
   margin-bottom: 16px;
 }
 
-.carousel-list-container > li img {
+.ais-Hits-list > li img {
   width: 190px;
   height: 100%;
   object-fit: cover;
 }
 
-.carousel-list-container > li:not(:last-child) {
+.ais-Hits-list > li:not(:last-child) {
   margin-right: 16px;
 }
