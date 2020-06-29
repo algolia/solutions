@@ -70,6 +70,6 @@ search.addWidgets([
     // even if we have no specific parameters we need to provide an empty object
     searchParameters: {},
   }),
-  virtualClear(),
+  virtualClear({}),
 ]);
 search.start();
