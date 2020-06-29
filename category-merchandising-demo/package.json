@@ -1,8 +1,8 @@
 {
-  "name": "animated-placeholder-demo",
+  "name": "caegory-merchandising-demo",
   "version": "1.0.0",
   "description": "",
-  "main": "main.js",
+  "main": "src/app.js",
   "scripts": {
     "start": "parcel index.html",
     "build": "parcel build index.html"
