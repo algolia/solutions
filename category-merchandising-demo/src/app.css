@@ -348,6 +348,7 @@ mark {
   font-size: 14px;
   color: #21243d;
   margin-right: 16px;
+  margin-bottom: 16px;
   border: solid 1px #21243d;
   padding: 10px;
   border-radius: 8px;
@@ -360,49 +361,4 @@ mark {
 .context-filter--is-refined {
   font-weight: bold;
   border-color: #21243d;
-}
-
-.federated-search-container {
-  position: relative;
-}
-
-.searchbox-results {
-  position: relative;
-  z-index: 100;
-  color: rgba(33, 36, 61, 0.8);
-  position: absolute;
-  top: 100%;
-  left: -50%;
-  background-color: #fff;
-  width: 200%;
-  padding: 16px;
-  display: none;
-  grid-template-columns: 1fr 2fr 1fr;
-  gap: 20px;
-  list-style: none;
-  text-align: left;
-}
-
-.searchbox-results--is-open {
-  display: grid;
-}
-
-.federated-products {
-  list-style: none;
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-}
-
-.federated-products .hit-image-container {
-  width: 100px;
-  height: auto;
-}
-
-.product-carousel {
-  display: flex;
-  list-style: none;
-}
-
-.product-carousel li {
-  margin-right: 40px;
 }
