@@ -2,6 +2,7 @@ import algoliasearch from 'algoliasearch/lite';
 import instantsearch from 'instantsearch.js';
 
 // Not specific to this demo
+import { attachEventListeners } from './ui';
 import {
   brands,
   categories,
@@ -73,3 +74,5 @@ search.addWidgets([
   virtualClear({}),
 ]);
 search.start();
+
+attachEventListeners();
