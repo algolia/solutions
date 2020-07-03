@@ -7,7 +7,7 @@ const page = parameters.get('page') || '';
 const $pageLink = document.querySelector(`[data-page="${page}"]`);
 
 if ($pageLink) {
-  $pageLink.style.fontWeight = 'bold';
+  $pageLink.parentNode.classList.add('active');
 }
 
 const context = ((page) => {

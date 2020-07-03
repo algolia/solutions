@@ -50,9 +50,9 @@ const widgets = [
   sortBy,
 ];
 
-if (!searchParams.get('page')) {
-  widgets.push(categories);
-}
+// if (!searchParams.get('page')) {
+widgets.push(categories);
+// }
 
 search.addWidgets(widgets);
 search.start();
