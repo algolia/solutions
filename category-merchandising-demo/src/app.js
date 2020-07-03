@@ -18,12 +18,8 @@ import {
   ratings,
   resultsNumberMobile,
   saveFiltersMobile,
-  searchBox,
   sortBy,
 } from './widgets';
-
-// Those are the new widgets
-import { contextSetter, virtualClear } from './widgets/category-merchandising';
 
 const searchClient = algoliasearch(
   'latency',
@@ -35,9 +31,10 @@ const search = instantsearch({
   indexName: 'instant_search',
 });
 
-search.addWidgets([
+const searchParams = new URLSearchParams(window.location.search);
+
+const widgets = [
   brands,
-  categories,
   clearFilters,
   clearFiltersEmptyResults,
   clearFiltersMobile,
@@ -50,29 +47,14 @@ search.addWidgets([
   ratings,
   resultsNumberMobile,
   saveFiltersMobile,
-  searchBox,
   sortBy,
-  contextSetter({
-    container: '.merchandising-filters',
-    contexts: [
-      {
-        label: 'Cell phones',
-        value: 'cat_phones',
-      },
-      {
-        label: 'Video Games',
-        value: 'cat_video_games',
-      },
-      {
-        label: 'Appliances',
-        value: 'cat_appliances',
-      },
-    ],
-    // even if we have no specific parameters we need to provide an empty object
-    searchParameters: {},
-  }),
-  virtualClear({}),
-]);
+];
+
+if (!searchParams.get('page')) {
+  widgets.push(categories);
+}
+
+search.addWidgets(widgets);
 search.start();
 
 attachEventListeners();
