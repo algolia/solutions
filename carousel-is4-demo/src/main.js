@@ -54,6 +54,7 @@ search.addWidgets([
   // Carousel #1
   index({
     indexName: 'perso_movies_carousel_trending',
+    indexId: 'trending',
   }).addWidgets([
     configure({
       hitsPerPage: 12,
