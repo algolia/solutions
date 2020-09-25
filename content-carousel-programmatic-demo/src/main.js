@@ -14,7 +14,7 @@ const search = instantsearch({
 });
 
 function getUserToken() {
-  return 'action_crime_fan';
+  return 'action_crime';
 }
 
 function getCarousels() {
