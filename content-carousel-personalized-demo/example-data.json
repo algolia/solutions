@@ -1,0 +1,66 @@
+[
+  {
+    "title": "Fantasy Comedy",
+    "indexName": "perso_movies_carousel",
+    "configure": { "hitsPerPage": 8, "ruleContexts": "comedy_fantasy" },
+    "userToken": "action_crime",
+    "objectID": "action-1",
+    "order": 1
+  },
+  {
+    "title": "Just for you",
+    "indexName": "perso_movies_carousel",
+    "configure": { "hitsPerPage": 10, "enablePersonalization": true },
+    "userToken": "action_crime",
+    "objectID": "action-2",
+    "order": 2
+  },
+  {
+    "title": "Most popular",
+    "indexName": "perso_movies_carousel",
+    "configure": { "hitsPerPage": 8 },
+    "userToken": "action_crime",
+    "objectID": "action-3",
+    "order": 3
+  },
+  {
+    "title": "Trending",
+    "indexName": "perso_movies_carousel_trending",
+    "configure": { "hitsPerPage": 12 },
+    "userToken": "action_crime",
+    "objectID": "action-4",
+    "order": 4
+  },
+  {
+    "title": "Fantasy Comedy",
+    "indexName": "perso_movies_carousel",
+    "configure": { "hitsPerPage": 8, "ruleContexts": "comedy_fantasy" },
+    "userToken": "downey_jr",
+    "objectID": "drama-4",
+    "order": 4
+  },
+  {
+    "title": "Just for you",
+    "indexName": "perso_movies_carousel",
+    "configure": { "hitsPerPage": 10, "enablePersonalization": true },
+    "userToken": "downey_jr",
+    "objectID": "drama-2",
+    "order": 2
+  },
+  {
+    "title": "Most popular",
+    "indexName": "perso_movies_carousel",
+    "configure": { "hitsPerPage": 8 },
+    "userToken": "downey_jr",
+    "objectID": "drama-3",
+    "order": 3
+  },
+  {
+    "title": "Trending",
+    "indexName": "perso_movies_carousel_trending",
+    "configure": { "hitsPerPage": 12 },
+    "userToken": "downey_jr",
+    "objectID": "drama-1",
+    "order": 1
+  }
+]
