@@ -1,0 +1,30 @@
+[
+  {
+    "title": "Fantasy Comedy",
+    "indexName": "perso_movies_carousel",
+    "configure": { "hitsPerPage": 8, "ruleContexts": "comedy_fantasy" },
+    "objectID": "action-1"
+  },
+  {
+    "title": "Just for you",
+    "indexName": "perso_movies_carousel",
+    "configure": {
+      "hitsPerPage": 10,
+      "enablePersonalization": true,
+      "userToken": true
+    },
+    "objectID": "action-2"
+  },
+  {
+    "title": "Most popular",
+    "indexName": "perso_movies_carousel",
+    "configure": { "hitsPerPage": 8 },
+    "objectID": "action-3"
+  },
+  {
+    "title": "Trending",
+    "indexName": "perso_movies_carousel_trending",
+    "configure": { "hitsPerPage": 12 },
+    "objectID": "action-4"
+  }
+]
