@@ -31,7 +31,7 @@ function getCarousels() {
     .initIndex('perso_movies_carousel_config')
     .search('', {
       attributesToHighlight: [],
-      attributesToRetrieve: ['title', 'index', 'configure'],
+      attributesToRetrieve: ['title', 'indexName', 'configure'],
     })
     .then((res) => res.hits);
 }
