@@ -14,6 +14,26 @@ search.addWidgets([
   instantsearch.widgets.searchBox({
     container: '#searchbox',
   }),
+  instantsearch.widgets.queryRuleCustomData({
+    container: '#queryRuleCustomData',
+    transformItems(items) {
+      return items.filter(item => typeof item.banner !== 'undefined');
+    },
+    templates: {
+      default: `
+        {{#items}}
+          {{#banner}}
+            <section>
+              <h2>{{title}}</h2>
+              <a href="{{link}}">
+                <img src="{{banner}}" alt="{{title}}">
+              </a>
+            </section>
+          {{/banner}}
+        {{/items}}
+      `,
+    },
+  }),
   instantsearch.widgets.hits({
     container: '#hits',
     templates: {

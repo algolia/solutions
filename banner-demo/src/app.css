@@ -58,3 +58,9 @@
   margin: 2rem auto;
   text-align: center;
 }
+
+
+#queryRuleCustomData img {
+  height: 30%;
+  width: 30%;
+}
