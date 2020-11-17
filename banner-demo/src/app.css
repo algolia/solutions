@@ -59,8 +59,17 @@
   text-align: center;
 }
 
-
 #queryRuleCustomData img {
   height: 30%;
   width: 30%;
+  display: block;
+  margin: 10px auto;
+}
+
+#queryRuleCustomData h2 {
+  height: 30%;
+  width: 30%;
+  display: block;
+  margin: 10px auto;
+  text-align: center;
 }
