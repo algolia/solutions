@@ -73,3 +73,9 @@
   margin: 10px auto;
   text-align: center;
 }
+
+@media only screen and (max-width: 600px) {
+  .ais-Hits-item {
+    width: 100%;
+  }
+}
