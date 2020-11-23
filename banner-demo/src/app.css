@@ -35,6 +35,17 @@
 
 .search-panel {
   display: flex;
+  flex-direction: column;
+}
+
+.search-inputs-container {
+  display: flex;
+  flex-direction: row;
+  flex: 2 1;
+}
+
+.searchbox {
+  flex: 2;
 }
 
 .search-panel__filters {
@@ -43,6 +54,12 @@
 
 .search-panel__results {
   flex: 3;
+  display: flex;
+}
+
+.refinement-list {
+  min-width: 20%;
+  margin-right: 5px;
 }
 
 .ais-Highlight-highlighted {
