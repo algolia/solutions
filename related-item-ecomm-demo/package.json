@@ -1,11 +1,12 @@
 {
-  "name": "animated-placeholder-demo",
+  "name": "related-item-ecomm-demo",
   "version": "1.0.0",
   "description": "",
   "main": "main.js",
   "scripts": {
     "start": "parcel index.html",
-    "build": "parcel build index.html"
+    "build": "parcel build index.html",
+    "dev": "parcel index.html"
   },
   "author": "",
   "license": "ISC",
@@ -13,7 +14,7 @@
     "parcel-bundler": "^1.12.4"
   },
   "dependencies": {
-    "algoliasearch": "^4.3.0",
-    "instantsearch.js": "^4.7.0"
+    "algoliasearch": "^4.8.0",
+    "instantsearch.js": "^4.8.7"
   }
 }
