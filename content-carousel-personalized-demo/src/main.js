@@ -16,6 +16,7 @@ const search = instantsearch({
 const userTokenSelector = document.getElementById('user-token-selector');
 userTokenSelector.addEventListener('change', () => {
   userTokenSelector.disabled = true;
+  console.log(search)
   search.removeWidgets(carouselWidgets);
   getCarousels().then((carousels) => {
     userTokenSelector.disabled = false;
@@ -46,12 +47,14 @@ function getCarousels() {
       attributesToHighlight: [],
       attributesToRetrieve: ['title', 'indexName', 'configure'],
     })
-    .then((res) => res.hits);
+    .then((res) => res.hits
+    );
 }
 
 let carouselWidgets = [];
 function createWidgets(carousels) {
   const container = document.querySelector('#carousel-container');
+  console.log(carousels)
 
   container.innerText = '';
 
