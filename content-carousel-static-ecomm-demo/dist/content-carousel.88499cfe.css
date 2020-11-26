@@ -1,0 +1,15 @@
+.ais-Hits-list {
+  flex-wrap: nowrap !important;
+  display: -webkit-box !important;
+  overflow-x: scroll !important;
+}
+
+.ais-Hits-item {
+  width: 23%;
+  background-color: white;
+  padding: 0;
+  position: relative;
+}
+
+
+/*# sourceMappingURL=/content-carousel.88499cfe.css.map */
