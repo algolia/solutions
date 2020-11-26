@@ -8,7 +8,39 @@ const search = instantsearch({
   searchClient: algoliasearch("GENYJWQIK2", "a847d02d26f1276fbb0281a7e51ee8a5"),
 });
 
+const searchRelated = instantsearch({
+  indexName: "e_commerce_transformed_perso",
+  searchClient: algoliasearch("GENYJWQIK2", "a847d02d26f1276fbb0281a7e51ee8a5"),
+});
 
+
+// RULES CAROUSEL
+search.addWidgets([
+  configure({
+    ruleContexts: ["get_carousels"]
+  }),
+  contentCarousel({
+    container: "#carousel",
+    template: `
+    <div class="item">
+    <figure class="hit-image-container"><div class="hit-image-container-box"><img class="hit-image" src="{{image}}" alt=""></div></figure>
+    <p class="hit-category">&#8203;​</p>
+    <div class="item-content">
+    <p class="brand hit-tag">{{{_highlightResult.brand.value}}}</p>
+    <p class="name">{{{_highlightResult.name.value}}}</p>
+    <div class="hit-rating-price">
+      <div class="hit-ratings"><p>{{{ratings}}}</p></div>
+      <div class="hit-price">$ {{{price}}}</div>
+    </div>
+    </div>
+    </div>
+    `,
+  }),
+]);
+
+
+
+// RELATED CAROUSEL
 const referenceHit = {
   objectID: "8532557",
   brand: 'Apple',
@@ -34,40 +66,118 @@ const referenceHit = {
     newPrice: 1299.99
 };
 
+const carouselRelated = document.querySelector(".carousel-container")
+const titleRelated = document.createElement("h2")
+titleRelated.classList.add('h2-titleRelated')
+titleRelated.innerText = "Because you purchase of Apple Mac Pro"
+carouselRelated.before(titleRelated)
 
-// RULES CAROUSEL
-search.addWidgets([
+
+
+searchRelated.addWidgets([
   configure({
     hitsPerPage: 8,
-    ruleContexts: ["get_carousels"],
-    enablePersonalization: true,
-    userToken: 'apple_fan',
+    query: '',
   }),
   EXPERIMENTAL_configureRelatedItems({
     hit: referenceHit,
-    ruleContexts: ["carousel_related"],
     matchingPatterns: {
       brand: { score: 3 },
       categories: { score: 2 },
     },
   }),
-  contentCarousel({
-    container: "#carousel",
-    template: `
-    <div class="item">
-    <figure class="hit-image-container"><div class="hit-image-container-box"><img class="hit-image" src="{{image}}" alt=""></div></figure>
-    <p class="hit-category">&#8203;​</p>
-    <div class="item-content">
-    <p class="brand hit-tag">{{{_highlightResult.brand.value}}}</p>
-    <p class="name">{{{_highlightResult.name.value}}}</p>
-    <div class="hit-description">{{{price}}}</div>
-    </div>
-    </div>
-    `,
+  hits({
+    container: '.carousel-container',
+    templates: {
+      item: (hit) => `
+      <div class="card-wrapper">
+          <div class="img-hit">
+            <img src="${hit.image}" align="left" alt="${hit.name}" class="hit-img" />
+          </div>
+          <div class="hit-name">
+          ${hit.brand}
+          </div>
+          <div class="hit-description">
+          ${hit.name}
+          </div>
+          <div class="hit-rating-price">
+            <div class="hit-ratings"><p>${ratings(hit.rating)} (${hit.ratingsNumber})</p></div>
+            <div class="hit-price">$${hit.price}</div>
+          </div>
+        </div>
+      `
+    
+    }
   }),
 ]);
 
+const ratings = (hit) =>{
+  console.log(hit)
+  switch (hit) {
+    case hit = 0: 
+      return `<div>
+      <i class="far fa-star"></i>
+      <i class="far fa-star"></i>
+      <i class="far fa-star"></i>
+      <i class="far fa-star"></i>
+      <i class="far fa-star"></i>
+      </div>` 
+      break;
+    case hit = 1: 
+      return `<div>
+      <i class="fas fa-star"></i>
+      <i class="far fa-star"></i>
+      <i class="far fa-star"></i>
+      <i class="far fa-star"></i>
+      <i class="far fa-star"></i>
+      </div>` 
+      break;
+    case hit = 2: 
+      return `<div>
+      <i class="fas fa-star"></i>
+      <i class="fas fa-star"></i>
+      <i class="far fa-star"></i>
+      <i class="far fa-star"></i>
+      <i class="far fa-star"></i>
+      </div>` 
+      break;
+    case hit = 3: 
+      return `<div>
+      <i class="fas fa-star"></i>
+      <i class="fas fa-star"></i>
+      <i class="fas fa-star"></i>
+      <i class="far fa-star"></i>
+      <i class="far fa-star"></i>
+      </div>` 
+      break;
+    case hit = 4: 
+      return `<div>
+      <i class="fas fa-star"></i>
+      <i class="fas fa-star"></i>
+      <i class="fas fa-star"></i>
+      <i class="fas fa-star"></i>
+      <i class="far fa-star"></i>
+      </div>` 
+      break;
+    case hit = 4: 
+      return `<div>
+      <i class="fas fa-star"></i>
+      <i class="fas fa-star"></i>
+      <i class="fas fa-star"></i>
+      <i class="fas fa-star"></i>
+      <i class="fas fa-star"></i>
+      </div>` 
+      break;
+    default:
+      return 'No ratings yet for this product'
+      console.log('Erreur cas inconnu');  
+  }
+  
+  }
+
 search.start();
+searchRelated.start()
+
 
 // RELATED ITEMS
 // Add the widgets
@@ -108,7 +218,3 @@ search.start();
   // }),
 // ]);
 
-// const carouselRelated = document.querySelector(".carousel-related")
-// const titleRelated = document.createElement("h2")
-// titleRelated.innerText = "Because you purchase of Apple Mac Pro"
-// carouselRelated.before(titleRelated)

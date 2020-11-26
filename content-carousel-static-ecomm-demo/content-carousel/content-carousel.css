@@ -1,12 +1,69 @@
+.container {
+  margin: 2rem auto !important;
+  padding: 2rem 0 !important;
+  border-radius: 7px;
+  box-shadow: -46px 14px 71px -19px rgba(0, 0, 0, 0.4);
+}
+
 .ais-Hits-list {
   flex-wrap: nowrap !important;
   display: -webkit-box !important;
   overflow-x: scroll !important;
+  padding: 2rem;
 }
 
 .ais-Hits-item {
-  width: 23%;
+  width: 28%;
   background-color: white;
   padding: 0;
   position: relative;
+  min-height: 450px;
+}
+/* RELATED ITEMS ECOMMERCE */
+.ais-Hits-item {
+  min-height: 450px;
+  box-shadow: 2px 2px 15px 2px rgba(0, 0, 0, 0.6);
+  padding: 1.5rem;
+  border-radius: 7px;
+}
+
+.img-hit {
+  display: flex !important;
+  justify-content: center !important;
+  width: 200px !important;
+  height: 200px !important;
+  margin: 0 auto;
+}
+.img-hit img {
+  width: 100% !important;
+  object-fit: contain !important;
+}
+.hit-ratings {
+  display: flex;
+}
+.hit-ratings p {
+  display: flex;
+  font-size: 0.6rem;
+  font-style: italic;
+  margin-left: 0.2rem;
+}
+.hit-ratings i {
+  color: gold;
+}
+
+.hit-name {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.hit-rating-price {
+  position: absolute;
+  bottom: 0.5rem;
+}
+
+.inner-content > div h2,
+.h2-titleRelated {
+  margin: 2rem 0;
+  margin-left: 2rem;
+  font-family: Hind, sans-serif;
 }

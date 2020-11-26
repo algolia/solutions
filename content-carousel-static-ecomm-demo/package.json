@@ -4,7 +4,9 @@
   "description": "",
   "main": "main.js",
   "scripts": {
-    "start": "browser-sync start --server --files ."
+    "start-custom": "browser-sync start --server --files .",
+    "start": "parcel index.html --port 3000",
+    "build": "parcel build index.html"
   },
   "author": "",
   "license": "ISC",
