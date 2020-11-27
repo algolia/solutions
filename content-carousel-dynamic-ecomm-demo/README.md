@@ -26,14 +26,13 @@ A separate index for the carousel configurations (which can use query rules or p
 
 ```json
 {
-  "title": "Just for you",
-  "indexName": "perso_movies_carousel",
-  "userToken": "relevant_user_token",
   "configure": {
-    "hitsPerPage": 10,
-    "enablePersonalization": true,
+    "hitsPerPage": 8,
+    "enablePersonalization": true
   },
-  "objectID": "61606000"
+  "title": "These might interest you",
+  "order": 7,
+  "objectID": "7982424000"
 }
 ```
 
