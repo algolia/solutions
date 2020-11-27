@@ -62,7 +62,7 @@ mark {
   padding: 1.5rem;
   border-radius: 7px;
   margin: auto 1rem;
-  width: 28%;
+  width: 380px;
   background-color: white;
   position: relative;
   display: flex;
@@ -177,4 +177,18 @@ mark {
   margin-top: 1rem;
   border-radius: 30px;
   padding: 0.5rem;
+}
+
+@media (max-width: 680px) {
+  h1 {
+    text-align: center;
+    padding: 1rem;
+  }
+  .carousel .carousel-list-container li,
+  .ais-Hits-item {
+    width: 300px;
+  }
+  .carousel {
+    margin: 1rem 1rem !important;
+  }
 }
