@@ -7,10 +7,9 @@ const searchClient = algoliasearch(
   "H15E474HQJ",
   "a74e88d5ceb60cc33383489932a000ab"
 );
-const indexName = "e_commerce";
 
 const search = instantsearch({
-  indexName,
+  indexName: 'e_commerce',
   searchClient,
 });
 
@@ -34,10 +33,11 @@ function getCarouselConfigs() {
   return searchClient
     .initIndex("carousel_config")
     .search("", {
+      facetFilters: ['userToken:' + getUserToken()],
       attributesToHighlight: [],
       attributesToRetrieve: ["title", "indexName", "configure"],
     })
-    .then((res) => res.hits );
+    .then((res) => res.hits);
 }
 
 let carouselWidgets = [];
@@ -53,7 +53,7 @@ function createWidgets(carousels) {
     carouselContainer.className = "carousel";
 
     const indexWidget = index({
-      indexName,
+      indexName: carouselConfig.indexName,
       indexId: carouselConfig.objectID,
     });
 

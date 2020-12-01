@@ -117,74 +117,106 @@ parcelRequire = (function (modules, cache, entry, globalName) {
   }
 
   return newRequire;
-})({"../../../../.config/yarn/global/node_modules/parcel-bundler/src/builtins/bundle-url.js":[function(require,module,exports) {
-var bundleURL = null;
+})({"content-carousel/content-carousel.js":[function(require,module,exports) {
+"use strict";
 
-function getBundleURLCached() {
-  if (!bundleURL) {
-    bundleURL = getBundleURL();
-  }
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
 
-  return bundleURL;
-}
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
 
-function getBundleURL() {
-  // Attempt to find the URL of the current script and use that as the base URL
-  try {
-    throw new Error();
-  } catch (err) {
-    var matches = ('' + err.stack).match(/(https?|file|ftp|chrome-extension|moz-extension):\/\/[^)\n]+/g);
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 
-    if (matches) {
-      return getBaseURL(matches[0]);
-    }
-  }
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 
-  return '/';
-}
+function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter); }
 
-function getBaseURL(url) {
-  return ('' + url).replace(/^((?:https?|file|ftp|chrome-extension|moz-extension):\/\/.+)\/[^/]+$/, '$1') + '/';
-}
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
 
-exports.getBundleURL = getBundleURLCached;
-exports.getBaseURL = getBaseURL;
-},{}],"../../../../.config/yarn/global/node_modules/parcel-bundler/src/builtins/css-loader.js":[function(require,module,exports) {
-var bundle = require('./bundle-url');
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
 
-function updateLink(link) {
-  var newLink = link.cloneNode();
+var state = {
+  lastCarouselsReceived: null,
+  carouselIndices: []
+};
+var contentCarousel = instantsearch.connectors.connectQueryRules(function (_ref) {
+  var items = _ref.items,
+      widgetParams = _ref.widgetParams,
+      instantSearchInstance = _ref.instantSearchInstance;
 
-  newLink.onload = function () {
-    link.remove();
-  };
-
-  newLink.href = link.href.split('?')[0] + '?' + Date.now();
-  link.parentNode.insertBefore(newLink, link.nextSibling);
-}
-
-var cssTimeout = null;
-
-function reloadCSS() {
-  if (cssTimeout) {
+  // We don't display anything if we don't receive any carousels from the
+  // Query Rules.
+  if (items.length === 0 || !items[0].carousels) {
     return;
   }
 
-  cssTimeout = setTimeout(function () {
-    var links = document.querySelectorAll('link[rel="stylesheet"]');
+  var carousels = items[0].carousels;
+  carousels.sort(function (a, b) {
+    return a.position - b.position;
+  }); // If the carousels haven't changed after a refinement, we don't need to update
+  // the DOM.
 
-    for (var i = 0; i < links.length; i++) {
-      if (bundle.getBaseURL(links[i].href) === bundle.getBundleURL()) {
-        updateLink(links[i]);
+  if (state.lastCarouselsReceived === JSON.stringify(carousels)) {
+    return;
+  }
+
+  state.lastCarouselsReceived = JSON.stringify(carousels);
+  var container = document.querySelector(widgetParams.container); // We unmount all previous carousels indices to have an updated InstantSearch
+  // tree.
+
+  instantSearchInstance.mainIndex.removeWidgets(state.carouselIndices);
+  var carouselIndices = carousels.map(function (carousel) {
+    var carouselContainer = document.createElement("div");
+    var carouselTitle = document.createElement("h2");
+    carouselTitle.innerText = carousel.label;
+    var carouselRow = document.createElement("div");
+    carouselContainer.append(carouselTitle, carouselRow);
+    var carouselIndex = instantsearch.widgets.index({
+      indexName: instantSearchInstance.indexName
+    }).addWidgets([instantsearch.widgets.configure({
+      hitsPerPage: carousel.nbProducts,
+      ruleContexts: [carousel.ruleContext]
+    }), instantsearch.widgets.hits({
+      container: carouselRow,
+      templates: {
+        item: widgetParams.template
       }
-    }
+    })]);
+    return [carouselIndex, carouselContainer];
+  });
+  state.carouselIndices = carouselIndices.map(function (carouselsIndex) {
+    return carouselsIndex[0];
+  });
+  var carouselContainers = carouselIndices.map(function (carouselsIndex) {
+    return carouselsIndex[1];
+  });
+  instantSearchInstance.mainIndex.addWidgets(state.carouselIndices);
+  container.append.apply(container, _toConsumableArray(carouselContainers));
+});
+var _default = contentCarousel;
+exports.default = _default;
+},{}],"main.js":[function(require,module,exports) {
+"use strict";
 
-    cssTimeout = null;
-  }, 50);
-}
+var _contentCarousel = _interopRequireDefault(require("./content-carousel/content-carousel.js"));
 
-module.exports = reloadCSS;
-},{"./bundle-url":"../../../../.config/yarn/global/node_modules/parcel-bundler/src/builtins/bundle-url.js"}],"../../../../.config/yarn/global/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var search = instantsearch({
+  indexName: "solution_retail_dataset",
+  searchClient: algoliasearch("RSBCBF0EG8", "fac0c6dc5e242a210d0047f51cec2b77")
+});
+search.addWidgets([instantsearch.widgets.configure({
+  hitsPerPage: 8,
+  ruleContexts: ["get_carousels"]
+}), (0, _contentCarousel.default)({
+  container: "#carousel",
+  template: "\n    <div class=\"item\">\n      <figure class=\"hit-image-container\"><div class=\"hit-image-container-box\"><img class=\"hit-image\" src=\"{{image_link}}\" alt=\"\"></div></figure>\n      <p class=\"hit-category\">&#8203;\u200B</p>\n      <div class=\"item-content\">\n          <p class=\"brand hit-tag\">{{{_highlightResult.brand.value}}}</p>\n          <p class=\"name\">{{{_highlightResult.name.value}}}</p>\n          <div class=\"hit-description\">{{{price}}}</div>\n      </div>\n    </div>\n"
+})]);
+search.start();
+},{"./content-carousel/content-carousel.js":"content-carousel/content-carousel.js"}],"../../../../.npm/_npx/46487/lib/node_modules/parcel/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
@@ -212,7 +244,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "52274" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "54225" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
@@ -388,5 +420,5 @@ function hmrAcceptRun(bundle, id) {
     return true;
   }
 }
-},{}]},{},["../../../../.config/yarn/global/node_modules/parcel-bundler/src/builtins/hmr-runtime.js"], null)
-//# sourceMappingURL=/index.js.map
+},{}]},{},["../../../../.npm/_npx/46487/lib/node_modules/parcel/src/builtins/hmr-runtime.js","main.js"], null)
+//# sourceMappingURL=/main.1f19ae8e.js.map

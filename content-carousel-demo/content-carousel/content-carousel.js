@@ -7,6 +7,7 @@ const contentCarousel = instantsearch.connectors.connectQueryRules(
   ({ items, widgetParams, instantSearchInstance }) => {
     // We don't display anything if we don't receive any carousels from the
     // Query Rules.
+    
     if (items.length === 0 || !items[0].carousels) {
       return;
     }

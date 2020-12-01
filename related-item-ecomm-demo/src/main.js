@@ -39,11 +39,6 @@ const referenceHit = {
 };
 
 
-
-
-
-
-
 // Add the widgets
 search.addWidgets([
   configure({
