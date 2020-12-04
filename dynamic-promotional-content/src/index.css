@@ -9,6 +9,10 @@ body {
     Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
 }
 
+.search-panel__results {
+  margin: 1em;
+}
+
 #banner .ais-Hits-item {
   width: 100%;
   margin: 1em;
