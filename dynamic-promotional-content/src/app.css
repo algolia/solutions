@@ -34,15 +34,8 @@
 }
 
 .search-panel {
-  display: flex;
-}
-
-.search-panel__filters {
-  flex: 1;
-}
-
-.search-panel__results {
-  flex: 3;
+  display: grid;
+  grid-template-columns: 1fr 3fr;
 }
 
 .ais-Highlight-highlighted {

@@ -40,18 +40,59 @@ function taggedTemplateNoop(strings, ...keys) {
 const html = taggedTemplateNoop;
 
 const templates = {
-  'images-image'(item) {
-    console.log(item);
+  'logo-text'({
+    displayed_attributes: { name, page_url, logo_url, layout_label },
+  }) {
+    // console.log(item);
     return html`
-      ${item.layout_type}:
-      <pre>${JSON.stringify(item.displayed_attributes, null, 2)}</pre>
+      <p>
+        <a href="${page_url}">
+          <img
+            src="${logo_url}"
+            alt="${name}"
+            style="height: 1em;vertical-align: middle"
+          />${layout_label}
+        </a>
+      </p>
     `;
   },
-  'logo-text'(item) {
-    console.log(item);
+  'images-image'({
+    displayed_attributes: {
+      page_url,
+      image_url,
+      name,
+      layout_label,
+      promoted_items,
+    },
+  }) {
     return html`
-      ${item.layout_type}:
-      <pre>${JSON.stringify(item.displayed_attributes, null, 2)}</pre>
+      <p>
+        <a href="${page_url}">
+          <img
+            src="${image_url}"
+            alt="${name}"
+            style="height: 5em;vertical-align: middle"
+          />${layout_label}
+        </a>
+      </p>
+      <ul>
+        ${promoted_items
+          .map(
+            promoted => html`
+              <li>
+                <a href="${promoted.product_page_url}">
+                  <img
+                    src="${promoted.thumbnail_url}"
+                    alt="${promoted.product_name}"
+                    style="height: 5em"
+                  />
+                  <p>${promoted.product_name}</p>
+                </a>
+              </li>
+            `
+          )
+          .join('')}
+      </ul>
     `;
   },
   'images-text'({
