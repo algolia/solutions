@@ -21,22 +21,44 @@ export const carousel = connectHits(function renderCarousel(
 
   container.querySelector("ul").innerHTML = hits
     .map(
-      (hit) => `
-        <li>
-          <img src="${hit.image}" alt="${hit.name}">
-          <div class="info">
-          <div class="hit-name">
-          ${hit.brand}
+      (hit) => {
+        if (hit.newPrice === hit.price) {
+          return `
+          <li>
+            <img src="${hit.image}" alt="${hit.name}">
+            <div class="info">
+            <div class="hit-name">
+            ${hit.brand}
+            </div>
+              <h3 class="title">${hit.name}</h3>
+            </div>
+            <div class="hit-rating-price">
+            <div class="hit-ratings">${ratings(hit.rating)} <p>(${hit.ratingsNumber})</p></div>
+            <div class="hit-price"><p>$${hit.price}</p></div>
           </div>
-            <h3 class="title">${hit.name}</h3>
+          </li>
+        `
+
+        } else {
+          return `
+          <li>
+          
+            <img src="${hit.image}" alt="${hit.name}">
+            <div class="info">
+            <div class="hit-name">
+            ${hit.brand}
+            </div>
+              <h3 class="title">${hit.name}</h3>
+            </div>
+            <div class="hit-rating-price">
+            <div class="hit-ratings">${ratings(hit.rating)} <p>(${hit.ratingsNumber})</p></div>
+            <div class="hit-price"><p class="cross-price">$${hit.price}</p><p class="price-new">$${hit.newPrice}</p></div>
           </div>
-          <div class="hit-rating-price">
-          <div class="hit-ratings">${ratings(hit.rating)} <p>(${hit.ratingsNumber})</p></div>
-          <div class="hit-price">$${hit.price}</div>
-        </div>
-        </li>
-      `
-    )
+          </li>
+        `
+        }
+
+      })
     .join("");
 });
 
@@ -53,23 +75,23 @@ const referenceHit = {
   image: '"https://cdn-demo.algolia.com/bestbuy-0118/8532557_sb.jpg"',
   name: '"Apple - MacBook Pro with Retina display - 13.3" Display - 8GB Memory - 128GB Flash Storage - Silver"',
   description: "With fifth-generation Intel Core processors, the latest graphics, and faster flash storage, the incredibly advanced MacBook Pro with Retina display moves even further ahead in performance and battery life.* *Compared with the previous generation.",
-  categories: [ "Name Brands", "Apple", "Mac" ],
+  categories: ["Name Brands", "Apple", "Mac"],
   popularity: 21442,
   free_shipping: true,
   hierarchicalCategories: {
     lvl0: "Name Brands",
     lvl1: "Name Brands > Apple",
     lvl2: "Name Brands > Apple > Mac",
-    },
-    onSale: false,
-    price: 1299.99,
-    price_range: "500 - 2000",
-    seller: "RandomSeller#7",
-    type: "Apple",
-    url: "https://api.bestbuy.com/click/-/8532557/pdp",
-    rating: 4,
-    ratingsNumber: 397,
-    newPrice: 1299.99
+  },
+  onSale: false,
+  price: 1299.99,
+  price_range: "500 - 2000",
+  seller: "RandomSeller#7",
+  type: "Apple",
+  url: "https://api.bestbuy.com/click/-/8532557/pdp",
+  rating: 4,
+  ratingsNumber: 397,
+  newPrice: 1299.99
 };
 
 
@@ -115,73 +137,73 @@ searchRelated.addWidgets([
         </div>
         
       `
-    
+
     }
   }),
 ]);
 
 searchRelated.start()
 
-const ratings = (hit) =>{
+const ratings = (hit) => {
   console.log(hit)
   switch (hit) {
-    case hit = 0: 
+    case hit = 0:
       return `<div>
       <i class="far fa-star"></i>
       <i class="far fa-star"></i>
       <i class="far fa-star"></i>
       <i class="far fa-star"></i>
       <i class="far fa-star"></i>
-      </div>` 
+      </div>`
       break;
-    case hit = 1: 
+    case hit = 1:
       return `<div>
       <i class="fas fa-star"></i>
       <i class="far fa-star"></i>
       <i class="far fa-star"></i>
       <i class="far fa-star"></i>
       <i class="far fa-star"></i>
-      </div>` 
+      </div>`
       break;
-    case hit = 2: 
+    case hit = 2:
       return `<div>
       <i class="fas fa-star"></i>
       <i class="fas fa-star"></i>
       <i class="far fa-star"></i>
       <i class="far fa-star"></i>
       <i class="far fa-star"></i>
-      </div>` 
+      </div>`
       break;
-    case hit = 3: 
+    case hit = 3:
       return `<div>
       <i class="fas fa-star"></i>
       <i class="fas fa-star"></i>
       <i class="fas fa-star"></i>
       <i class="far fa-star"></i>
       <i class="far fa-star"></i>
-      </div>` 
+      </div>`
       break;
-    case hit = 4: 
+    case hit = 4:
       return `<div>
       <i class="fas fa-star"></i>
       <i class="fas fa-star"></i>
       <i class="fas fa-star"></i>
       <i class="fas fa-star"></i>
       <i class="far fa-star"></i>
-      </div>` 
+      </div>`
       break;
-    case hit = 4: 
+    case hit = 4:
       return `<div>
       <i class="fas fa-star"></i>
       <i class="fas fa-star"></i>
       <i class="fas fa-star"></i>
       <i class="fas fa-star"></i>
       <i class="fas fa-star"></i>
-      </div>` 
+      </div>`
       break;
     default:
       return 'No ratings yet for this product'
-      console.log('Erreur cas inconnu');  
+      console.log('Erreur cas inconnu');
   }
-  
-  }
+
+}

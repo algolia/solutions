@@ -94,6 +94,20 @@ mark {
   color: #a29185;
 }
 
+.hit-price{
+  display: flex;
+}
+
+.cross-price{
+  text-decoration: line-through red;
+  margin-right: 1rem;
+}
+
+.price-new{
+  font-weight: bold;
+  font-size: 1rem;
+}
+
 /* RELATED ITEMS ECOMMERCE */
 
 .carousel {
