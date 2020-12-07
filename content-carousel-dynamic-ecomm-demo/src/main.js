@@ -34,10 +34,11 @@ function getCarouselConfigs() {
   return searchClient
     .initIndex("e_commerce_transformed_config")
     .search("", {
+      facetFilters: ['userToken:' + getUserToken()],
       attributesToHighlight: [],
       attributesToRetrieve: ["title", "indexName", "configure"],
     })
-    .then((res) => res.hits );
+    .then((res) => res.hits);
 }
 
 let carouselWidgets = [];
