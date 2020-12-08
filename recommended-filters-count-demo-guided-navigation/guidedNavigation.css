@@ -1,0 +1,86 @@
+h1{
+    color: black;
+    margin-bottom: 0.8rem !important;
+}
+
+.title-guidedNavigation{
+position: relative;
+}
+
+.underlineh1{
+    border: solid 2px rgb(83,101,252);
+    border-radius: 15px;
+    width: 10vw;
+    position: absolute;
+    transform: translate(7rem, -1rem);
+}
+
+.header{
+    background: linear-gradient(162deg, rgba(34,36,61,1) 0%, rgba(237,237,237,1) 38%) !important;;
+}
+
+.searchbox{
+    width: 60vw;
+}
+.ais-SearchBox-input{
+    background-color: white !important;
+    border-radius: 17px !important;
+    min-height: 0.6rem !important;
+    margin: 2rem auto;
+    box-shadow: 2px 2px 15px 2px rgba(0, 0, 0, 0.2);
+}
+
+.ais-Menu .ais-SearchBox-input, .ais-RefinementList .ais-SearchBox-input {
+    border-radius: 3px;
+    font-size: 0.8rem;
+    min-height: 30px !important;
+    padding: 0px 44px;
+}
+
+
+.refinement-list ul {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 70vw;
+    margin: 1rem auto;
+}
+.refinement-list ul li {
+   padding: 0.6rem;
+   background-color: white;
+   border-radius: 20px;
+   color: rgb(29, 29, 29);
+   margin: 0.5rem;
+   font-size: 0.8rem;
+}
+
+.btn-showMore{
+    font-style: italic;
+}
+
+.ais-Hits-list{
+    grid-template-columns: repeat(3, 1fr) !important;
+}
+
+.ais-Hits-item{
+    height: 450px;
+    box-shadow: 2px 2px 15px 2px rgba(0, 0, 0, 0.6);
+    padding: 1rem;
+    border-radius: 7px;
+    margin: auto 0;
+    position: relative;
+}
+
+.item-content{
+    position: relative;
+}
+
+.hit-description{
+    position: absolute;
+    right: 1rem;
+    bottom: 1rem;
+}
+
+.ais-Pagination{
+    margin-top: 2rem;
+}
