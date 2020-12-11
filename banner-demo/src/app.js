@@ -65,11 +65,22 @@ search.addWidgets([
   instantsearch.widgets.hits({
     container: '#hits',
     templates: {
-      item: `
-<article>
-  <h1>{{#helpers.highlight}}{ "attribute": "name" }{{/helpers.highlight}}</h1>
-</article>
-`,
+      item: hit =>
+        `
+      <div class="card-wrapper">
+          <div class="img-hit">
+          <img src="${hit.image}" align="left" alt="${hit.name}"/>
+          </div>
+          <div class="hit-name">
+          ${hit.brand}
+          </div>
+          <div class="hit-description">
+            <p>${hit.name}</p>
+          </div>
+          <div class="hit-price">${hit.price + '€'}</div>        
+      </div>
+     
+     `,
     },
   }),
   instantsearch.widgets.pagination({
@@ -78,7 +89,7 @@ search.addWidgets([
   customConfigure({
     container: document.querySelector('#configure'),
     searchParameters: {
-      hitsPerPage: 8,
+      hitsPerPage: 12,
     },
   }),
 ]);
