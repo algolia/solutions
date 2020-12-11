@@ -1,0 +1,174 @@
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 80px;
+  padding: 0.5rem 1rem;
+  background-image: linear-gradient(284deg, #fedd4e, #fcb43a);
+  color: #fff;
+  margin-bottom: 1rem;
+}
+
+.header a {
+  color: #fff;
+  text-decoration: none;
+}
+
+.header-title {
+  /* font-size: 1.2rem;
+  font-weight: normal; */
+  font-family: 'Hind', sans-serif;
+  font-weight: 400;
+  font-size: 32px;
+}
+
+.header-title::after {
+  content: ' ▸ ';
+  padding: 0 0.5rem;
+}
+
+.header-subtitle {
+  /* font-size: 1.2rem; */
+  font-family: 'Hind', sans-serif;
+  font-weight: 400;
+  font-size: 22px;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.search-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.search-inputs-container {
+  display: flex;
+  flex-direction: row;
+  flex: 2 1;
+}
+
+.searchbox {
+  flex: 2;
+}
+
+.search-panel__filters {
+  flex: 2;
+}
+
+.search-panel__results {
+  flex: 3;
+  display: flex;
+}
+
+.refinement-list {
+  min-width: 20%;
+  margin-right: 5px;
+}
+
+.ais-Highlight-highlighted {
+  color: inherit;
+  font-size: inherit;
+}
+
+#searchbox {
+  margin-bottom: 2rem;
+}
+
+#pagination {
+  margin: 2rem auto;
+  text-align: center;
+}
+
+#queryRuleCustomData img {
+  height: 30%;
+  width: 30%;
+  display: block;
+  margin: 10px auto;
+}
+
+#queryRuleCustomData h2 {
+  height: 30%;
+  width: 30%;
+  display: block;
+  margin: 10px auto;
+  text-align: center;
+}
+
+.ais-Hits-item {
+  overflow-wrap: break-word;
+}
+
+@media only screen and (max-width: 600px) {
+  .ais-Hits-item {
+    width: 100%;
+  }
+}
+
+/* hit cards design  */
+.ais-Hits-item {
+  min-height: 350px;
+  box-shadow: 2px 2px 10px 2px rgba(136, 134, 134, 0.6);
+  padding: 1.5rem;
+  border-radius: 10px;
+}
+
+.card-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  flex: 3;
+}
+
+.img-hit {
+  display: flex !important;
+  justify-content: center !important;
+  width: 200px !important;
+  height: 200px !important;
+  margin: 0 auto;
+}
+
+.hit-description p {
+  float: left;
+  font-size: 14px;
+  word-wrap: break-word;
+}
+
+.img-hit img {
+  width: 100% !important;
+  object-fit: contain !important;
+}
+
+.hit-name {
+  /* justify-content: center !important; */
+  word-wrap: break-word;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.hit-price {
+  position: absolute;
+
+  z-index: 11;
+  padding: 2px 5px;
+  background-color: #fedd4e;
+  border-radius: 5px;
+  opacity: 0.8;
+}
+
+.ais-SearchBox {
+  width: 100%;
+}
+
+.ais-SearchBox-input {
+  width: 100%;
+  -webkit-appearance: none;
+  appearance: none;
+  border: 1px solid #979596;
+  color: rgb(22, 21, 21);
+  font-size: 14px;
+  padding: 12px 14px;
+  padding-left: 40px;
+}
