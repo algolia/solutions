@@ -1,18 +1,46 @@
 import instantsearch from 'instantsearch.js';
 import algoliasearch from 'algoliasearch';
 import { configure, hits, EXPERIMENTAL_configureRelatedItems } from 'instantsearch.js/es/widgets';
-
-
-const searchClient = algoliasearch(
-  'GENYJWQIK2',
-  'a847d02d26f1276fbb0281a7e51ee8a5'
-);
+import contentCarousel from "./content-carousel/content-carousel.js";
 
 const search = instantsearch({
-  indexName: 'e_commerce_transformed',
-  searchClient,
+  indexName: "e_commerce_transformed",
+  searchClient: algoliasearch("GENYJWQIK2", "a847d02d26f1276fbb0281a7e51ee8a5"),
 });
 
+const searchRelated = instantsearch({
+  indexName: "e_commerce_transformed_perso",
+  searchClient: algoliasearch("GENYJWQIK2", "a847d02d26f1276fbb0281a7e51ee8a5"),
+});
+
+
+// RULES CAROUSEL
+search.addWidgets([
+  configure({
+    ruleContexts: ["get_carousels"]
+  }),
+  contentCarousel({
+    container: "#carousel",
+    template: `
+    <div class="item">
+    <figure class="hit-image-container"><div class="hit-image-container-box"><img class="hit-image" src="{{image}}" alt=""></div></figure>
+    <p class="hit-category">&#8203;​</p>
+    <div class="item-content">
+    <p class="brand hit-tag">{{{_highlightResult.brand.value}}}</p>
+    <p class="name">{{{_highlightResult.name.value}}}</p>
+    <div class="hit-rating-price">
+      <div class="hit-ratings"><p>{{{ratings}}}</p></div>
+      <div class="hit-price">$ {{{price}}}</div>
+    </div>
+    </div>
+    </div>
+    `,
+  }),
+]);
+
+
+
+// RELATED CAROUSEL
 const referenceHit = {
   objectID: "8532557",
   brand: 'Apple',
@@ -38,11 +66,17 @@ const referenceHit = {
     newPrice: 1299.99
 };
 
+const carouselRelated = document.querySelector(".carousel-container")
+const titleRelated = document.createElement("h2")
+titleRelated.classList.add('h2-titleRelated')
+titleRelated.innerText = "Because you purchase of Apple Mac Pro"
+carouselRelated.before(titleRelated)
 
-// Add the widgets
-search.addWidgets([
+
+
+searchRelated.addWidgets([
   configure({
-    hitsPerPage: 15,
+    hitsPerPage: 8,
     query: '',
   }),
   EXPERIMENTAL_configureRelatedItems({
@@ -67,7 +101,7 @@ search.addWidgets([
           ${hit.name}
           </div>
           <div class="hit-rating-price">
-            <div class="hit-ratings">${ratings(hit.rating)} <p> (${hit.ratingsNumber})</p></div>
+            <div class="hit-ratings"><p>${ratings(hit.rating)} (${hit.ratingsNumber})</p></div>
             <div class="hit-price">$${hit.price}</div>
           </div>
         </div>
@@ -78,6 +112,7 @@ search.addWidgets([
 ]);
 
 const ratings = (hit) =>{
+  console.log(hit)
   switch (hit) {
     case hit = 0: 
       return `<div>
@@ -141,3 +176,45 @@ const ratings = (hit) =>{
   }
 
 search.start();
+searchRelated.start()
+
+
+// RELATED ITEMS
+// Add the widgets
+// search.addWidgets([
+//   configure({
+//     hitsPerPage: 8,
+//     query: '',
+//   }),
+  // EXPERIMENTAL_configureRelatedItems({
+  //   hit: referenceHit,
+  //   matchingPatterns: {
+  //     brand: { score: 3 },
+  //     categories: { score: 2 },
+  //   },
+  // }),
+  // hits({
+  //   container: ".carousel-related",
+  //   templates: {
+  //     item: (hit) => `
+  //     <div class="card-wrapper">    
+  //         <div class="img-hit">
+  //           <img src="${hit.image}" align="left" alt="${hit.name}" class="hit-img" />
+  //         </div>
+  //         <div class="hit-name">
+  //         ${hit.brand}
+  //         </div>
+  //         <div class="hit-description">
+  //         ${hit.name}
+  //         </div>
+  //         <div class="hit-rating-price">
+  //           <div class="hit-ratings"> <p> (${hit.ratingsNumber})</p></div>
+  //           <div class="hit-price">$${hit.price}</div>
+  //         </div>
+  //       </div>
+  //     `
+    
+  //   }
+  // }),
+// ]);
+

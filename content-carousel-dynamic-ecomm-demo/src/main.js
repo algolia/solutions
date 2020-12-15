@@ -1,23 +1,25 @@
-import instantsearch from 'instantsearch.js';
-import algoliasearch from 'algoliasearch';
-import { configure, index } from 'instantsearch.js/es/widgets';
-import { carousel } from './carousel';
+import instantsearch from "instantsearch.js";
+import algoliasearch from "algoliasearch";
+import { configure, index } from "instantsearch.js/es/widgets";
+import { carousel } from "./carousel";
 
 const searchClient = algoliasearch(
-  'GENYJWQIK2',
-  'd7a56394e700ad117ef483c12bc04481'
+  "GENYJWQIK2",
+  "a847d02d26f1276fbb0281a7e51ee8a5"
 );
+const indexName = "e_commerce_transformed";
 
 const search = instantsearch({
-  indexName: 'perso_movies_carousel',
+  indexName,
   searchClient,
 });
 
-const userTokenSelector = document.getElementById('user-token-selector');
-userTokenSelector.addEventListener('change', () => {
+const userTokenSelector = document.getElementById("user-token-selector");
+userTokenSelector.addEventListener("change", () => {
   userTokenSelector.disabled = true;
   search.removeWidgets(carouselWidgets);
-  getCarousels().then((carousels) => {
+  getCarouselConfigs().then((carousels) => {
+    console.log(carousels)
     userTokenSelector.disabled = false;
     carouselWidgets = createWidgets(carousels);
     search.addWidgets(carouselWidgets);
@@ -28,43 +30,36 @@ function getUserToken() {
   return userTokenSelector.value;
 }
 
-function getCarousels() {
-  // this requires an extra index, here "personalized_movies_carousel_config",
-  // with this schema:
-  // {
-  //   "title": "my carousel",
-  //   "indexName": "my_index",
-  //   "userToken": "user token for this ",
-  //   "configure": {
-  //     // any search parameter, e.g. "enablePersonalization": true
-  //   }
-  // }
+function getCarouselConfigs() {
   return searchClient
-    .initIndex('personalized_movies_carousel_config')
-    .search('', {
+    .initIndex("e_commerce_transformed_config")
+    .search("", {
       facetFilters: ['userToken:' + getUserToken()],
       attributesToHighlight: [],
-      attributesToRetrieve: ['title', 'indexName', 'configure'],
+      attributesToRetrieve: ["title", "indexName", "configure"],
     })
-    .then((res) => res.hits
-    );
+    .then((res) => res.hits);
 }
 
 let carouselWidgets = [];
 function createWidgets(carousels) {
-  const container = document.querySelector('#carousel-container');
+  console.log(carousel)
+  const container = document.querySelector("#stacked-carousels");
 
-  container.innerText = '';
+  container.innerText = "";
 
   return carousels.map((carouselConfig) => {
-    const carouselContainer = document.createElement('div');
+    console.log(carouselConfig)
+    const carouselContainer = document.createElement("div");
+    carouselContainer.className = "carousel";
 
     const indexWidget = index({
-      indexName: carouselConfig.indexName,
+      indexName,
       indexId: carouselConfig.objectID,
     });
 
     if (carouselConfig.configure) {
+      console.log(carouselConfig.configure)
       indexWidget.addWidgets([
         configure({
           ...carouselConfig.configure,
@@ -81,15 +76,16 @@ function createWidgets(carousels) {
     ]);
 
     container.appendChild(carouselContainer);
-
     return indexWidget;
   });
 }
 
 // retrieve the carousel configuration once
-getCarousels().then((carousels) => {
+getCarouselConfigs().then((carousels) => {
   userTokenSelector.disabled = false;
   carouselWidgets = createWidgets(carousels);
+  console.log(carousels)
   search.addWidgets(carouselWidgets);
+  console.log(carouselWidgets)
   search.start();
 });

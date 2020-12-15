@@ -1,5 +1,5 @@
 {
-  "name": "content-carousel-programmatic",
+  "name": "content-carousel-ecommerce",
   "version": "1.0.0",
   "description": "",
   "main": "main.js",
@@ -8,12 +8,13 @@
     "build": "parcel build index.html"
   },
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "parcel-bundler": "^1.12.4"
   },
   "dependencies": {
-    "algoliasearch": "^4.8.0",
+    "algoliasearch": "^4.8.2",
     "instantsearch.js": "^4.8.7"
-  }
+  },
+  "keywords": []
 }
