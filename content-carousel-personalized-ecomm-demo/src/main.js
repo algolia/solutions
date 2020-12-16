@@ -13,12 +13,12 @@ const search = instantsearch({
   searchClient,
 });
 
-const userTokenSelector = document.getElementById("user-token-selector");
-userTokenSelector.addEventListener("change", () => {
+
+const userTokenSelector = document.getElementById('user-token-selector');
+userTokenSelector.addEventListener('change', () => {
   userTokenSelector.disabled = true;
   search.removeWidgets(carouselWidgets);
-  getCarouselConfigs().then((carousels) => {
-    console.log(carousels)
+  getCarousels().then((carousels) => {
     userTokenSelector.disabled = false;
     carouselWidgets = createWidgets(carousels);
     search.addWidgets(carouselWidgets);
@@ -29,27 +29,36 @@ function getUserToken() {
   return userTokenSelector.value;
 }
 
-function getCarouselConfigs() {
+function getCarousels() {
+  // this requires an extra index, here "personalized_movies_carousel_config",
+  // with this schema:
+  // {
+  //   "title": "my carousel",
+  //   "indexName": "my_index",
+  //   "userToken": "user token for this ",
+  //   "configure": {
+  //     // any search parameter, e.g. "enablePersonalization": true
+  //   }
+  // }
   return searchClient
-    .initIndex("carousel_config")
-    .search("", {
+    .initIndex('carousel_config')
+    .search('', {
       facetFilters: ['userToken:' + getUserToken()],
       attributesToHighlight: [],
-      attributesToRetrieve: ["title", "indexName", "configure"],
+      attributesToRetrieve: ['title', 'indexName', 'configure'],
     })
     .then((res) => res.hits);
 }
 
 let carouselWidgets = [];
 function createWidgets(carousels) {
-  console.log(carousel)
-  const container = document.querySelector("#stacked-carousels");
+  const container = document.querySelector('#stacked-carousels');
 
-  container.innerText = "";
+
+  container.innerText = '';
 
   return carousels.map((carouselConfig) => {
-    console.log(carouselConfig)
-    const carouselContainer = document.createElement("div");
+    const carouselContainer = document.createElement('div');
     carouselContainer.className = "carousel";
 
     const indexWidget = index({
@@ -58,7 +67,6 @@ function createWidgets(carousels) {
     });
 
     if (carouselConfig.configure) {
-      console.log(carouselConfig.configure)
       indexWidget.addWidgets([
         configure({
           ...carouselConfig.configure,
@@ -75,14 +83,18 @@ function createWidgets(carousels) {
     ]);
 
     container.appendChild(carouselContainer);
+
     return indexWidget;
   });
 }
 
 // retrieve the carousel configuration once
-getCarouselConfigs().then((carousels) => {
+getCarousels().then((carousels) => {
   userTokenSelector.disabled = false;
   carouselWidgets = createWidgets(carousels);
   search.addWidgets(carouselWidgets);
   search.start();
 });
+
+
+
