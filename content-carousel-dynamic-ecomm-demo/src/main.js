@@ -34,7 +34,6 @@ function getCarouselConfigs() {
   return searchClient
     .initIndex("e_commerce_transformed_config")
     .search("", {
-      facetFilters: ['userToken:' + getUserToken()],
       attributesToHighlight: [],
       attributesToRetrieve: ["title", "indexName", "configure"],
     })
