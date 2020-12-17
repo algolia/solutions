@@ -1,54 +1,32 @@
+body {
+  margin: 0;
+  color: #21243d;
+}
+
 .header {
-  display: flex;
+  position: relative;
   align-items: center;
+  background: linear-gradient(
+    to bottom,
+    transparent 36%,
+    rgba(0, 0, 0, 0.1) 100%
+  );
+  background-color: #ffffff;
+  background-position: center;
+  background-size: cover;
+  display: flex;
+  flex-direction: column;
   justify-content: center;
-  min-height: 80px;
+  min-height: 15.5rem;
   padding: 0.5rem 1rem;
-  background-image: linear-gradient(284deg, #fedd4e, #fcb43a);
-  color: #fff;
-  margin-bottom: 1rem;
-}
-
-.header a {
-  color: #fff;
-  text-decoration: none;
-}
-
-.header-title {
-  /* font-size: 1.2rem;
-  font-weight: normal; */
-  font-family: 'Hind', sans-serif;
-  font-weight: 400;
-  font-size: 32px;
-}
-
-.header-title::after {
-  content: ' ▸ ';
-  padding: 0 0.5rem;
-}
-
-.header-subtitle {
-  /* font-size: 1.2rem; */
-  font-family: 'Hind', sans-serif;
-  font-weight: 400;
-  font-size: 22px;
+  text-align: center;
+  z-index: 10;
 }
 
 .container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 1rem;
-}
-
-.search-panel {
-  display: flex;
-  flex-direction: column;
-}
-
-.search-inputs-container {
-  display: flex;
-  flex-direction: row;
-  flex: 2 1;
+  padding: 3rem;
 }
 
 .searchbox {
@@ -163,12 +141,67 @@
 }
 
 .ais-SearchBox-input {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  height: 4rem;
+  border-radius: 8px;
+  background: linear-gradient(
+      -180deg,
+      hsla(0, 0%, 100%, 0),
+      hsla(0, 0%, 100%, 0.8)
+    )
+    #ebecf3;
+  box-shadow: 0 20px 44px 0 rgba(0, 0, 0, 0.2);
+}
+
+/* Search header style */
+.search-header h1 {
+  display: block;
+  font-size: 2em;
+  margin-block-start: 0.5em;
+  margin-block-end: 0.67em;
+  margin-inline-start: 0px;
+  margin-inline-end: 0px;
+  font-weight: bold;
+}
+
+#searchCheckbox {
+  display: none;
+}
+
+/* seach box style */
+.search-inputs-container {
+  max-width: 100%;
+  width: 47rem;
+  padding: 0.5rem 1rem;
+}
+
+.search-inputs-container input {
+  border: none;
   width: 100%;
-  -webkit-appearance: none;
-  appearance: none;
-  border: 1px solid #979596;
-  color: rgb(22, 21, 21);
-  font-size: 14px;
-  padding: 12px 14px;
-  padding-left: 40px;
+  font-size: 0.875rem;
+  background: transparent;
+  outline: none;
+  /* height: 100%; */
+  position: relative;
+  z-index: 99;
+  font-family: Hind, sans-serif;
+  padding-left: 57px;
+}
+
+.ais-SearchBox-input::placeholder {
+  color: #21243d;
+  opacity: 0.55;
+}
+
+.ais-SearchBox-loadingIcon,
+.ais-SearchBox-resetIcon,
+.ais-SearchBox-submitIcon {
+  left: 2rem;
+}
+
+.ais-SearchBox-resetIcon {
+  display: none;
 }
