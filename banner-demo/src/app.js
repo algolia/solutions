@@ -4,16 +4,6 @@ const searchClient = algoliasearch(
   'af044fb0788d6bb15f807e4420592bc5'
 );
 
-document.addEventListener('DOMContentLoaded', event => {
-  let elem = document.getElementsByClassName('ais-SearchBox-input');
-  console.log('element', elem);
-  if (elem)
-    elem[0].setAttribute(
-      'placeholder',
-      'Search for "phone", "Samsung", "Black Friday", "help"'
-    );
-});
-
 const search = instantsearch({
   indexName: 'instant_search_solutions_ecommerce',
   searchClient,
@@ -105,3 +95,11 @@ search.addWidgets([
 ]);
 
 search.start();
+
+// Add placeholder
+let elem = document.getElementsByClassName('ais-SearchBox-input');
+if (elem)
+  elem[0].setAttribute(
+    'placeholder',
+    'Search for "phone", "Samsung", "Black Friday", "help"'
+  );
