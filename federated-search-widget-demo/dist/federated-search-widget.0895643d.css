@@ -1,0 +1,196 @@
+#searchbox {
+  width: 100%;
+  position: relative;
+}
+
+#search-box-container {
+  height: 50px;
+}
+
+#search-box-container input {
+  border: none;
+  border-bottom: 1px solid #cecece;
+  width: 100%;
+  font-size: 20px;
+  background: transparent;
+  padding: 0 !important;
+  outline: none;
+  height: 100%;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+#clear-input {
+  color: #a2a2a2;
+  display: none;
+  margin-top: -30px;
+  float: right;
+  overflow: hidden;
+  cursor: pointer;
+  position: relative;
+  z-index: 1;
+}
+
+#search-results-container > div {
+  border-right: 1px solid #e0e0e0;
+}
+
+.column-title {
+  font-size: 16px;
+  margin: 4px 0 0;
+  padding: 8px 16px;
+  line-height: 1.5;
+  font-weight: normal;
+}
+
+.facet {
+  font-weight: bold;
+}
+
+.hit img {
+  height: 80px;
+  width: 80px;
+  object-fit: cover;
+}
+
+.hit {
+  display: flex;
+  align-items: flex-start;
+  padding: 8px;
+}
+
+.hit-info {
+  padding-left: 16px;
+  flex: 1;
+  overflow: hidden;
+}
+.hit-title {
+  margin: 4px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hit-price {
+  font-weight: bold;
+}
+
+.click-button,
+.buy-button {
+  padding: 8px 16px;
+  background-color: #576cf6;
+  border-radius: 2px;
+  color: #fff;
+  border: none;
+}
+
+.hit-actions {
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+}
+
+.hit-buttons {
+  margin-left: 24px;
+}
+
+#search-results-container ul {
+  padding-left: 0;
+  list-style-type: none;
+  margin: 0px;
+  padding: 8px 16px;
+}
+
+#search-results-container li {
+  padding: 4px;
+  line-height: 1.2;
+  transition: all 500ms cubic-bezier(0.075, 0.82, 0.165, 1);
+  border-radius: 2px;
+}
+
+#search-results-container em {
+  font-weight: bold;
+  font-style: normal;
+}
+
+#search-results-container .inverted-highlight {
+  font-weight: bold;
+}
+
+#search-results-container .inverted-highlight em {
+  font-style: normal;
+  font-weight: normal;
+}
+
+#search-results-container .in-facet {
+  font-size: 12px;
+}
+
+#search-results-container li[aria-selected=true] {
+  background-color: #f3f3f3;
+}
+
+#search-results-container {
+  padding-top: 0;
+  padding-bottom: 0;
+  overflow: auto;
+  background-color: #fafafd;
+  position: absolute;
+  z-index: 1;
+  width: 100%;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0px 26px 110px -12px rgba(0,0,0,0.43);
+
+  display: grid;
+  grid-template-columns: repeat(3, minmax(10%, 33%));
+  color: #3a456f;
+}
+
+/* Start Custom Views */
+/* 1. Regular display*/
+#search-results-container {
+  grid-template-areas: 
+    "suggestions search facets"
+}
+#search-results-container div:first-child {
+  grid-area: suggestions
+}
+#search-results-container div:nth-child(2) {
+  grid-area: search
+}
+#search-results-container div:nth-child(3) {
+  grid-area: facets
+}
+
+/* 2. Suggestions on top view (uncomment to see changes) */
+/* #search-results-container {
+  grid-template-areas: 
+    "suggestions suggestions"
+    "search      facets"
+}
+#search-results-container div:first-child {
+  grid-area: suggestions
+}
+#search-results-container div:nth-child(2) {
+  grid-area: search
+}
+#search-results-container div:nth-child(3) {
+  grid-area: facets
+} */
+/* Inline suggestions so we keep everything visual*/
+/* #search-results-container div:first-child li {
+  display: inline-block;
+} */
+
+/* End Custom Views */
+
+@media screen and (max-width: 769px){
+  #search-results-container {
+    grid-template-columns: 100%;
+    grid-template-areas: 
+     "suggestions"
+     "search"
+     "facets"
+  }
+}
+
+/*# sourceMappingURL=/federated-search-widget.0895643d.css.map */

@@ -1,0 +1,78 @@
+@import url('https://fonts.googleapis.com/css?family=Hind&display=swap');
+
+* {
+  box-sizing: border-box;
+  font-family: Hind,Arial,sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+#predictive-box {
+  width: 100%;
+  padding: 8px 8px 8px 42px;
+  position: absolute;
+  z-index: 20;
+  color: rgba(0,0,0,.6);
+  pointer-events: none;
+}
+
+#searchbox {
+  position: relative;
+}
+
+#search-box-container {
+  position: relative;
+}
+
+#search-box-input {
+  padding: 8px 8px 8px 42px;
+  font-size: 16px;
+  width: 100%;
+  border: none;
+}
+
+.recent-searches-container {
+  position: relative;
+  max-height: 180px;
+}
+
+#recent-searches-tags {
+  width: 100%;
+  position: absolute;
+  background-color: #fff;
+  z-index: 5;
+  top: 0;
+  margin-top: 0;
+  padding: 8px 0;
+  list-style-type: none;
+  box-shadow: 0 8px 15px 0 rgba(37,44,97,.15), 0 2px 4px 0 rgba(93,100,148,.2);
+  border-radius: 0 0 4px 4px;
+}
+
+.suggestion-tag {
+  font-weight: 600;
+  padding: 4px;
+  padding-left: 8px;
+  display: flex;
+  align-items: center;
+}
+
+.suggestion-tag[aria-selected=true] {
+  background-color: #f5f5fa;
+}
+
+.suggestion-tag em {
+  font-weight: normal;
+  font-style: normal;
+}
+
+.suggestion-tag .fas {
+  color: #c5c9e0;
+  margin-right: 8px;
+  padding: 4px 8px
+}
+
+.no-results {
+  padding: 8px 8px 8px 42px;
+}
+
+/*# sourceMappingURL=/recent-searches.3af5aceb.css.map */
