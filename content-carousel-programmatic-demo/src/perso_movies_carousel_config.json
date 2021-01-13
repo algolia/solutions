@@ -1,38 +1,39 @@
 [
     {
-        "title":"Trending",
-        "indexName":"perso_movies_carousel_trending",
-        "configure":{
-            "hitsPerPage":12
-        },
-        "order":1,
-        "objectID":"trending"
-    },
-    {
         "title":"Most popular",
         "indexName":"perso_movies_carousel",
         "configure":{
-            "hitsPerPage":8
+            "hitsPerPage":10
+        },
+        "order":1,
+        "objectID":"popular"
+    },
+    {
+        "title":"Trending",
+        "indexName":"perso_movies_carousel_trending",
+        "configure":{
+            "hitsPerPage":10
         },
         "order":2,
-        "objectID":"most-popular"
+        "objectID":"trending"
     },
+    
     {
         "title":"Just for you",
         "indexName":"perso_movies_carousel",
         "configure":{
             "hitsPerPage":10,
             "enablePersonalization":true,
-            "userToken": "action_crime"
+            "userToken": "123456789"
         },
         "order":3,
-        "objectID":"just-for-you"
+        "objectID":"perso"
     },
     {
         "title":"Fantasy Comedy",
         "indexName":"perso_movies_carousel",
         "configure":{
-            "hitsPerPage":8,
+            "hitsPerPage":10,
             "ruleContexts":"comedy_fantasy"
         },
         "order":4,
