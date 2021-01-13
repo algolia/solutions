@@ -1,1 +1,41 @@
-[{"title":"Fantasy Comedy","indexName":"perso_movies_carousel","configure":{"hitsPerPage":8,"ruleContexts":"comedy_fantasy"},"order":1,"objectID":"61607000"},{"title":"Just for you","indexName":"perso_movies_carousel","configure":{"hitsPerPage":10,"enablePersonalization":true,"userToken":true},"order":2,"objectID":"61606000"},{"title":"Most popular","indexName":"perso_movies_carousel","configure":{"hitsPerPage":8},"order":3,"objectID":"61605000"},{"title":"Trending","indexName":"perso_movies_carousel_trending","configure":{"hitsPerPage":12},"order":4,"objectID":"61604000"}]
+[
+    {
+        "title":"Trending",
+        "indexName":"perso_movies_carousel_trending",
+        "configure":{
+            "hitsPerPage":12
+        },
+        "order":1,
+        "objectID":"trending"
+    },
+    {
+        "title":"Most popular",
+        "indexName":"perso_movies_carousel",
+        "configure":{
+            "hitsPerPage":8
+        },
+        "order":2,
+        "objectID":"most-popular"
+    },
+    {
+        "title":"Just for you",
+        "indexName":"perso_movies_carousel",
+        "configure":{
+            "hitsPerPage":10,
+            "enablePersonalization":true,
+            "userToken": "action_crime"
+        },
+        "order":3,
+        "objectID":"just-for-you"
+    },
+    {
+        "title":"Fantasy Comedy",
+        "indexName":"perso_movies_carousel",
+        "configure":{
+            "hitsPerPage":8,
+            "ruleContexts":"comedy_fantasy"
+        },
+        "order":4,
+        "objectID":"fantasy-comedy"
+    }
+]
