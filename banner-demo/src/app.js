@@ -37,6 +37,7 @@ const customConfigure = instantsearch.connectors.connectConfigure(
 search.addWidgets([
   instantsearch.widgets.searchBox({
     container: '#searchbox',
+    placeholder: 'Search for "phone", "Samsung", "Black Friday", "help"'
   }),
   instantsearch.widgets.queryRuleCustomData({
     container: '#queryRuleCustomData',
@@ -95,11 +96,3 @@ search.addWidgets([
 ]);
 
 search.start();
-
-// Add placeholder
-let elem = document.getElementsByClassName('ais-SearchBox-input');
-if (elem)
-  elem[0].setAttribute(
-    'placeholder',
-    'Search for "phone", "Samsung", "Black Friday", "help"'
-  );
