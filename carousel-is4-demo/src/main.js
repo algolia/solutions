@@ -85,7 +85,7 @@ search.addWidgets([
     configure({
       hitsPerPage: 10,
       enablePersonalization: true,
-      userToken: 'action_crime_fan',
+      userToken: 'action_crime',
     }),
     carousel({
       container: '#carousel-personalization',
