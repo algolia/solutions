@@ -1,22 +1,19 @@
 {
-  "name": "carousel-demo",
+  "name": "ecommerce-static-product-content-carousels-demo",
   "version": "1.0.0",
-  "private": true,
+  "description": "",
+  "main": "main.js",
   "scripts": {
-    "start": "parcel src/index.html --port 3000",
-    "build": "parcel build index.html",
-    "deploy": "rm -rf dist && parcel build src/index.html --public-url /demo-carousel-marketplace && git add --all && git commit -m 'build' && git push",
-    "lint": "eslint .",
-    "lint:fix": "npm run lint -- --fix"
+    "start": "parcel index.html",
+    "build": "parcel build index.html"
   },
+  "author": "",
+  "license": "ISC",
   "devDependencies": {
-    "babel-eslint": "10.0.3",
-    "eslint": "5.7.0",
-    "eslint-config-algolia": "13.2.3",
-    "eslint-config-prettier": "3.6.0",
-    "eslint-plugin-import": "2.19.1",
-    "eslint-plugin-prettier": "3.1.2",
-    "parcel-bundler": "1.12.4",
-    "prettier": "1.19.1"
+    "parcel-bundler": "^1.12.4"
+  },
+  "dependencies": {
+    "algoliasearch": "^4.3.0",
+    "instantsearch.js": "^4.7.0"
   }
 }
