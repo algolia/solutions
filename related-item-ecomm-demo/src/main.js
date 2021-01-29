@@ -38,12 +38,6 @@ const referenceHit = {
     newPrice: 1299.99
 };
 
-
-
-
-
-
-
 // Add the widgets
 search.addWidgets([
   configure({
@@ -140,7 +134,6 @@ const ratings = (hit) =>{
       break;
     default:
       return 'No ratings yet for this product'
-      console.log('Erreur cas inconnu');  
   }
   
   }
