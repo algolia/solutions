@@ -1,0 +1,26 @@
+{
+  "name": "predictive-search-box-demo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "start": "parcel index.html --open",
+    "build": "parcel build index.html"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@babel/core": "^7.9.6",
+    "@babel/plugin-proposal-class-properties": "^7.8.3",
+    "@babel/preset-env": "^7.9.6",
+    "parcel-bundler": "^1.6.1",
+    "webpack": "^4.41.6",
+    "webpack-cli": "^3.3.11"
+  },
+  "dependencies": {
+    "algoliasearch": "3.35.1",
+    "babel": "6.23.0",
+    "instantsearch.js": "4.2.0",
+    "recent-searches": "^1.0.5"
+  }
+}
