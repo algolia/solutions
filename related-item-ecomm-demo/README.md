@@ -1,1 +1,1 @@
-# animated-placeholder-demo
+# related-item-demo
