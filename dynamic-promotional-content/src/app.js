@@ -29,22 +29,12 @@ const search = instantsearch({
   },
 });
 
-// TODO: remove this, it was just for highlighting
-function taggedTemplateNoop(strings, ...keys) {
-  const lastIndex = strings.length - 1;
-  return (
-    strings.slice(0, lastIndex).reduce((p, s, i) => p + s + keys[i], '') +
-    strings[lastIndex]
-  );
-}
-const html = taggedTemplateNoop;
-
+// TODO: finish the three layouts
 const templates = {
   'logo-text'({
     displayed_attributes: { name, page_url, logo_url, layout_label },
   }) {
-    // console.log(item);
-    return html`
+    return `
       <p>
         <a href="${page_url}">
           <img
@@ -65,7 +55,7 @@ const templates = {
       promoted_items,
     },
   }) {
-    return html`
+    return `
       <p>
         <a href="${page_url}">
           <img
@@ -78,7 +68,7 @@ const templates = {
       <ul>
         ${promoted_items
           .map(
-            promoted => html`
+            promoted => `
               <li>
                 <a href="${promoted.product_page_url}">
                   <img
@@ -104,7 +94,7 @@ const templates = {
       promoted_items,
     },
   }) {
-    return html`
+    return `
       <p>
         <a href="${page_url}">
           <img
@@ -117,7 +107,7 @@ const templates = {
       <ul>
         ${promoted_items
           .map(
-            promoted => html`
+            promoted => `
               <li>
                 <a href="${promoted.product_page_url}">
                   <img
@@ -181,6 +171,18 @@ function optionalRefinementTranslator() {
   };
 }
 
+function hasHighlightedMatch(item, attribute) {
+  return Boolean(
+    item &&
+      item._highlightResult &&
+      item._highlightResult[attribute] &&
+      Array.isArray(item._highlightResult[attribute]) &&
+      item._highlightResult[attribute].some(
+        ({ matchLevel }) => matchLevel !== 'none'
+      )
+  );
+}
+
 function banner({ container }) {
   return instantsearch.widgets
     .index({ indexName: 'instant_search_promotions' })
@@ -193,19 +195,32 @@ function banner({ container }) {
       instantsearch.widgets.hits({
         container,
         templates: {
-          item(item) {
-            return templates[item.layout_type]?.(item);
-          },
+          item: item => templates[item.layout_type](item),
           empty: '',
+        },
+        transformItems(items) {
+          return items.filter(item => {
+            // remove items without matching layout
+            if (typeof templates[item.layout_type] !== 'function') {
+              // eslint-disable-next-line no-console
+              console.warn(
+                `layout type ${item.layout_type} was not defined in templates`
+              );
+              return false;
+            }
+
+            // remote items without matching highlight
+            return hasHighlightedMatch(item, 'matching_keywords');
+          });
         },
       }),
     ]);
 }
 
-// TODO: finish the three layouts
 search.addWidgets([
   instantsearch.widgets.searchBox({
     container: '#searchbox',
+    placeholder: 'example queries: oral b, test, tooth brush',
   }),
   banner({ container: '#banner' }),
   instantsearch.widgets.panel({ templates: { header: 'brand' } })(
