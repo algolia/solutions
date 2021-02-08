@@ -178,7 +178,7 @@ function hasHighlightedMatch(item, attribute) {
       item._highlightResult[attribute] &&
       Array.isArray(item._highlightResult[attribute]) &&
       item._highlightResult[attribute].some(
-        ({ matchLevel }) => matchLevel !== 'none'
+        ({ fullyHighlighted }) => fullyHighlighted
       )
   );
 }
