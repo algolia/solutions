@@ -1,6 +1,6 @@
 # Programmatic content carousel
 
-[Run on CodeSandbox](https://codesandbox.io/s/github/algolia/solutions/tree/master/content-carousel-programmatic-demo)
+[Run on CodeSandbox](https://codesandbox.io/s/github/algolia/solutions/tree/master/content-carousel-programmatic-ecommerce-demo)
 
 ## Get started
 
@@ -27,12 +27,12 @@ A separate index for the carousel configurations (which can use query rules or p
 ```json
 {
   "title": "Just for you",
-  "indexName": "perso_movies_carousel",
+  "indexName": "e_commerce_transformed",
   "configure": {
     "hitsPerPage": 10,
     "enablePersonalization": true,
-    "userToken": true
+    "userToken": "1234"
   },
-  "objectID": "61606000"
+  "objectID": "just-for-you"
 }
 ```
