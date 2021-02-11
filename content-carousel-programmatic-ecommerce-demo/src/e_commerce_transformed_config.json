@@ -1,0 +1,52 @@
+[
+    {
+        "title":"Popular",
+        "indexName":"e_commerce_transformed",
+        "configure":{
+            "hitsPerPage":10
+        },
+        "order":1,
+        "objectID":"popular"
+    },
+    {
+        "title":"Best Rated",
+        "indexName":"e_commerce_transformed_rating_desc",
+        "configure":{
+            "hitsPerPage":10
+        },
+        "order":2,
+        "objectID":"best-rated"
+    },
+    
+    {
+        "title":"On Sale",
+        "indexName":"e_commerce_transformed",
+        "configure":{
+            "hitsPerPage":10,
+            "filters": "onSale:true"
+        },
+        "order":3,
+        "objectID":"on-sale"
+    },
+    {
+        "title":"These might interest you",
+        "indexName":"e_commerce_transformed",
+        "configure":{
+            "hitsPerPage":10,
+            "enablePersonalization":true,
+            "userToken": "samsung_fan"
+        },
+        "order":4,
+        "objectID":"these-might-interest-you"
+    },
+    {
+        "title":"Gifts for Black Friday",
+        "indexName":"e_commerce_transformed",
+        "configure":{
+            "hitsPerPage":10,
+            "ruleContexts":"carousel_black_friday"
+        },
+        "order":4,
+        "objectID":"gifts-for-black-friday"
+    }
+]
