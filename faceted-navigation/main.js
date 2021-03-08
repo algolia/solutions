@@ -96,7 +96,8 @@ const renderRefinementList = (renderOptions, isFirstRender) => {
     toggleShowMore,
     widgetParams,
   } = renderOptions;
-
+  
+  //Do some initial rendering and bind events
   if (isFirstRender) {
     const ul = document.createElement('ul');
     const button = document.createElement('button');
@@ -111,7 +112,7 @@ const renderRefinementList = (renderOptions, isFirstRender) => {
     widgetParams.container.appendChild(button);
   }
 
-
+  //Render the widget
   widgetParams.container.querySelector('ul').innerHTML = items
     .map(
       item => `
