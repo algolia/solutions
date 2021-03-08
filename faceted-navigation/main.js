@@ -153,7 +153,7 @@ const customRefinementList = instantsearch.connectors.connectRefinementList(
 // 3. Instantiate
 search.addWidgets([
   customRefinementList({
-    container: document.querySelector('#refinement-list'),
+    container: document.querySelector('#guided-search-facets'),
     attribute: 'categories',
     showMoreLimit: 40,
   })

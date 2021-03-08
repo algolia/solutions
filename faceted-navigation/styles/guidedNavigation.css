@@ -34,14 +34,14 @@ position: relative;
 }
 
 
-.refinement-list ul {
+.guided-search-facets ul {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
     width: 70vw;
     margin: 1rem auto;
 }
-.refinement-list ul li {
+.guided-search-facets ul li {
    padding: 0.6rem;
    background-color: white;
    border-radius: 20px;
