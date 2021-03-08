@@ -15,10 +15,6 @@ position: relative;
     transform: translate(7rem, -1rem);
 }
 
-.header{
-    background: linear-gradient(162deg, rgba(34,36,61,1) 0%, rgba(237,237,237,1) 38%) !important;;
-}
-
 .searchbox{
     width: 60vw;
 }
