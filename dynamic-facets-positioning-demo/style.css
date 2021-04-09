@@ -91,7 +91,18 @@ html {
     height: 4rem
   }
   
+  .infobox-container {
+    display: none;
+  }
+  
   @media (max-width: 900px) {
+    .infobox-container {
+      display: block;
+      padding: 1rem;
+      border: solid 1px #faebcc;
+      background-color: #fcf8e3;
+    }
+
     .header {
       cursor: pointer;
       background-position: bottom;
