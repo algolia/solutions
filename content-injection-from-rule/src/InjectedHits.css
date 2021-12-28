@@ -1,0 +1,23 @@
+.InjectedHits-list {
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-flow: dense;
+  gap: 1rem;
+}
+
+.InjectedHits-item {
+  margin: 0;
+  padding: 1rem;
+  width: auto;
+  border: 1px solid #c4c8d8;
+  box-shadow: 0 2px 5px 0 #e3e5ec;
+  font-size: 1rem;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.InjectedHits-injected {
+  display: contents;
+}
