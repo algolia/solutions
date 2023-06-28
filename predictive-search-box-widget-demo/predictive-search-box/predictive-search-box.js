@@ -248,11 +248,11 @@ class PredictiveSearchBox {
 
           suggestions = filterUniques(
           recentSearches.concat(response.hits),
-          query
-        ).filter(hit => hit.query.startsWith(query) && hit.query !== query);
+          query.toLowerCase()
+        ).filter(hit => hit.query.startsWith(query.toLowerCase()) && hit.query !== query);
         }else{
           suggestions = response.hits.filter(
-            hit => hit.query.startsWith(query) && hit.query !== query
+            hit => hit.query.startsWith(query.toLowerCase()) && hit.query !== query
           );
         }
 
@@ -262,7 +262,11 @@ class PredictiveSearchBox {
         }
 
         this.predictiveSearchBox.style.display = "flex";
-        this.setPredictiveSearchBoxValue(suggestions[0].query);
+        if (query === query.toUpperCase()) {
+          this.setPredictiveSearchBoxValue(suggestions[0].query.toUpperCase());
+        } else {
+          this.setPredictiveSearchBoxValue(suggestions[0].query);
+        }
         this.tabActionSuggestion = suggestions[0].query;
         return suggestions;
       })
